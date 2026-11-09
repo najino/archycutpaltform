@@ -1,0 +1,20 @@
+{
+  "name": "edit-team-hub",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @eth/web --filter @eth/bot dev",
+    "dev:web": "pnpm --filter @eth/web dev",
+    "dev:bot": "pnpm --filter @eth/bot dev",
+    "build": "pnpm -r build",
+    "db:generate": "pnpm --filter @eth/db generate",
+    "db:migrate": "pnpm --filter @eth/db migrate",
+    "db:seed": "pnpm --filter @eth/db seed",
+    "test": "pnpm -r --filter @eth/core test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
