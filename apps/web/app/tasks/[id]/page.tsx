@@ -12,7 +12,7 @@ import {
 import { deliverables } from "@eth/db";
 import { channelPostUrl } from "@eth/telegram";
 import type { TaskStatus } from "@eth/db";
-import { EditorNav } from "@/components/editor-nav";
+import { EditorShell } from "@/components/editor-shell";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
@@ -50,8 +50,7 @@ export default async function TaskDetailPage({
   ]);
 
   return (
-    <div className="app-shell">
-      <EditorNav user={user} />
+    <EditorShell user={user}>
       <p>
         <Link href="/week" className="muted">
           ← بازگشت
@@ -77,7 +76,7 @@ export default async function TaskDetailPage({
             <input type="hidden" name="taskId" value={task.id} />
             <input type="hidden" name="status" value="in_progress" />
             <button className="btn primary" type="submit">
-              Start
+              شروع
             </button>
           </form>
         )}
@@ -87,14 +86,14 @@ export default async function TaskDetailPage({
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="status" value="approved" />
               <button className="btn primary" type="submit">
-                Approve
+                تأیید
               </button>
             </form>
             <form action={statusAction}>
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="status" value="rejected" />
               <button className="btn danger" type="submit">
-                Reject
+                رد
               </button>
             </form>
           </>
@@ -131,6 +130,6 @@ export default async function TaskDetailPage({
           ))}
         </ul>
       </div>
-    </div>
+    </EditorShell>
   );
 }

@@ -7,8 +7,7 @@ import {
   listProjects,
   listWeekTasks,
 } from "@eth/core";
-import { EditorNav } from "@/components/editor-nav";
-import { RealtimeRefetch } from "@/components/realtime-refetch";
+import { EditorShell } from "@/components/editor-shell";
 import { requireEditorPortal } from "@/lib/authz";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -49,16 +48,66 @@ export default async function WeekPage() {
   const openProjects = projects.filter((p) => p.status === "open");
 
   return (
-    <div className="app-shell">
-      <RealtimeRefetch />
-      <EditorNav user={user} />
-      <h1 className="hero-title">هفته من</h1>
-      <p className="hero-sub">لیست تسک‌های هفته جاری و وضعیت تحویل.</p>
-      <p className="stats-line">
-        {stats.total} tasks · {stats.delivered} delivered · {stats.approved}{" "}
-        approved
-        <span className="muted"> · {weekKey}</span>
-      </p>
+    <EditorShell user={user}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 16,
+          marginBottom: 8,
+        }}
+      >
+        <div>
+          <h1 className="hero-title">هفته من</h1>
+          <p className="hero-sub">لیست تسک‌های هفته جاری و وضعیت تحویل.</p>
+        </div>
+        <span className="sys-pill">
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+            calendar_view_week
+          </span>
+          <span className="font-mono" style={{ color: "var(--primary)" }}>
+            {weekKey}
+          </span>
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        <div className="metric-card">
+          <div className="metric-label">کل</div>
+          <div className="metric-value font-mono">{stats.total}</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-label" style={{ color: "var(--status-delivered)" }}>
+            تحویل‌شده
+          </div>
+          <div
+            className="metric-value font-mono"
+            style={{ color: "var(--status-delivered)" }}
+          >
+            {stats.delivered}
+          </div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-label" style={{ color: "var(--status-approved)" }}>
+            تأییدشده
+          </div>
+          <div
+            className="metric-value font-mono"
+            style={{ color: "var(--primary)" }}
+          >
+            {stats.approved}
+          </div>
+        </div>
+      </div>
 
       <div className="task-list">
         {tasks.map((task) => (
@@ -66,7 +115,9 @@ export default async function WeekPage() {
             <span className={`chip ${task.status}`}>{task.status}</span>
             <div>
               <strong>{task.title}</strong>
-              <div className="muted">{task.shortCode}</div>
+              <div className="muted font-mono" style={{ fontSize: 11 }}>
+                {task.shortCode}
+              </div>
             </div>
             <span className="muted">{task.dueDate ?? "—"}</span>
           </Link>
@@ -75,7 +126,20 @@ export default async function WeekPage() {
       </div>
 
       <div className="panel" style={{ marginTop: 24 }}>
-        <h2 style={{ marginTop: 0 }}>افزودن تسک</h2>
+        <h2
+          style={{
+            marginTop: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
+            add_task
+          </span>
+          افزودن تسک
+        </h2>
         <form action={addTaskAction} className="form-grid">
           <label>
             عنوان
@@ -111,6 +175,6 @@ export default async function WeekPage() {
           </button>
         </form>
       </div>
-    </div>
+    </EditorShell>
   );
 }

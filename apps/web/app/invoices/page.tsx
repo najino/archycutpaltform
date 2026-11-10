@@ -4,7 +4,7 @@ import {
   formatToman,
   listInvoices,
 } from "@eth/core";
-import { EditorNav } from "@/components/editor-nav";
+import { EditorShell } from "@/components/editor-shell";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 
@@ -19,8 +19,7 @@ export default async function EditorInvoicesPage({
   const invoices = await listInvoices(db(), user, periodKey);
 
   return (
-    <div className="app-shell">
-      <EditorNav user={user} />
+    <EditorShell user={user}>
       <h1 className="hero-title">فاکتورهای من</h1>
       <p className="hero-sub">فاکتورهای ماهانه مربوط به خودتان.</p>
 
@@ -61,6 +60,6 @@ export default async function EditorInvoicesPage({
           <p className="muted">فاکتوری برای این ماه نیست.</p>
         )}
       </div>
-    </div>
+    </EditorShell>
   );
 }

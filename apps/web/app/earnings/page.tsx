@@ -4,7 +4,7 @@ import {
   monthlyEarnings,
   toPersianDigits,
 } from "@eth/core";
-import { EditorNav } from "@/components/editor-nav";
+import { EditorShell } from "@/components/editor-shell";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -21,8 +21,7 @@ export default async function EarningsPage({
   const rows = await monthlyEarnings(db(), user, periodKey, user.id);
 
   return (
-    <div className="app-shell">
-      <EditorNav user={user} />
+    <EditorShell user={user}>
       <h1 className="hero-title">درآمد</h1>
       <p className="hero-sub">
         فقط تسک‌های تأییدشده (approved) در ماه میلادی شمرده می‌شوند.
@@ -80,6 +79,6 @@ export default async function EarningsPage({
           </ul>
         </div>
       ))}
-    </div>
+    </EditorShell>
   );
 }

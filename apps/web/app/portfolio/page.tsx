@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { listCategories, listClients, listDeliverables, listMembers } from "@eth/core";
 import { channelPostUrl, videoTypeLabel } from "@eth/telegram";
-import { EditorNav } from "@/components/editor-nav";
+import { EditorShell } from "@/components/editor-shell";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 
@@ -36,8 +36,7 @@ export default async function PortfolioPage({
   ]);
 
   return (
-    <div className="app-shell">
-      <EditorNav user={user} />
+    <EditorShell user={user}>
       <h1 className="hero-title">پورتفولیو</h1>
       <p className="hero-sub">
         همه تحویل‌ها با لینک مستقیم به پست کانال تلگرام.
@@ -138,6 +137,6 @@ export default async function PortfolioPage({
         </table>
         {rows.length === 0 && <p className="muted">موردی نیست.</p>}
       </div>
-    </div>
+    </EditorShell>
   );
 }
