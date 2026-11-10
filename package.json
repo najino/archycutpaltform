@@ -11,6 +11,7 @@
     "db:generate": "pnpm --filter @eth/db generate",
     "db:migrate": "pnpm --filter @eth/db migrate",
     "db:seed": "pnpm --filter @eth/db seed",
+    "db:seed:demo": "pnpm --filter @eth/db seed:demo",
     "test": "pnpm -r --filter @eth/core test",
     "typecheck": "pnpm -r typecheck"
   },
