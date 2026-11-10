@@ -7,11 +7,14 @@ import {
   formatToman,
   getTaskById,
   listActivityForEntity,
+  listCategories,
+  listClients,
   toPersianDigits,
 } from "@eth/core";
 import { deliverables } from "@eth/db";
 import { channelPostUrl } from "@eth/telegram";
 import type { TaskStatus } from "@eth/db";
+import { DeliverableUpload } from "@/components/deliverable-upload";
 import { EditorShell } from "@/components/editor-shell";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
@@ -41,13 +44,20 @@ export default async function TaskDetailPage({
     redirect("/week");
   }
 
-  const [history, dels] = await Promise.all([
+  const [history, dels, categories, clients] = await Promise.all([
     listActivityForEntity(db(), "task", task.id),
     db()
       .select()
       .from(deliverables)
       .where(eq(deliverables.taskId, task.id)),
+    listCategories(db()),
+    listClients(db()),
   ]);
+
+  const canUpload = task.status !== "approved";
+  const channelConfigured = Boolean(
+    process.env.TELEGRAM_PORTFOLIO_CHANNEL_ID?.trim(),
+  );
 
   return (
     <EditorShell user={user}>
@@ -101,23 +111,80 @@ export default async function TaskDetailPage({
       </div>
 
       <div className="panel" style={{ marginTop: 24 }}>
-        <h2 style={{ marginTop: 0 }}>تحویل‌ها</h2>
-        {dels.length === 0 && (
-          <p className="muted">
-            هنوز فایلی ارسال نشده. ارسال فقط از طریق ربات تلگرام (/submit).
+        <h2
+          style={{
+            marginTop: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 18,
+          }}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{ color: "var(--primary)" }}
+          >
+            cloud_upload
+          </span>
+          تحویل‌ها
+        </h2>
+
+        {dels.length === 0 ? (
+          <p className="muted" style={{ marginTop: 0 }}>
+            هنوز فایلی ارسال نشده.
           </p>
+        ) : (
+          <div className="task-list" style={{ marginBottom: 16 }}>
+            {dels.map((d) => (
+              <a
+                key={d.id}
+                href={channelPostUrl(d.channelChatId, d.channelMsgId)}
+                target="_blank"
+                rel="noreferrer"
+                className="task-row"
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ color: "var(--status-delivered)" }}
+                >
+                  play_circle
+                </span>
+                <div>
+                  <strong>{d.title}</strong>
+                  <div className="muted" style={{ fontSize: 12 }}>
+                    msg {d.channelMsgId} · {d.videoType}
+                  </div>
+                </div>
+                <span className="muted" style={{ fontSize: 12 }}>
+                  مشاهده در کانال
+                </span>
+              </a>
+            ))}
+          </div>
         )}
-        {dels.map((d) => (
-          <p key={d.id}>
-            <a
-              href={channelPostUrl(d.channelChatId, d.channelMsgId)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {d.title} → پست کانال
-            </a>
-          </p>
-        ))}
+
+        {canUpload ? (
+          <>
+            {!channelConfigured && (
+              <p style={{ color: "var(--status-in-progress)", marginBottom: 12 }}>
+                برای انتشار، `TELEGRAM_PORTFOLIO_CHANNEL_ID` را در `.env` تنظیم
+                کنید و سرور را ری‌استارت کنید.
+              </p>
+            )}
+            <DeliverableUpload
+              taskId={task.id}
+              defaultTitle={task.title}
+              defaultCategoryId={task.categoryId}
+              defaultClientId={task.clientId}
+              defaultVideoType={task.videoType}
+              categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+              clients={clients.map((c) => ({ id: c.id, name: c.name }))}
+              disabled={!channelConfigured}
+            />
+          </>
+        ) : (
+          <p className="muted">تسک تأیید شده؛ آپلود جدید غیرفعال است.</p>
+        )}
       </div>
 
       <div className="panel" style={{ marginTop: 16 }}>

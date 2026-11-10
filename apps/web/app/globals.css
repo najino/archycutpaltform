@@ -654,6 +654,51 @@ code {
   }
 }
 
+/* ——— Upload progress ——— */
+.upload-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.upload-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.upload-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary-container), var(--primary));
+  transition: width 160ms ease;
+}
+
+.upload-progress-fill.pulse {
+  animation: upload-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes upload-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.25);
+  }
+}
+
 @media (max-width: 640px) {
   .task-row {
     grid-template-columns: 1fr;
