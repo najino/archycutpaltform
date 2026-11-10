@@ -42,8 +42,10 @@ export async function getSessionUser(): Promise<User | null> {
     const { payload } = await jwtVerify(token, secretKey());
     const userId = payload.sub;
     if (!userId) return null;
-    return getUserById(db(), userId);
-  } catch {
+    return await getUserById(db(), userId);
+  } catch (err) {
+    // DB down / bad cookie → treat as logged out instead of crashing RSC
+    console.error("getSessionUser failed:", err);
     return null;
   }
 }
