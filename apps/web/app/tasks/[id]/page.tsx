@@ -12,7 +12,8 @@ import {
 import { deliverables } from "@eth/db";
 import { channelPostUrl } from "@eth/telegram";
 import type { TaskStatus } from "@eth/db";
-import { Nav } from "@/components/nav";
+import { EditorNav } from "@/components/editor-nav";
+import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 
@@ -31,13 +32,12 @@ export default async function TaskDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireEditorPortal();
   const { id } = await params;
   const task = await getTaskById(db(), id);
   if (!task) notFound();
 
-  if (!can(user, "task.view_all") && task.assigneeId !== user.id) {
+  if (task.assigneeId !== user.id) {
     redirect("/week");
   }
 
@@ -51,7 +51,7 @@ export default async function TaskDetailPage({
 
   return (
     <div className="app-shell">
-      <Nav user={user} />
+      <EditorNav user={user} />
       <p>
         <Link href="/week" className="muted">
           ← بازگشت

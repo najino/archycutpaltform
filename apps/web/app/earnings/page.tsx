@@ -1,14 +1,12 @@
-import { redirect } from "next/navigation";
 import {
-  can,
   currentMonthPeriod,
   formatToman,
   monthlyEarnings,
   toPersianDigits,
 } from "@eth/core";
-import { Nav } from "@/components/nav";
+import { EditorNav } from "@/components/editor-nav";
+import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 import Link from "next/link";
 
 export default async function EarningsPage({
@@ -16,22 +14,15 @@ export default async function EarningsPage({
 }: {
   searchParams: Promise<{ month?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireEditorPortal();
 
   const sp = await searchParams;
   const periodKey = sp.month || currentMonthPeriod().periodKey;
-  const isAdmin = can(user, "earnings.view_all");
-  const rows = await monthlyEarnings(
-    db(),
-    user,
-    periodKey,
-    isAdmin ? undefined : user.id,
-  );
+  const rows = await monthlyEarnings(db(), user, periodKey, user.id);
 
   return (
     <div className="app-shell">
-      <Nav user={user} />
+      <EditorNav user={user} />
       <h1 className="hero-title">درآمد</h1>
       <p className="hero-sub">
         فقط تسک‌های تأییدشده (approved) در ماه میلادی شمرده می‌شوند.

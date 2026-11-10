@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { listCategories, listClients, listDeliverables, listMembers } from "@eth/core";
 import { channelPostUrl, videoTypeLabel } from "@eth/telegram";
-import { Nav } from "@/components/nav";
+import { EditorNav } from "@/components/editor-nav";
+import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 export default async function PortfolioPage({
   searchParams,
@@ -15,8 +15,7 @@ export default async function PortfolioPage({
     editorId?: string;
   }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireEditorPortal();
   const sp = await searchParams;
 
   const [rows, cats, clients, members] = await Promise.all([
@@ -38,7 +37,7 @@ export default async function PortfolioPage({
 
   return (
     <div className="app-shell">
-      <Nav user={user} />
+      <EditorNav user={user} />
       <h1 className="hero-title">پورتفولیو</h1>
       <p className="hero-sub">
         همه تحویل‌ها با لینک مستقیم به پست کانال تلگرام.

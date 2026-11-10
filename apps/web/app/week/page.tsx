@@ -7,15 +7,16 @@ import {
   listProjects,
   listWeekTasks,
 } from "@eth/core";
-import { Nav } from "@/components/nav";
+import { EditorNav } from "@/components/editor-nav";
 import { RealtimeRefetch } from "@/components/realtime-refetch";
+import { requireEditorPortal } from "@/lib/authz";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 
 async function addTaskAction(formData: FormData) {
   "use server";
   const user = await getSessionUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?portal=editor");
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return;
   const dueDateRaw = String(formData.get("dueDate") ?? "").trim();
@@ -37,8 +38,7 @@ async function addTaskAction(formData: FormData) {
 }
 
 export default async function WeekPage() {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireEditorPortal();
 
   const weekKey = currentWeekKey();
   const [tasks, stats, projects] = await Promise.all([
@@ -51,7 +51,7 @@ export default async function WeekPage() {
   return (
     <div className="app-shell">
       <RealtimeRefetch />
-      <Nav user={user} />
+      <EditorNav user={user} />
       <h1 className="hero-title">هفته من</h1>
       <p className="hero-sub">لیست تسک‌های هفته جاری و وضعیت تحویل.</p>
       <p className="stats-line">
@@ -71,9 +71,7 @@ export default async function WeekPage() {
             <span className="muted">{task.dueDate ?? "—"}</span>
           </Link>
         ))}
-        {tasks.length === 0 && (
-          <p className="muted">این هفته تسکی ندارید.</p>
-        )}
+        {tasks.length === 0 && <p className="muted">این هفته تسکی ندارید.</p>}
       </div>
 
       <div className="panel" style={{ marginTop: 24 }}>
@@ -96,7 +94,13 @@ export default async function WeekPage() {
           </label>
           <label>
             تعداد واحد
-            <input name="units" type="number" step="0.01" min="0.01" defaultValue="1" />
+            <input
+              name="units"
+              type="number"
+              step="0.01"
+              min="0.01"
+              defaultValue="1"
+            />
           </label>
           <label>
             موعد (اختیاری)

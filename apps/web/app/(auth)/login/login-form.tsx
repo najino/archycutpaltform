@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+export function LoginForm({ portal }: { portal: "admin" | "editor" }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +20,7 @@ export function LoginForm() {
         body: JSON.stringify({
           telegramId: String(fd.get("telegramId") ?? ""),
           password: String(fd.get("password") ?? ""),
+          portal,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -28,7 +29,7 @@ export function LoginForm() {
         setLoading(false);
         return;
       }
-      router.push("/week");
+      router.push(data.redirectTo ?? (portal === "admin" ? "/admin" : "/week"));
       router.refresh();
     } catch {
       setError("خطای شبکه");
@@ -37,7 +38,11 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="form-grid" style={{ textAlign: "right" }}>
+    <form
+      onSubmit={onSubmit}
+      className="form-grid"
+      style={{ textAlign: "right" }}
+    >
       <label>
         آیدی تلگرام
         <input
@@ -60,7 +65,7 @@ export function LoginForm() {
       </label>
       {error && <p style={{ color: "var(--danger)", margin: 0 }}>{error}</p>}
       <button className="btn primary" type="submit" disabled={loading}>
-        {loading ? "..." : "ورود"}
+        {loading ? "..." : portal === "admin" ? "ورود ادمین" : "ورود ادیتور"}
       </button>
     </form>
   );
