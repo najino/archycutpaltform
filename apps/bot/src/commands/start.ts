@@ -1,12 +1,29 @@
 import { redeemInviteWithPasswordHint } from "@eth/core";
+import { parseSubmitStartPayload } from "@eth/telegram";
 import type { BotContext } from "../context.js";
 
 export async function startCommand(ctx: BotContext) {
   const text = ctx.message?.text ?? "";
   const parts = text.trim().split(/\s+/);
-  const code = parts[1];
+  const payload = parts[1];
 
-  if (!code) {
+  const submitCode = parseSubmitStartPayload(payload);
+  if (submitCode) {
+    if (!ctx.user) {
+      await ctx.reply(
+        "برای ارسال فایل ابتدا باید عضو تیم باشید. با لینک دعوت `/start <code>` وارد شوید.",
+      );
+      return;
+    }
+    await ctx.reply(
+      `📤 شروع ارسال برای تسک <code>${submitCode}</code>…`,
+      { parse_mode: "HTML" },
+    );
+    await ctx.conversation.enter("submit", submitCode);
+    return;
+  }
+
+  if (!payload) {
     if (ctx.user) {
       await ctx.reply(
         `سلام ${ctx.user.displayName}!\nنقش: ${ctx.user.role}\nدستورات: /my /add /submit /week`,
@@ -22,7 +39,7 @@ export async function startCommand(ctx: BotContext) {
   try {
     const { user, initialPassword } = await redeemInviteWithPasswordHint(
       ctx.db,
-      code,
+      payload,
       {
         telegramId: BigInt(ctx.from.id),
         username: ctx.from.username ?? null,

@@ -74,6 +74,22 @@ export function inviteDeepLink(botUsername: string, code: string): string {
   return `https://t.me/${botUsername.replace(/^@/, "")}?start=${code}`;
 }
 
+/** Deep-link that opens submit flow for a task (`/start submit_T-0001`). */
+export function submitDeepLink(botUsername: string, shortCode: string): string {
+  const payload = `submit_${shortCode.trim().toUpperCase()}`;
+  return `https://t.me/${botUsername.replace(/^@/, "")}?start=${payload}`;
+}
+
+export function parseSubmitStartPayload(
+  payload: string | undefined | null,
+): string | null {
+  if (!payload) return null;
+  const raw = payload.trim();
+  const match = /^submit[_-](.+)$/i.exec(raw);
+  if (!match?.[1]) return null;
+  return match[1].trim().toUpperCase();
+}
+
 export function videoTypeLabel(type: string): string {
   return VIDEO_TYPE_LABELS[type] ?? type;
 }

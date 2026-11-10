@@ -12,7 +12,7 @@ import {
   toPersianDigits,
 } from "@eth/core";
 import { deliverables } from "@eth/db";
-import { channelPostUrl } from "@eth/telegram";
+import { channelPostUrl, submitDeepLink } from "@eth/telegram";
 import type { TaskStatus } from "@eth/db";
 import { DeliverableUpload } from "@/components/deliverable-upload";
 import { EditorShell } from "@/components/editor-shell";
@@ -58,6 +58,10 @@ export default async function TaskDetailPage({
   const channelConfigured = Boolean(
     process.env.TELEGRAM_PORTFOLIO_CHANNEL_ID?.trim(),
   );
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME?.trim() || "";
+  const telegramSubmitUrl = botUsername
+    ? submitDeepLink(botUsername, task.shortCode)
+    : null;
 
   return (
     <EditorShell user={user}>
@@ -180,6 +184,8 @@ export default async function TaskDetailPage({
               categories={categories.map((c) => ({ id: c.id, name: c.name }))}
               clients={clients.map((c) => ({ id: c.id, name: c.name }))}
               disabled={!channelConfigured}
+              telegramSubmitUrl={telegramSubmitUrl}
+              shortCode={task.shortCode}
             />
           </>
         ) : (

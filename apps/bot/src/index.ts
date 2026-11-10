@@ -104,7 +104,9 @@ bot.command("assign", async (ctx) => {
   await ctx.conversation.enter("assign");
 });
 bot.command("submit", async (ctx) => {
-  await ctx.conversation.enter("submit");
+  const parts = ctx.message?.text?.trim().split(/\s+/) ?? [];
+  const code = parts[1]?.trim().toUpperCase();
+  await ctx.conversation.enter("submit", code || undefined);
 });
 bot.command("project", async (ctx) => {
   await ctx.conversation.enter("project");

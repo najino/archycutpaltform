@@ -23,6 +23,8 @@ export function DeliverableUpload({
   categories,
   clients,
   disabled,
+  telegramSubmitUrl,
+  shortCode,
 }: {
   taskId: string;
   defaultTitle: string;
@@ -32,6 +34,8 @@ export function DeliverableUpload({
   categories: Option[];
   clients: Option[];
   disabled?: boolean;
+  telegramSubmitUrl?: string | null;
+  shortCode?: string;
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -149,7 +153,74 @@ export function DeliverableUpload({
           : null;
 
   return (
-    <form onSubmit={onSubmit} className="form-grid" style={{ marginTop: 12 }}>
+    <div style={{ marginTop: 12, display: "grid", gap: 16 }}>
+      {telegramSubmitUrl && (
+        <div
+          className="info-banner"
+          style={{
+            marginBottom: 0,
+            borderRight: "2px solid var(--primary)",
+            flexDirection: "column",
+            alignItems: "stretch",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ color: "var(--tertiary)", fontSize: 22 }}
+            >
+              smart_toy
+            </span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>
+                فایل حجیم؟ از تلگرام بفرستید
+              </div>
+              <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>
+                برای ویدیوهای بالای ۴۹MB، ارسال از ربات بدون محدودیت آپلود سرور
+                انجام می‌شود
+                {shortCode ? (
+                  <>
+                    {" "}
+                    (تسک{" "}
+                    <span className="font-mono" style={{ color: "var(--primary)" }}>
+                      {shortCode}
+                    </span>{" "}
+                    از قبل انتخاب می‌شود).
+                  </>
+                ) : (
+                  "."
+                )}
+              </p>
+            </div>
+          </div>
+          <a
+            className="btn primary"
+            href={telegramSubmitUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ width: "100%", textDecoration: "none" }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+              send
+            </span>
+            باز کردن ربات و ارسال فایل
+          </a>
+        </div>
+      )}
+
+      <div
+        style={{
+          height: 1,
+          background: "rgba(16,185,129,0.12)",
+        }}
+      />
+
+      <div style={{ fontWeight: 600, fontSize: 13 }}>
+        آپلود مستقیم از وب (تا ۴۹MB)
+      </div>
+
+    <form onSubmit={onSubmit} className="form-grid">
       <label>
         عنوان پورتفولیو
         <input name="title" defaultValue={defaultTitle} required />
@@ -249,5 +320,6 @@ export function DeliverableUpload({
         delivered تغییر می‌کند. حداکثر ۴۹ مگابایت.
       </p>
     </form>
+    </div>
   );
 }
