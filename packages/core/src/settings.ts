@@ -12,6 +12,9 @@ export type AgencySettings = {
 
 const AGENCY_KEY = "agency";
 
+/** Default invoice / agency letterhead title */
+export const DEFAULT_AGENCY_NAME = "فاکتور تسویه حساب ماهانه آرشی کات";
+
 export async function getAgencySettings(db: Db): Promise<AgencySettings> {
   const row = (
     await db
@@ -21,8 +24,12 @@ export async function getAgencySettings(db: Db): Promise<AgencySettings> {
       .limit(1)
   )[0];
   const value = (row?.value ?? {}) as Partial<AgencySettings>;
+  const rawName = value.name?.trim() || "";
   return {
-    name: value.name || "Edit Team Hub",
+    name:
+      !rawName || rawName === "Edit Team Hub"
+        ? DEFAULT_AGENCY_NAME
+        : rawName,
     logoUrl: value.logoUrl ?? null,
   };
 }

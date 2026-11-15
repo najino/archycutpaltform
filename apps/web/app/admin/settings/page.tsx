@@ -52,7 +52,9 @@ async function saveAgency(formData: FormData) {
     db(),
     user,
     {
-      name: String(formData.get("name") ?? "").trim() || "Edit Team Hub",
+      name:
+        String(formData.get("name") ?? "").trim() ||
+        "فاکتور تسویه حساب ماهانه آرشی کات",
       logoUrl: String(formData.get("logoUrl") ?? "").trim() || null,
     },
     "web",
