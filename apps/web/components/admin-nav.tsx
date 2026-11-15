@@ -23,20 +23,13 @@ export function AdminNav({ user }: { user: User }) {
   const pathname = usePathname();
 
   return (
-    <aside className="admin-sidebar">
+    <aside className="admin-sidebar" suppressHydrationWarning>
       <div>
-        <div style={{ padding: "20px 20px 8px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-            }}
-          >
-            <Link href="/admin" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="admin-sidebar-head">
+          <div className="admin-sidebar-brand-row">
+            <Link href="/admin" className="admin-sidebar-brand">
               <div className="brand-mark">
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                <span className="material-symbols-outlined icon-20">
                   movie_edit
                 </span>
               </div>
@@ -45,56 +38,22 @@ export function AdminNav({ user }: { user: User }) {
                 <div className="brand-sub">استودیو تدوین ویدیو</div>
               </div>
             </Link>
-            <span
-              className="chip"
-              style={{
-                background: "var(--secondary-container)",
-                color: "var(--on-surface)",
-                borderColor: "transparent",
-                textTransform: "none",
-                letterSpacing: 0,
-              }}
-            >
+            <span className="chip chip-role" suppressHydrationWarning>
               ادمین
             </span>
           </div>
 
-          <div
-            style={{
-              marginTop: 12,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "6px 10px",
-              borderRadius: "var(--radius)",
-              background: "var(--surface-subtle)",
-            }}
-          >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <div className="admin-status-bar" suppressHydrationWarning>
+            <span className="admin-status-online">
               <span className="sys-dot" />
-              <span className="font-mono muted" style={{ fontSize: 11 }}>
-                SYS.ONLINE
-              </span>
+              <span className="font-mono muted text-11">SYS.ONLINE</span>
             </span>
-            <span className="muted" style={{ fontSize: 11 }}>
-              نسخه ۲.۴.۰
-            </span>
+            <span className="muted text-11">نسخه ۲.۴.۰</span>
           </div>
         </div>
 
-        <div style={{ padding: "8px 8px 0" }}>
-          <span
-            className="muted"
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              display: "block",
-              padding: "0 14px 6px",
-            }}
-          >
-            ناوبری مدیریت
-          </span>
+        <div className="admin-sidebar-nav-wrap">
+          <span className="admin-nav-label">ناوبری مدیریت</span>
           <nav className="side-nav">
             {LINKS.map((item) => {
               const active =
@@ -105,23 +64,11 @@ export function AdminNav({ user }: { user: User }) {
                   href={item.href}
                   className={active ? "active" : ""}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                  <span className="material-symbols-outlined icon-20">
                     {item.icon}
                   </span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                  {active && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        padding: "1px 6px",
-                        borderRadius: 4,
-                        background: "var(--surface-subtle)",
-                        color: "var(--primary)",
-                      }}
-                    >
-                      فعال
-                    </span>
-                  )}
+                  <span className="side-nav-label">{item.label}</span>
+                  {active && <span className="nav-active-pill">فعال</span>}
                 </Link>
               );
             })}
@@ -129,51 +76,24 @@ export function AdminNav({ user }: { user: User }) {
         </div>
       </div>
 
-      <div style={{ padding: 16 }}>
-        <div
-          style={{
-            padding: 10,
-            borderRadius: "var(--radius-lg)",
-            background: "var(--surface-card)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 999,
-                background: "var(--primary)",
-                color: "var(--on-primary)",
-                display: "grid",
-                placeItems: "center",
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-                person
-              </span>
+      <div className="admin-sidebar-foot">
+        <div className="admin-user-card" suppressHydrationWarning>
+          <div className="admin-user-meta">
+            <div className="admin-user-avatar">
+              <span className="material-symbols-outlined icon-18">person</span>
             </div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 600 }}>{user.displayName}</div>
-              <div className="muted" style={{ fontSize: 11 }}>
-                {roleLabel(user.role)}
-              </div>
+              <div className="admin-user-name">{user.displayName}</div>
+              <div className="muted text-11">{roleLabel(user.role)}</div>
             </div>
           </div>
           <form action="/api/auth/logout" method="post">
             <button
-              className="btn"
+              className="btn btn-ghost-icon"
               type="submit"
               title="خروج"
-              style={{ padding: 8, border: 0, background: "transparent" }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                logout
-              </span>
+              <span className="material-symbols-outlined icon-20">logout</span>
             </button>
           </form>
         </div>

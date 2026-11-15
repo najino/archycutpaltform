@@ -156,14 +156,14 @@ todo → in_progress → delivered → approved
 
 ## 8. طراحی UI وب
 
-مبنای بصری: **ui-ux-pro-max** + پالت Gaming neon purple روی OLED dark.
+مبنای بصری: **ui-ux-pro-max Soft UI** + الهام 21st (glass / aurora) — بنفش لطیف روی دارک نرم.
 
 ### جهت و تم
 - RTL (`dir="rtl"`، `lang="fa"`)
-- سطوح: `surface-base` `#09091a` → `surface` `#0f0f23` → `surface-card` `#1e1c35`
-- Primary: `#a78bfa` / container `#7c3aed` — border-glass بنفش
-- وضعیت‌ها: todo / in_progress / delivered / approved / rejected با رنگ اختصاصی
-- فونت: IBM Plex Sans (+ Vazirmatn) + Material Symbols Outlined
+- سطوح شیشه‌ای نرم با blur و سایه ملایم (نه مشکی خشک OLED)
+- Primary: `#c4b5fd` / `#8b7cf6` — gradient دکمه‌ها، radius بزرگ/pill
+- وضعیت‌ها: todo / in_progress / delivered / approved / rejected
+- فونت: Nunito Sans (+ Vazirmatn) + Material Symbols Outlined
 - توکن‌ها در `apps/web/app/globals.css`
 - سند سیستم طراحی: `design-system/edit-team-hub/MASTER.md`
 

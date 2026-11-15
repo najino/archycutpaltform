@@ -12,46 +12,25 @@ export default async function AdminLayout({
   const weekKey = currentWeekKey();
 
   return (
-    <div className="admin-shell">
+    <div className="admin-shell" suppressHydrationWarning>
       <RealtimeRefetch />
       <AdminNav user={user} />
       <div className="admin-main">
         <header className="admin-topbar">
-          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 10px",
-                borderRadius: "var(--radius)",
-                background: "var(--surface-container-low)",
-              }}
-            >
-              <span
-                className="material-symbols-outlined muted"
-                style={{ fontSize: 18 }}
-              >
+          <div className="admin-topbar-left">
+            <div className="admin-week-pill" suppressHydrationWarning>
+              <span className="material-symbols-outlined muted icon-18">
                 date_range
               </span>
-              <span className="muted" style={{ fontSize: 11 }}>
-                هفته جاری:
-              </span>
-              <span
-                className="font-mono"
-                style={{ color: "var(--primary)", fontWeight: 600, fontSize: 12 }}
-              >
-                {weekKey}
-              </span>
+              <span className="muted text-11">هفته جاری:</span>
+              <span className="font-mono admin-week-key">{weekKey}</span>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="admin-topbar-right">
             <span className="sys-pill">
               <span className="sys-dot" />
               همگام‌سازی زنده
-              <span className="font-mono" style={{ opacity: 0.7 }}>
-                (SSE)
-              </span>
+              <span className="font-mono sse-tag">(SSE)</span>
             </span>
           </div>
         </header>
