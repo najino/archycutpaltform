@@ -23,6 +23,7 @@ export type InvoicePdfInput = {
   issuedAt?: Date | null;
   totalAmount: bigint;
   lines: InvoicePdfLine[];
+  paymentReceipt?: string | null;
 };
 
 const STATUS_FA: Record<string, string> = {
@@ -90,6 +91,14 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
     <tbody>${rows}</tbody>
   </table>
   <div class="total">جمع کل: ${formatToman(input.totalAmount)}</div>
+  ${
+    input.paymentReceipt?.trim()
+      ? `<div style="margin-top:18px;padding:12px;border:1px solid #ddd;border-radius:8px;background:#fafafa;font-size:12px">
+    <b>فیش پرداختی:</b>
+    <pre style="margin:8px 0 0;white-space:pre-wrap;font-family:inherit">${escapeHtml(input.paymentReceipt.trim())}</pre>
+  </div>`
+      : ""
+  }
 </body>
 </html>`;
 }

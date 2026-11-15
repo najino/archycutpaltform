@@ -9,7 +9,6 @@ import {
   jalaliMonthLabel,
   listInvoices,
   listMembers,
-  markInvoicePaid,
   parsePeriodKey,
   previousMonthPeriod,
   toPersianDigits,
@@ -54,15 +53,6 @@ async function issueAction(formData: FormData) {
     console.error("issue notify failed:", err);
   }
   redirect(`/admin/invoices?month=${inv.periodKey}`);
-}
-
-async function payAction(formData: FormData) {
-  "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
-  const id = String(formData.get("id") ?? "");
-  await markInvoicePaid(db(), user, id, "web");
-  redirect("/admin/invoices");
 }
 
 async function voidAction(formData: FormData) {
@@ -163,12 +153,12 @@ export default async function InvoicesPage({
                       </form>
                     )}
                     {can(user, "invoice.pay") && inv.status === "issued" && (
-                      <form action={payAction}>
-                        <input type="hidden" name="id" value={inv.id} />
-                        <button className="btn primary" type="submit">
-                          پرداخت شد
-                        </button>
-                      </form>
+                      <Link
+                        className="btn primary"
+                        href={`/admin/invoices/${inv.id}#payment`}
+                      >
+                        ثبت پرداخت / فیش
+                      </Link>
                     )}
                     {isAdmin && inv.status !== "paid" && inv.status !== "void" && (
                       <form action={voidAction}>

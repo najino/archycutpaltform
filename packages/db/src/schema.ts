@@ -113,6 +113,8 @@ export const invoices = pgTable(
     status: invoiceStatusEnum("status").notNull().default("draft"),
     issuedAt: timestamp("issued_at", { withTimezone: true }),
     paidAt: timestamp("paid_at", { withTimezone: true }),
+    /** Free-text payment slip / tracking code / bank note */
+    paymentReceipt: text("payment_receipt"),
     tgMessageId: integer("tg_message_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

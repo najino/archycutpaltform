@@ -88,6 +88,7 @@ export async function sendInvoiceToUser(ctx: BotContext, invoiceId: string) {
     status: detail.invoice.status,
     issuedAt: detail.invoice.issuedAt,
     totalAmount: detail.invoice.totalAmount,
+    paymentReceipt: detail.invoice.paymentReceipt,
     lines: detail.lines.map((l) => ({
       projectName: l.projectName,
       description: l.description,
@@ -135,6 +136,7 @@ export async function handleInvoiceCallbacks(ctx: BotContext) {
           status: inv.status,
           issuedAt: inv.issuedAt,
           totalAmount: inv.totalAmount,
+          paymentReceipt: detail.invoice.paymentReceipt,
           lines: detail.lines.map((l) => ({
             projectName: l.projectName,
             description: l.description,

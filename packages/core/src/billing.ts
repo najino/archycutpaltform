@@ -521,6 +521,7 @@ export async function markInvoicePaid(
   actor: User,
   invoiceId: string,
   source: ActivitySource,
+  paymentReceipt?: string | null,
 ): Promise<Invoice> {
   assertCan(actor, "invoice.pay");
   const invoice = await getInvoiceById(db, invoiceId);
@@ -532,9 +533,18 @@ export async function markInvoicePaid(
     throw new ValidationError("Issue invoice before marking paid");
   }
 
+  const receipt =
+    paymentReceipt != null
+      ? paymentReceipt.trim() || null
+      : invoice.paymentReceipt;
+
   const [updated] = await db
     .update(invoices)
-    .set({ status: "paid", paidAt: new Date() })
+    .set({
+      status: "paid",
+      paidAt: new Date(),
+      paymentReceipt: receipt,
+    })
     .where(eq(invoices.id, invoiceId))
     .returning();
 
@@ -544,6 +554,60 @@ export async function markInvoicePaid(
     actorId: actor.id,
     source,
     action: "invoice.paid",
+    entityType: "invoice",
+    entityId: invoiceId,
+    payload: {
+      number: updated.number,
+      hasReceipt: Boolean(receipt),
+    },
+    eventType: "invoice.updated",
+  });
+
+  return updated;
+}
+
+/** Save / update payment slip text (tracking code, bank note, …). */
+export async function setInvoicePaymentReceipt(
+  db: Db,
+  actor: User,
+  invoiceId: string,
+  paymentReceipt: string,
+  source: ActivitySource = "web",
+): Promise<Invoice> {
+  const invoice = await getInvoiceById(db, invoiceId);
+  if (!invoice) throw new NotFoundError("Invoice not found");
+
+  const isOwnerEditor = invoice.userId === actor.id;
+  const isAdmin =
+    can(actor, "invoice.manage") || can(actor, "invoice.pay");
+
+  if (!isAdmin && !isOwnerEditor) {
+    throw new PermissionError("Forbidden");
+  }
+  if (invoice.status === "void") {
+    throw new ValidationError("فاکتور باطل قابل ویرایش نیست");
+  }
+  if (invoice.status === "draft" && !isAdmin) {
+    throw new ValidationError("پیش‌نویس هنوز صادر نشده");
+  }
+
+  const receipt = paymentReceipt.trim();
+  if (!receipt) {
+    throw new ValidationError("متن فیش پرداختی خالی است");
+  }
+
+  const [updated] = await db
+    .update(invoices)
+    .set({ paymentReceipt: receipt })
+    .where(eq(invoices.id, invoiceId))
+    .returning();
+
+  if (!updated) throw new Error("Failed to save payment receipt");
+
+  await logAndEmit(db, {
+    actorId: actor.id,
+    source,
+    action: "invoice.payment_receipt",
     entityType: "invoice",
     entityId: invoiceId,
     payload: { number: updated.number },

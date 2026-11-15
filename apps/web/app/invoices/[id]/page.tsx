@@ -1,11 +1,14 @@
 import { redirect, notFound } from "next/navigation";
 import {
   jalaliMonthLabel,
+  formatJalaliDateTime,
   formatToman,
   getAgencySettings,
   getInvoiceDetail,
+  setInvoicePaymentReceipt,
   toPersianDigits,
 } from "@eth/core";
+import { EditorShell } from "@/components/editor-shell";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -16,6 +19,16 @@ const STATUS_FA: Record<string, string> = {
   paid: "پرداخت شده",
   void: "باطل",
 };
+
+async function saveReceiptAction(formData: FormData) {
+  "use server";
+  const user = await getSessionUser();
+  if (!user) redirect("/login?portal=editor");
+  const id = String(formData.get("id") ?? "");
+  const paymentReceipt = String(formData.get("paymentReceipt") ?? "");
+  await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
+  redirect(`/invoices/${id}#payment`);
+}
 
 export default async function InvoicePrintPage({
   params,
@@ -35,89 +48,110 @@ export default async function InvoicePrintPage({
 
   const agency = await getAgencySettings(db());
   const { invoice, lines, editor } = detail;
+  const isMine = invoice.userId === user.id;
+  const canEditReceipt =
+    isMine && (invoice.status === "issued" || invoice.status === "paid");
 
   return (
-    <div
-      dir="rtl"
-      style={{
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: 32,
-        fontFamily: "Vazirmatn, Tahoma, sans-serif",
-        color: "#122",
-        background: "#fff",
-        minHeight: "100vh",
-      }}
-    >
-      <link
-        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap"
-        rel="stylesheet"
-      />
+    <EditorShell user={user}>
       <p>
-        <Link href="/invoices">← بازگشت</Link>
+        <Link href="/invoices" className="muted">
+          ← بازگشت
+        </Link>
       </p>
-      {agency.logoUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={agency.logoUrl} alt="" style={{ maxHeight: 48 }} />
-      )}
-      <h1 style={{ marginBottom: 4 }}>{agency.name}</h1>
-      <div style={{ color: "#555", marginBottom: 24, fontSize: 14 }}>
-        شماره فاکتور: <b>{invoice.number}</b>
-        <br />
-        دوره: {jalaliMonthLabel(invoice.periodKey)} (
-        {toPersianDigits(invoice.periodKey)})
-        <br />
-        ادیتور: {editor?.displayName ?? "—"}
-        <br />
-        وضعیت: {STATUS_FA[invoice.status] ?? invoice.status}
+      <h1 className="hero-title">{invoice.number}</h1>
+      <p className="hero-sub">
+        {jalaliMonthLabel(invoice.periodKey)} ·{" "}
+        {STATUS_FA[invoice.status] ?? invoice.status} ·{" "}
+        {formatToman(invoice.totalAmount)}
+      </p>
+
+      <div className="panel">
+        <div className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
+          {agency.name}
+          <br />
+          ادیتور: {editor?.displayName ?? "—"}
+          {invoice.paidAt && (
+            <>
+              <br />
+              تاریخ پرداخت: {formatJalaliDateTime(invoice.paidAt)}
+            </>
+          )}
+        </div>
+
+        <table className="table">
+          <thead>
+            <tr>
+              <th>پروژه</th>
+              <th>عنوان</th>
+              <th>واحد</th>
+              <th>فی</th>
+              <th>مبلغ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((l) => (
+              <tr key={l.id}>
+                <td>{l.projectName ?? "—"}</td>
+                <td>{l.description}</td>
+                <td>{toPersianDigits(l.units)}</td>
+                <td>{formatToman(l.unitPrice)}</td>
+                <td>{formatToman(l.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <p style={{ marginTop: 16, fontWeight: 700 }}>
+          جمع کل: {formatToman(invoice.totalAmount)}
+        </p>
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            {["پروژه", "عنوان", "واحد", "فی", "مبلغ"].map((h) => (
-              <th
-                key={h}
-                style={{
-                  textAlign: "right",
-                  borderBottom: "1px solid #ddd",
-                  padding: 8,
-                  color: "#666",
-                }}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {lines.map((l) => (
-            <tr key={l.id}>
-              <td style={{ borderBottom: "1px solid #eee", padding: 8 }}>
-                {l.projectName ?? "—"}
-              </td>
-              <td style={{ borderBottom: "1px solid #eee", padding: 8 }}>
-                {l.description}
-              </td>
-              <td style={{ borderBottom: "1px solid #eee", padding: 8 }}>
-                {toPersianDigits(l.units)}
-              </td>
-              <td style={{ borderBottom: "1px solid #eee", padding: 8 }}>
-                {formatToman(l.unitPrice)}
-              </td>
-              <td style={{ borderBottom: "1px solid #eee", padding: 8 }}>
-                {formatToman(l.amount)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="panel" id="payment" style={{ marginTop: 16 }}>
+        <h2 style={{ marginTop: 0, fontSize: 16 }}>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              verticalAlign: "middle",
+              marginLeft: 6,
+              color: "var(--primary)",
+            }}
+          >
+            receipt_long
+          </span>
+          فیش پرداختی
+        </h2>
 
-      <p style={{ marginTop: 24, fontWeight: 700, fontSize: 18 }}>
-        جمع کل: {formatToman(invoice.totalAmount)}
-      </p>
+        {invoice.paymentReceipt ? (
+          <div className="payment-receipt-box">
+            <div className="muted text-11">متن فیش / پیگیری</div>
+            <pre className="payment-receipt-text">{invoice.paymentReceipt}</pre>
+          </div>
+        ) : (
+          <p className="muted" style={{ marginTop: 0 }}>
+            هنوز فیش پرداختی ثبت نشده است.
+          </p>
+        )}
 
-      <style>{`@media print { a { display: none } }`}</style>
-    </div>
+        {canEditReceipt && (
+          <form action={saveReceiptAction} className="form-grid" style={{ marginTop: 12 }}>
+            <input type="hidden" name="id" value={invoice.id} />
+            <label>
+              ثبت / به‌روزرسانی فیش (متنی)
+              <textarea
+                name="paymentReceipt"
+                rows={4}
+                required
+                defaultValue={invoice.paymentReceipt ?? ""}
+                placeholder="کد پیگیری، شماره کارت، یا توضیح دریافت وجه…"
+              />
+            </label>
+            <button className="btn primary" type="submit">
+              ذخیره فیش
+            </button>
+          </form>
+        )}
+      </div>
+    </EditorShell>
   );
 }
