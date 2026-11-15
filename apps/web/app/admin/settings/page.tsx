@@ -12,6 +12,7 @@ import {
   setUserPassword,
 } from "@eth/core";
 import { inviteDeepLink } from "@eth/telegram";
+import { InviteLinkCard } from "@/components/invite-link-card";
 import { InviteRoleSelect } from "@/components/invite-role-select";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
@@ -109,15 +110,8 @@ export default async function SettingsPage({
       <h1 className="hero-title">تنظیمات</h1>
       <p className="hero-sub">دسته‌ها، کارفرماها، دعوت‌ها و اعضا.</p>
 
-      {inviteLink && (
-        <div className="panel" style={{ marginBottom: 16 }}>
-          <p>
-            لینک دعوت جدید:{" "}
-            <a href={inviteLink} target="_blank" rel="noreferrer">
-              {inviteLink}
-            </a>
-          </p>
-        </div>
+      {sp.invite && inviteLink && (
+        <InviteLinkCard code={sp.invite} link={inviteLink} />
       )}
 
       <div className="panel" style={{ marginBottom: 16 }}>

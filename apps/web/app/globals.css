@@ -1721,6 +1721,114 @@ code {
   }
 }
 
+/* ——— Invite link card ——— */
+.invite-link-card {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 18px 18px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  background:
+    linear-gradient(135deg, rgba(196, 181, 253, 0.12), rgba(36, 32, 54, 0.55)),
+    rgba(36, 32, 54, 0.72);
+  box-shadow: var(--shadow-soft);
+}
+
+.invite-link-card-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.invite-link-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(196, 181, 253, 0.16);
+  color: var(--primary);
+  font-size: 22px;
+}
+
+.invite-link-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.invite-link-sub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+}
+
+.invite-link-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-glass);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.invite-link-row-link {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+.invite-link-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--outline);
+  letter-spacing: 0.02em;
+}
+
+.invite-link-code {
+  justify-self: start;
+  padding: 6px 10px;
+  border-radius: 0.65rem;
+  background: rgba(196, 181, 253, 0.14);
+  color: var(--primary);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.invite-link-url {
+  display: block;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(196, 181, 253, 0.28);
+  color: var(--primary-fixed);
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 12.5px;
+  word-break: break-all;
+  text-decoration: none;
+}
+
+.invite-link-url:hover {
+  border-color: rgba(196, 181, 253, 0.5);
+  background: rgba(196, 181, 253, 0.08);
+}
+
+.invite-link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 640px) {
+  .invite-link-row:not(.invite-link-row-link) {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ——— Payment receipt ——— */
 .invoice-admin-bar {
   max-width: 800px;
