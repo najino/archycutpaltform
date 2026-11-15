@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Edit Team Hub",
-  description: "Internal task platform for the video editing team",
+  title: "ARSHYCUTPLATFORM",
+  description: "ARSHYCUTPLATFORM — Edit Team Hub",
 };
 
 export default function RootLayout({
