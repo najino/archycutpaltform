@@ -156,7 +156,7 @@ export function LoginForm({
         style={{
           marginTop: 8,
           paddingTop: 14,
-          borderTop: "1px solid rgba(16,185,129,0.1)",
+          borderTop: "1px solid rgba(124,58,237,0.15)",
           textAlign: "center",
         }}
       >

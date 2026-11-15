@@ -156,15 +156,16 @@ todo → in_progress → delivered → approved
 
 ## 8. طراحی UI وب
 
-مبنای بصری: Stitch Design System (`edit_team_hub_2`) — تم moss-dark سینمایی.
+مبنای بصری: **ui-ux-pro-max** + پالت Gaming neon purple روی OLED dark.
 
 ### جهت و تم
 - RTL (`dir="rtl"`، `lang="fa"`)
-- سطوح: `surface-base` `#0d1410` → `surface-card` `#18261e` → `surface-raised` `#1a2e22`
-- Primary: `#4edea3` / container `#10b981` — border-glass emerald
+- سطوح: `surface-base` `#09091a` → `surface` `#0f0f23` → `surface-card` `#1e1c35`
+- Primary: `#a78bfa` / container `#7c3aed` — border-glass بنفش
 - وضعیت‌ها: todo / in_progress / delivered / approved / rejected با رنگ اختصاصی
 - فونت: IBM Plex Sans (+ Vazirmatn) + Material Symbols Outlined
 - توکن‌ها در `apps/web/app/globals.css`
+- سند سیستم طراحی: `design-system/edit-team-hub/MASTER.md`
 
 ### ساختار صفحات
 

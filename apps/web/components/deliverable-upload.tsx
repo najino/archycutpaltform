@@ -212,7 +212,7 @@ export function DeliverableUpload({
       <div
         style={{
           height: 1,
-          background: "rgba(16,185,129,0.12)",
+          background: "rgba(124,58,237,0.12)",
         }}
       />
 

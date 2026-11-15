@@ -1,41 +1,41 @@
 :root {
-  /* Surfaces */
-  --surface: #0e1511;
-  --surface-base: #0d1410;
-  --surface-subtle: #131d16;
-  --surface-card: #18261e;
-  --surface-raised: #1a2e22;
-  --surface-container: #1a211d;
-  --surface-container-low: #161d19;
-  --surface-container-high: #242c27;
-  --surface-container-highest: #2f3632;
+  /* Surfaces — OLED dark + purple (ui-ux-pro-max: Gaming neon purple) */
+  --surface: #0f0f23;
+  --surface-base: #09091a;
+  --surface-subtle: #141428;
+  --surface-card: #1e1c35;
+  --surface-raised: #2a2548;
+  --surface-container: #1a1830;
+  --surface-container-low: #121225;
+  --surface-container-high: #27273b;
+  --surface-container-highest: #322f4a;
 
   /* Text */
-  --on-surface: #dde4dd;
-  --on-surface-variant: #bbcabf;
-  --outline: #86948a;
-  --outline-variant: #3c4a42;
+  --on-surface: #e2e8f0;
+  --on-surface-variant: #a5b4c8;
+  --outline: #8b7bb5;
+  --outline-variant: #4c1d95;
 
   /* Brand */
-  --primary: #4edea3;
-  --primary-container: #10b981;
-  --on-primary: #003824;
-  --on-primary-container: #00422b;
-  --primary-fixed: #6ffbbe;
-  --border-glass: rgba(16, 185, 129, 0.18);
+  --primary: #a78bfa;
+  --primary-container: #7c3aed;
+  --on-primary: #ffffff;
+  --on-primary-container: #f5f3ff;
+  --primary-fixed: #c4b5fd;
+  --border-glass: rgba(124, 58, 237, 0.28);
 
   /* Secondary / Tertiary */
-  --secondary: #b5ccbb;
-  --secondary-container: #394e40;
-  --tertiary: #93ccff;
+  --secondary: #c4b5fd;
+  --secondary-container: #4c1d95;
+  --tertiary: #67e8f9;
 
-  /* Status */
+  /* Status (semantic kept for workflow clarity) */
   --status-todo: #94a3b8;
   --status-in-progress: #f59e0b;
   --status-delivered: #38bdf8;
-  --status-approved: #10b981;
+  --status-approved: #a78bfa;
   --status-rejected: #f43f5e;
-  --error: #ffb4ab;
+  --error: #fca5a5;
   --danger: #f43f5e;
 
   /* Compat aliases used by older markup */
@@ -55,6 +55,7 @@
   --radius: 0.5rem;
   --radius-lg: 0.75rem;
   --sidebar-w: 18rem;
+  --focus-ring: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--primary);
 }
 
 * {
@@ -68,9 +69,10 @@ body {
   min-height: 100%;
   color: var(--on-surface);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   background: var(--surface-base);
+  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -85,6 +87,26 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .material-symbols-outlined {
@@ -122,7 +144,7 @@ code {
   flex-direction: column;
   justify-content: space-between;
   background: var(--surface-container-low);
-  border-left: 1px solid rgba(16, 185, 129, 0.08);
+  border-left: 1px solid rgba(124, 58, 237, 0.08);
 }
 
 .admin-main {
@@ -143,7 +165,7 @@ code {
   padding: 0 24px;
   background: rgba(14, 21, 17, 0.8);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
 }
 
 .admin-content {
@@ -167,7 +189,7 @@ code {
   padding: 0 24px;
   background: rgba(19, 29, 22, 0.85);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.1);
 }
 
 .editor-content {
@@ -258,7 +280,7 @@ code {
 .side-nav a.active {
   background: var(--surface-raised);
   color: var(--primary);
-  box-shadow: 0 0 16px -4px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 16px -4px rgba(124, 58, 237, 0.2);
 }
 
 .nav-links {
@@ -288,19 +310,20 @@ code {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  background: rgba(26, 46, 34, 0.6);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  background: rgba(42, 37, 72, 0.7);
   color: var(--on-surface);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
+  min-height: 44px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .btn:hover {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.45);
 }
 
 .btn.primary {
@@ -311,7 +334,7 @@ code {
 }
 
 .btn.primary:hover {
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.35);
   background: var(--primary-fixed);
   border-color: var(--primary-fixed);
 }
@@ -357,8 +380,8 @@ code {
 }
 .chip.approved {
   color: var(--status-approved);
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.35);
 }
 .chip.rejected {
   color: var(--status-rejected);
@@ -402,7 +425,7 @@ code {
   font-size: 22px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: #f0fdf4;
+  color: #f5f3ff;
 }
 
 /* ——— Forms ——— */
@@ -425,7 +448,7 @@ code {
 .field-input {
   width: 100%;
   border-radius: var(--radius);
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.12);
   background: var(--surface-subtle);
   color: var(--on-surface);
   padding: 10px 12px;
@@ -438,7 +461,7 @@ code {
 .form-grid textarea:focus,
 .field-input:focus {
   background: var(--surface-raised);
-  border-color: rgba(16, 185, 129, 0.45);
+  border-color: rgba(124, 58, 237, 0.45);
   box-shadow: 0 0 0 1px rgba(78, 222, 163, 0.35);
 }
 
@@ -452,7 +475,7 @@ code {
 .table td {
   text-align: right;
   padding: 10px 8px;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.08);
   font-size: 0.92rem;
 }
 
@@ -485,8 +508,8 @@ code {
 }
 
 .task-row:hover {
-  border-color: rgba(16, 185, 129, 0.35);
-  box-shadow: 0 0 16px -4px rgba(16, 185, 129, 0.2);
+  border-color: rgba(124, 58, 237, 0.35);
+  box-shadow: 0 0 16px -4px rgba(124, 58, 237, 0.2);
   transform: translateY(-1px);
 }
 
@@ -499,7 +522,7 @@ code {
 
 .board-col {
   background: var(--surface-subtle);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.08);
   border-radius: var(--radius);
   padding: 12px;
   min-height: 200px;
@@ -524,7 +547,7 @@ code {
 }
 
 .board-item:hover {
-  border-color: rgba(16, 185, 129, 0.35);
+  border-color: rgba(124, 58, 237, 0.35);
 }
 
 .actions {
@@ -543,8 +566,8 @@ code {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(900px 500px at 50% -10%, rgba(16, 185, 129, 0.12), transparent 55%),
-    radial-gradient(700px 400px at 80% 110%, rgba(26, 46, 34, 0.5), transparent 50%),
+    radial-gradient(900px 500px at 50% -10%, rgba(124, 58, 237, 0.12), transparent 55%),
+    radial-gradient(700px 400px at 80% 110%, rgba(76, 29, 149, 0.45), transparent 50%),
     var(--surface);
 }
 
@@ -572,7 +595,7 @@ code {
   gap: 4px;
   padding: 4px;
   background: var(--surface-subtle);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.15);
   border-radius: var(--radius-sm);
   margin-bottom: 16px;
 }
@@ -594,7 +617,7 @@ code {
 .portal-switch a.active {
   background: var(--surface-raised);
   color: var(--primary);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
 .info-banner {
@@ -625,7 +648,7 @@ code {
   height: 8px;
   border-radius: 999px;
   background: var(--status-approved);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
 }
 
 .field-wrap {
@@ -673,7 +696,7 @@ code {
   height: 8px;
   border-radius: 999px;
   background: var(--surface-subtle);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.15);
   overflow: hidden;
 }
 
