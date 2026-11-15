@@ -49,8 +49,9 @@ export default async function InvoicePrintPage({
   const agency = await getAgencySettings(db());
   const { invoice, lines, editor } = detail;
   const isMine = invoice.userId === user.id;
-  const canEditReceipt =
-    isMine && (invoice.status === "issued" || invoice.status === "paid");
+  const isFinal = invoice.status === "paid";
+  /** بعد از تأیید نهایی، ویرایش برای ادیتور بسته است */
+  const canEditReceipt = isMine && invoice.status === "issued";
 
   return (
     <EditorShell user={user}>
@@ -122,9 +123,27 @@ export default async function InvoicePrintPage({
           فیش پرداختی
         </h2>
 
+        {isFinal && (
+          <div className="info-banner" style={{ marginBottom: 12 }}>
+            <span className="material-symbols-outlined">verified</span>
+            <div>
+              <div className="info-banner-title">پرداخت تأیید نهایی شده</div>
+              <p className="muted">
+                فیش قفل است و دیگر قابل ویرایش نیست
+                {invoice.paidAt
+                  ? ` · ${formatJalaliDateTime(invoice.paidAt)}`
+                  : ""}
+                .
+              </p>
+            </div>
+          </div>
+        )}
+
         {invoice.paymentReceipt ? (
           <div className="payment-receipt-box">
-            <div className="muted text-11">متن فیش / پیگیری</div>
+            <div className="muted text-11">
+              {isFinal ? "فیش نهایی" : "پیش‌نویس فیش (قابل ویرایش)"}
+            </div>
             <pre className="payment-receipt-text">{invoice.paymentReceipt}</pre>
           </div>
         ) : (
@@ -134,10 +153,14 @@ export default async function InvoicePrintPage({
         )}
 
         {canEditReceipt && (
-          <form action={saveReceiptAction} className="form-grid" style={{ marginTop: 12 }}>
+          <form
+            action={saveReceiptAction}
+            className="form-grid"
+            style={{ marginTop: 12 }}
+          >
             <input type="hidden" name="id" value={invoice.id} />
             <label>
-              ثبت / به‌روزرسانی فیش (متنی)
+              ثبت / ویرایش فیش (متنی)
               <textarea
                 name="paymentReceipt"
                 rows={4}
@@ -146,9 +169,12 @@ export default async function InvoicePrintPage({
                 placeholder="کد پیگیری، شماره کارت، یا توضیح دریافت وجه…"
               />
             </label>
-            <button className="btn primary" type="submit">
-              ذخیره فیش
+            <button className="btn" type="submit">
+              ذخیره (قابل ویرایش)
             </button>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>
+              تا قبل از تأیید نهایی ادمین می‌توانید متن فیش را عوض کنید.
+            </p>
           </form>
         )}
       </div>

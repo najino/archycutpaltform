@@ -532,11 +532,18 @@ export async function markInvoicePaid(
   if (invoice.status === "draft") {
     throw new ValidationError("Issue invoice before marking paid");
   }
+  if (invoice.status === "paid") {
+    throw new ValidationError("این فاکتور قبلاً تأیید نهایی شده است");
+  }
 
-  const receipt =
-    paymentReceipt != null
-      ? paymentReceipt.trim() || null
-      : invoice.paymentReceipt;
+  const fromForm =
+    paymentReceipt != null ? paymentReceipt.trim() || null : null;
+  const receipt = fromForm ?? invoice.paymentReceipt;
+  if (!receipt) {
+    throw new ValidationError(
+      "قبل از تأیید نهایی، فیش پرداختی را ذخیره کنید",
+    );
+  }
 
   const [updated] = await db
     .update(invoices)
@@ -586,6 +593,11 @@ export async function setInvoicePaymentReceipt(
   }
   if (invoice.status === "void") {
     throw new ValidationError("فاکتور باطل قابل ویرایش نیست");
+  }
+  if (invoice.status === "paid") {
+    throw new ValidationError(
+      "پرداخت تأیید نهایی شده و فیش قفل است — برای تغییر ابتدا وضعیت را باز کنید",
+    );
   }
   if (invoice.status === "draft" && !isAdmin) {
     throw new ValidationError("پیش‌نویس هنوز صادر نشده");

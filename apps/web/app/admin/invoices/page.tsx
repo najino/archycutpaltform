@@ -157,7 +157,7 @@ export default async function InvoicesPage({
                         className="btn primary"
                         href={`/admin/invoices/${inv.id}#payment`}
                       >
-                        ثبت پرداخت / فیش
+                        فیش و تأیید نهایی
                       </Link>
                     )}
                     {isAdmin && inv.status !== "paid" && inv.status !== "void" && (

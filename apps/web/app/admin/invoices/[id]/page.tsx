@@ -31,13 +31,13 @@ async function saveReceiptAction(formData: FormData) {
   redirect(`/admin/invoices/${id}#payment`);
 }
 
-async function payWithReceiptAction(formData: FormData) {
+async function finalizePaymentAction(formData: FormData) {
   "use server";
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
   const id = String(formData.get("id") ?? "");
   const paymentReceipt = String(formData.get("paymentReceipt") ?? "");
-  await markInvoicePaid(db(), user, id, "web", paymentReceipt);
+  await markInvoicePaid(db(), user, id, "web", paymentReceipt || null);
   redirect(`/admin/invoices/${id}#payment`);
 }
 
@@ -61,6 +61,11 @@ export default async function InvoicePrintPage({
   const { invoice, lines, editor } = detail;
   const canPay = can(user, "invoice.pay");
   const canManage = can(user, "invoice.manage");
+  const isFinal = invoice.status === "paid";
+  const canEditReceipt =
+    (canPay || canManage) &&
+    invoice.status !== "void" &&
+    invoice.status !== "paid";
 
   return (
     <>
@@ -94,53 +99,81 @@ export default async function InvoicePrintPage({
               فیش پرداختی (متنی)
             </h2>
             <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>
-              کد پیگیری کارت‌به‌کارت، شماره تراکنش، یا توضیح پرداخت را اینجا
-              بنویسید. برای ادیتور در پنل فاکتور قابل مشاهده است.
+              ابتدا فیش را ذخیره و در صورت نیاز ویرایش کنید؛ بعد با «تأیید نهایی»
+              پرداخت قفل می‌شود و دیگر قابل تغییر نیست.
             </p>
 
-            {invoice.paymentReceipt && (
-              <div className="payment-receipt-box">
-                <div className="muted text-11">فیش ثبت‌شده</div>
-                <pre className="payment-receipt-text">{invoice.paymentReceipt}</pre>
-                {invoice.paidAt && (
-                  <div className="muted text-11">
-                    پرداخت: {formatJalaliDateTime(invoice.paidAt)}
-                  </div>
-                )}
+            {isFinal && (
+              <div className="info-banner" style={{ marginBottom: 12 }}>
+                <span className="material-symbols-outlined">verified</span>
+                <div>
+                  <div className="info-banner-title">تأیید نهایی انجام شد</div>
+                  <p className="muted">
+                    فیش و وضعیت پرداخت قفل است
+                    {invoice.paidAt
+                      ? ` · ${formatJalaliDateTime(invoice.paidAt)}`
+                      : ""}
+                    .
+                  </p>
+                </div>
               </div>
             )}
 
-            <form
-              action={
-                invoice.status === "issued" && canPay
-                  ? payWithReceiptAction
-                  : saveReceiptAction
-              }
-              className="form-grid"
-            >
-              <input type="hidden" name="id" value={invoice.id} />
-              <label>
-                متن فیش / کد پیگیری
-                <textarea
-                  name="paymentReceipt"
-                  rows={4}
-                  required
-                  defaultValue={invoice.paymentReceipt ?? ""}
-                  placeholder="مثال: کارت‌به‌کارت ۱۴۰۴/۰۸/۲۰ — پیگیری ۱۲۳۴۵۶ — مبلغ …"
-                />
-              </label>
-              <div className="actions">
-                {invoice.status === "issued" && canPay ? (
-                  <button className="btn primary" type="submit">
-                    ثبت فیش و علامت پرداخت‌شده
-                  </button>
-                ) : (
-                  <button className="btn primary" type="submit">
-                    ذخیره فیش پرداختی
-                  </button>
-                )}
+            {invoice.paymentReceipt && (
+              <div className="payment-receipt-box">
+                <div className="muted text-11">
+                  {isFinal ? "فیش نهایی" : "پیش‌نویس فیش"}
+                </div>
+                <pre className="payment-receipt-text">{invoice.paymentReceipt}</pre>
               </div>
-            </form>
+            )}
+
+            {canEditReceipt ? (
+              <form className="form-grid">
+                <input type="hidden" name="id" value={invoice.id} />
+                <label>
+                  متن فیش / کد پیگیری
+                  <textarea
+                    name="paymentReceipt"
+                    rows={4}
+                    required
+                    defaultValue={invoice.paymentReceipt ?? ""}
+                    placeholder="مثال: کارت‌به‌کارت ۱۴۰۴/۰۸/۲۰ — پیگیری ۱۲۳۴۵۶ — مبلغ …"
+                  />
+                </label>
+                <div className="actions" style={{ flexWrap: "wrap" }}>
+                  <button
+                    className="btn"
+                    type="submit"
+                    formAction={saveReceiptAction}
+                  >
+                    ذخیره (قابل ویرایش)
+                  </button>
+                  {invoice.status === "issued" && canPay && (
+                    <button
+                      className="btn primary"
+                      type="submit"
+                      formAction={finalizePaymentAction}
+                    >
+                      <span className="material-symbols-outlined icon-18">
+                        done_all
+                      </span>
+                      تأیید نهایی پرداخت
+                    </button>
+                  )}
+                </div>
+                <p className="muted" style={{ margin: 0, fontSize: 12 }}>
+                  ذخیره فقط متن فیش را نگه می‌دارد. تأیید نهایی وضعیت را
+                  «پرداخت شده» می‌کند و ویرایش را می‌بندد.
+                </p>
+              </form>
+            ) : (
+              !invoice.paymentReceipt && (
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  فیشی ثبت نشده است.
+                </p>
+              )
+            )}
           </div>
         )}
       </div>
@@ -234,7 +267,7 @@ export default async function InvoicePrintPage({
               fontSize: 13,
             }}
           >
-            <b>فیش پرداختی:</b>
+            <b>فیش پرداختی{isFinal ? " (نهایی)" : ""}:</b>
             <pre
               style={{
                 margin: "8px 0 0",
