@@ -165,20 +165,34 @@ export default async function AdminBoardPage({
                     {t.shortCode}
                   </div>
                   {(col.status === "delivered" || col.status === "rejected") && (
-                    <div className="actions">
+                    <div className="board-item-actions">
                       {col.status === "delivered" && (
                         <>
                           <form action={statusAction}>
                             <input type="hidden" name="taskId" value={t.id} />
                             <input type="hidden" name="status" value="approved" />
-                            <button className="btn primary" type="submit">
+                            <button
+                              className="btn-mini btn-mini-ok"
+                              type="submit"
+                              title="تأیید"
+                            >
+                              <span className="material-symbols-outlined">
+                                check
+                              </span>
                               تأیید
                             </button>
                           </form>
                           <form action={statusAction}>
                             <input type="hidden" name="taskId" value={t.id} />
                             <input type="hidden" name="status" value="rejected" />
-                            <button className="btn danger" type="submit">
+                            <button
+                              className="btn-mini btn-mini-no"
+                              type="submit"
+                              title="رد"
+                            >
+                              <span className="material-symbols-outlined">
+                                close
+                              </span>
                               رد
                             </button>
                           </form>
@@ -192,7 +206,14 @@ export default async function AdminBoardPage({
                             name="status"
                             value="in_progress"
                           />
-                          <button className="btn" type="submit">
+                          <button
+                            className="btn-mini"
+                            type="submit"
+                            title="بازنگری"
+                          >
+                            <span className="material-symbols-outlined">
+                              replay
+                            </span>
                             بازنگری
                           </button>
                         </form>

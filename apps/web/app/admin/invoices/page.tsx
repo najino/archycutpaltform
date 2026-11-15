@@ -103,15 +103,19 @@ export default async function InvoicesPage({
       <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
 
       {isAdmin && (
-        <div className="actions" style={{ marginBottom: 16, flexWrap: "wrap" }}>
-          <Link className="btn primary" href={`/admin/invoices/compose?month=${periodKey}`}>
-            <span className="material-symbols-outlined icon-18">fact_check</span>
-            فاکتور شخصی‌سازی (تیک پروژه‌ها)
+        <div className="board-item-actions invoice-toolbar">
+          <Link
+            className="btn-mini btn-mini-ok"
+            href={`/admin/invoices/compose?month=${periodKey}`}
+          >
+            <span className="material-symbols-outlined">fact_check</span>
+            فاکتور شخصی‌سازی
           </Link>
           <form action={generateAction}>
             <input type="hidden" name="periodKey" value={periodKey} />
-            <button className="btn" type="submit">
-              تولید خودکار همهٔ پیش‌نویس‌های {jalaliMonthLabel(periodKey)}
+            <button className="btn-mini" type="submit">
+              <span className="material-symbols-outlined">auto_awesome</span>
+              تولید پیش‌نویس‌های {jalaliMonthLabel(periodKey)}
             </button>
           </form>
         </div>
@@ -155,27 +159,34 @@ export default async function InvoicesPage({
                           : inv.status}
                 </td>
                 <td>
-                  <div className="actions">
+                  <div className="board-item-actions">
                     {isAdmin && inv.status === "draft" && (
                       <form action={issueAction}>
                         <input type="hidden" name="id" value={inv.id} />
-                        <button className="btn" type="submit">
-                          صدور به پنل
+                        <button className="btn-mini btn-mini-ok" type="submit">
+                          <span className="material-symbols-outlined">send</span>
+                          صدور
                         </button>
                       </form>
                     )}
                     {can(user, "invoice.pay") && inv.status === "issued" && (
                       <Link
-                        className="btn primary"
+                        className="btn-mini btn-mini-ok"
                         href={`/admin/invoices/${inv.id}#payment`}
                       >
-                        فیش و تأیید نهایی
+                        <span className="material-symbols-outlined">
+                          receipt_long
+                        </span>
+                        فیش و تأیید
                       </Link>
                     )}
                     {isAdmin && inv.status !== "paid" && inv.status !== "void" && (
                       <form action={voidAction}>
                         <input type="hidden" name="id" value={inv.id} />
-                        <button className="btn danger" type="submit">
+                        <button className="btn-mini btn-mini-no" type="submit">
+                          <span className="material-symbols-outlined">
+                            block
+                          </span>
                           ابطال
                         </button>
                       </form>

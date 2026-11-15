@@ -1426,6 +1426,81 @@ code {
   margin-top: 12px;
 }
 
+.board-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.board-item-actions form {
+  margin: 0;
+}
+
+.btn-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.btn-mini .material-symbols-outlined {
+  font-size: 15px;
+  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
+}
+
+.btn-mini:hover {
+  background: rgba(196, 181, 253, 0.08);
+  border-color: rgba(196, 181, 253, 0.28);
+  color: var(--on-surface);
+}
+
+.btn-mini-ok {
+  border-color: rgba(184, 164, 248, 0.28);
+  color: var(--primary);
+  background: rgba(139, 124, 246, 0.1);
+}
+
+.btn-mini-ok:hover {
+  background: rgba(139, 124, 246, 0.18);
+  border-color: rgba(196, 181, 253, 0.4);
+  color: var(--primary-fixed);
+}
+
+.btn-mini-no {
+  border-color: rgba(240, 122, 142, 0.25);
+  color: var(--status-rejected);
+  background: rgba(240, 122, 142, 0.08);
+}
+
+.btn-mini-no:hover {
+  background: rgba(240, 122, 142, 0.14);
+  border-color: rgba(240, 122, 142, 0.4);
+}
+
+a.btn-mini {
+  text-decoration: none;
+}
+
+.invoice-toolbar {
+  margin: 0 0 14px;
+}
+
 /* ——— Login ——— */
 .login-wrap {
   min-height: 100vh;
