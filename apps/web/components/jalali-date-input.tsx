@@ -7,6 +7,7 @@ import {
   JALALI_MONTHS,
   toGregorian,
 } from "@eth/core/calendar";
+import { SoftSelect } from "@/components/soft-select";
 
 type Props = {
   name: string;
@@ -15,9 +16,22 @@ type Props = {
   id?: string;
 };
 
+const FA = "۰۱۲۳۴۵۶۷۸۹";
+function faDigits(n: number | string) {
+  return String(n).replace(/\d/g, (d) => FA[Number(d)]!);
+}
+
 function isoFromParts(jy: number, jm: number, jd: number) {
   const g = toGregorian(jy, jm, jd);
   return `${g.gy}-${String(g.gm).padStart(2, "0")}-${String(g.gd).padStart(2, "0")}`;
+}
+
+function nowJalali() {
+  return (
+    isoToJalaliParts(
+      new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tehran" }),
+    ) ?? { jy: 1404, jm: 1, jd: 1 }
+  );
 }
 
 export function JalaliDateInput({
@@ -44,19 +58,32 @@ export function JalaliDateInput({
   const iso = empty ? "" : isoFromParts(jy, jm, safeDay);
 
   const years = useMemo(() => {
-    const base =
-      initial.jy > 0
-        ? initial.jy
-        : (() => {
-            const now = isoToJalaliParts(
-              new Date().toLocaleDateString("en-CA", {
-                timeZone: "Asia/Tehran",
-              }),
-            );
-            return now?.jy ?? 1404;
-          })();
+    const base = initial.jy > 0 ? initial.jy : nowJalali().jy;
     return Array.from({ length: 9 }, (_, i) => base - 3 + i);
   }, [initial.jy]);
+
+  const dayOptions = useMemo(
+    () =>
+      Array.from({ length: maxDay }, (_, i) => {
+        const d = i + 1;
+        return { value: String(d), label: faDigits(d) };
+      }),
+    [maxDay],
+  );
+
+  const monthOptions = useMemo(
+    () =>
+      JALALI_MONTHS.map((label, i) => ({
+        value: String(i + 1),
+        label,
+      })),
+    [],
+  );
+
+  const yearOptions = useMemo(
+    () => years.map((y) => ({ value: String(y), label: faDigits(y) })),
+    [years],
+  );
 
   return (
     <div className="jalali-date-input" dir="rtl">
@@ -68,81 +95,55 @@ export function JalaliDateInput({
           required
           value={iso}
           onChange={() => undefined}
-          style={{
-            position: "absolute",
-            opacity: 0,
-            pointerEvents: "none",
-            width: 1,
-            height: 1,
-          }}
+          className="jalali-required-proxy"
         />
       ) : null}
       <div className="jalali-date-fields">
-        <select
+        <SoftSelect
           id={id}
           aria-label="روز"
-          value={empty ? "" : safeDay}
-          onChange={(e) => {
-            const v = Number(e.target.value);
+          placeholder="روز"
+          value={empty ? "" : String(safeDay)}
+          options={dayOptions}
+          onChange={(raw) => {
+            const v = Number(raw);
             if (!v) {
               setJd(0);
               return;
             }
             if (jy === 0 || jm === 0) {
-              const now = isoToJalaliParts(
-                new Date().toLocaleDateString("en-CA", {
-                  timeZone: "Asia/Tehran",
-                }),
-              );
-              setJy(now?.jy ?? 1404);
-              setJm(now?.jm ?? 1);
+              const now = nowJalali();
+              setJy(now.jy);
+              setJm(now.jm);
             }
             setJd(v);
           }}
-        >
-          <option value="">روز</option>
-          {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
-          ))}
-        </select>
-        <select
+        />
+        <SoftSelect
           aria-label="ماه"
-          value={empty ? "" : jm}
-          onChange={(e) => {
-            const v = Number(e.target.value);
+          placeholder="ماه"
+          value={empty ? "" : String(jm)}
+          options={monthOptions}
+          onChange={(raw) => {
+            const v = Number(raw);
             if (!v) {
               setJm(0);
               setJd(0);
               return;
             }
-            if (jy === 0) {
-              const now = isoToJalaliParts(
-                new Date().toLocaleDateString("en-CA", {
-                  timeZone: "Asia/Tehran",
-                }),
-              );
-              setJy(now?.jy ?? 1404);
-            }
+            if (jy === 0) setJy(nowJalali().jy);
             setJm(v);
-            if (jd > jalaliMonthLength(jy || 1404, v)) {
-              setJd(jalaliMonthLength(jy || 1404, v));
-            }
+            const len = jalaliMonthLength(jy || nowJalali().jy, v);
+            if (jd > len) setJd(len);
           }}
-        >
-          <option value="">ماه</option>
-          {JALALI_MONTHS.map((label, i) => (
-            <option key={label} value={i + 1}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <select
+        />
+        <SoftSelect
           aria-label="سال"
-          value={empty ? "" : jy}
-          onChange={(e) => {
-            const v = Number(e.target.value);
+          placeholder="سال"
+          value={empty ? "" : String(jy)}
+          options={yearOptions}
+          onChange={(raw) => {
+            const v = Number(raw);
             if (!v) {
               setJy(0);
               setJm(0);
@@ -156,14 +157,7 @@ export function JalaliDateInput({
               setJd(jalaliMonthLength(v, jm));
             }
           }}
-        >
-          <option value="">سال</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+        />
       </div>
     </div>
   );

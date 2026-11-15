@@ -1167,17 +1167,141 @@ code {
 
 .jalali-date-fields {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
+  grid-template-columns: 1fr 1.5fr 1.1fr;
   gap: 8px;
 }
 
-.jalali-month-form .jalali-date-fields {
-  grid-template-columns: 1.5fr 1fr;
+.jalali-month-form {
+  max-width: 360px;
+  margin-bottom: 16px;
 }
 
-.jalali-date-input .jalali-date-fields select,
-.jalali-month-form .jalali-date-fields select {
+.jalali-month-form .jalali-date-fields {
+  grid-template-columns: 1.6fr 1fr;
+}
+
+.jalali-month-hint {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.jalali-required-proxy {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+/* Custom dark select — avoids Windows white native popup */
+.soft-select {
+  position: relative;
   min-width: 0;
+}
+
+.soft-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--on-surface);
+  padding: 12px 12px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out),
+    background var(--dur) var(--ease-out);
+}
+
+.soft-select-trigger .is-placeholder {
+  color: var(--outline);
+  font-weight: 500;
+}
+
+.soft-select-trigger:hover {
+  background: rgba(196, 181, 253, 0.07);
+  border-color: rgba(196, 181, 253, 0.28);
+}
+
+.soft-select.is-open .soft-select-trigger,
+.soft-select-trigger:focus-visible {
+  outline: none;
+  background: rgba(196, 181, 253, 0.08);
+  border-color: rgba(196, 181, 253, 0.4);
+  box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.16);
+}
+
+.soft-select-caret {
+  font-size: 18px;
+  color: var(--outline);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.soft-select.is-open .soft-select-caret {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.soft-select-menu {
+  position: absolute;
+  z-index: 40;
+  inset-inline: 0;
+  top: calc(100% + 6px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  border: 1px solid rgba(196, 181, 253, 0.22);
+  background: rgba(28, 24, 42, 0.96);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-lift);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 181, 253, 0.35) transparent;
+}
+
+.soft-select-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.soft-select-menu::-webkit-scrollbar-thumb {
+  background: rgba(196, 181, 253, 0.35);
+  border-radius: 999px;
+}
+
+.soft-select-option {
+  width: 100%;
+  display: block;
+  text-align: right;
+  border: 0;
+  background: transparent;
+  color: var(--on-surface);
+  padding: 9px 12px;
+  border-radius: 0.65rem;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.soft-select-option:hover {
+  background: rgba(196, 181, 253, 0.12);
+  color: var(--primary-fixed);
+}
+
+.soft-select-option.is-active {
+  background: rgba(139, 124, 246, 0.28);
+  color: var(--primary);
 }
 
 /* ——— Tables / lists ——— */
