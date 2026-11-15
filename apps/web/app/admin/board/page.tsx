@@ -10,7 +10,8 @@ import {
   listWeekTasks,
 } from "@eth/core";
 import type { TaskStatus } from "@eth/db";
-import { FlashAlert, resolveFlash } from "@/components/flash-alert";
+import { FlashAlert } from "@/components/flash-alert";
+import { resolveFlash } from "@/lib/flash";
 import { JalaliDateInput } from "@/components/jalali-date-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";

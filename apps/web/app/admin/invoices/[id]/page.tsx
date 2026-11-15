@@ -10,7 +10,8 @@ import {
   setInvoicePaymentReceipt,
   toPersianDigits,
 } from "@eth/core";
-import { FlashAlert, resolveFlash } from "@/components/flash-alert";
+import { FlashAlert } from "@/components/flash-alert";
+import { resolveFlash } from "@/lib/flash";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";

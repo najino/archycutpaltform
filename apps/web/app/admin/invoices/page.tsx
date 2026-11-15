@@ -14,7 +14,8 @@ import {
   toPersianDigits,
   voidInvoice,
 } from "@eth/core";
-import { FlashAlert, resolveFlash } from "@/components/flash-alert";
+import { FlashAlert } from "@/components/flash-alert";
+import { resolveFlash } from "@/lib/flash";
 import { JalaliMonthInput } from "@/components/jalali-month-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";

@@ -13,7 +13,8 @@ import {
 } from "@eth/core";
 import { inviteDeepLink } from "@eth/telegram";
 import { AgencyLogoField } from "@/components/agency-logo-field";
-import { FlashAlert, resolveFlash } from "@/components/flash-alert";
+import { FlashAlert } from "@/components/flash-alert";
+import { resolveFlash } from "@/lib/flash";
 import { InviteLinkCard } from "@/components/invite-link-card";
 import { InviteRoleSelect } from "@/components/invite-role-select";
 import { db } from "@/lib/db";
