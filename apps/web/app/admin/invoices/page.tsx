@@ -4,13 +4,10 @@ import {
   can,
   currentMonthPeriod,
   formatToman,
-  generateInvoicesForPeriod,
   issueInvoice,
   jalaliMonthLabel,
   listInvoices,
   listMembers,
-  parsePeriodKey,
-  previousMonthPeriod,
   toPersianDigits,
   voidInvoice,
 } from "@eth/core";
@@ -19,16 +16,6 @@ import { resolveFlash } from "@/lib/flash";
 import { JalaliMonthInput } from "@/components/jalali-month-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
-
-async function generateAction(formData: FormData) {
-  "use server";
-  const user = await getSessionUser();
-  if (!user || !can(user, "invoice.manage")) redirect("/login?portal=admin");
-  const periodKey =
-    String(formData.get("periodKey") ?? "") || previousMonthPeriod().periodKey;
-  await generateInvoicesForPeriod(db(), user, parsePeriodKey(periodKey), "web");
-  redirect(`/admin/invoices?month=${periodKey}&ok=invoice`);
-}
 
 async function issueAction(formData: FormData) {
   "use server";
@@ -88,7 +75,8 @@ export default async function InvoicesPage({
     <>
       <h1 className="hero-title">فاکتورها</h1>
       <p className="hero-sub">
-        فاکتور ماهانه شمسی برای هر ادیتور — {jalaliMonthLabel(periodKey)}.
+        در حال نمایش: <strong>{jalaliMonthLabel(periodKey)}</strong>
+        {" "}({toPersianDigits(periodKey)}) — {invoices.length} فاکتور
       </p>
 
       {flash && (
@@ -115,13 +103,6 @@ export default async function InvoicesPage({
             <span className="material-symbols-outlined">fact_check</span>
             فاکتور شخصی‌سازی
           </Link>
-          <form action={generateAction}>
-            <input type="hidden" name="periodKey" value={periodKey} />
-            <button className="btn-mini" type="submit">
-              <span className="material-symbols-outlined">auto_awesome</span>
-              تولید پیش‌نویس‌های {jalaliMonthLabel(periodKey)}
-            </button>
-          </form>
         </div>
       )}
 
@@ -202,7 +183,20 @@ export default async function InvoicesPage({
           </tbody>
         </table>
         {invoices.length === 0 && (
-          <p className="muted">فاکتوری برای این ماه نیست.</p>
+          <div className="flash-alert flash-alert-info" style={{ marginTop: 12 }}>
+            <span className="material-symbols-outlined flash-alert-icon">
+              filter_alt_off
+            </span>
+            <div className="flash-alert-body">
+              <div className="flash-alert-title">
+                برای {jalaliMonthLabel(periodKey)} فاکتوری نیست
+              </div>
+              <p className="flash-alert-detail">
+                فیلتر اعمال شد — ماه دیگری را انتخاب کنید یا از «فاکتور
+                شخصی‌سازی» بسازید.
+              </p>
+            </div>
+          </div>
         )}
       </div>
     </>

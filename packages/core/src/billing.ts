@@ -25,6 +25,7 @@ import { computeAmount } from "./money.js";
 import {
   currentMonthPeriod,
   parsePeriodKey,
+  periodKeyAliases,
   type MonthPeriod,
 } from "./calendar.js";
 import { rateFor } from "./projects.js";
@@ -682,12 +683,14 @@ export async function listInvoices(
   actor: User,
   periodKey?: string,
 ) {
+  const aliases = periodKey ? periodKeyAliases(periodKey) : null;
+
   if (can(actor, "invoice.manage") || can(actor, "earnings.view_all")) {
-    if (periodKey) {
+    if (aliases) {
       return db
         .select()
         .from(invoices)
-        .where(eq(invoices.periodKey, periodKey))
+        .where(inArray(invoices.periodKey, aliases))
         .orderBy(asc(invoices.number));
     }
     return db.select().from(invoices).orderBy(asc(invoices.createdAt));
@@ -703,7 +706,9 @@ export async function listInvoices(
       ),
     )
     .orderBy(asc(invoices.createdAt));
-  return periodKey ? rows.filter((r) => r.periodKey === periodKey) : rows;
+  return aliases
+    ? rows.filter((r) => aliases.includes(r.periodKey))
+    : rows;
 }
 
 export async function getInvoiceDetail(db: Db, actor: User, invoiceId: string) {

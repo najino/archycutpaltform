@@ -182,6 +182,18 @@ export function parsePeriodKey(periodKey: string): MonthPeriod {
   return monthPeriod(jy, jm);
 }
 
+/**
+ * کلیدهای معادل برای فیلتر: شمسی + ماه‌های میلادی هم‌پوشان
+ * (برای دادهٔ قدیمی که اشتباهاً با YYYY-MM میلادی ذخیره شده)
+ */
+export function periodKeyAliases(periodKey: string): string[] {
+  const period = parsePeriodKey(periodKey);
+  const keys = new Set<string>([period.periodKey]);
+  keys.add(period.periodStart.slice(0, 7));
+  keys.add(period.periodEnd.slice(0, 7));
+  return [...keys];
+}
+
 export function currentMonthPeriod(now = new Date()): MonthPeriod {
   const g = partsInTehran(now);
   const j = toJalali(g.year, g.month, g.day);

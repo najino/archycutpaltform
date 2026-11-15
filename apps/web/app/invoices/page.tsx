@@ -25,8 +25,8 @@ export default async function EditorInvoicesPage({
     <EditorShell user={user}>
       <h1 className="hero-title">فاکتورهای من</h1>
       <p className="hero-sub">
-        فاکتورهای صادرشدهٔ ماه شمسی — {jalaliMonthLabel(periodKey)}. پیش‌نویس‌ها
-        تا صدور ادمین اینجا دیده نمی‌شوند.
+        در حال نمایش: <strong>{jalaliMonthLabel(periodKey)}</strong> —{" "}
+        {invoices.length} فاکتور. پیش‌نویس‌ها تا صدور ادمین اینجا دیده نمی‌شوند.
       </p>
 
       <JalaliMonthInput
@@ -70,7 +70,19 @@ export default async function EditorInvoicesPage({
           </tbody>
         </table>
         {invoices.length === 0 && (
-          <p className="muted">فاکتوری برای این ماه نیست.</p>
+          <div className="flash-alert flash-alert-info" style={{ marginTop: 12 }}>
+            <span className="material-symbols-outlined flash-alert-icon">
+              filter_alt_off
+            </span>
+            <div className="flash-alert-body">
+              <div className="flash-alert-title">
+                برای {jalaliMonthLabel(periodKey)} فاکتوری نیست
+              </div>
+              <p className="flash-alert-detail">
+                فیلتر اعمال شد — ماه دیگری را امتحان کنید.
+              </p>
+            </div>
+          </div>
         )}
       </div>
     </EditorShell>
