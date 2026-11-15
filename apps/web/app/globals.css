@@ -1712,6 +1712,33 @@ code {
   }
 }
 
+/* ——— Deliverable link submit ——— */
+.deliverable-submit {
+  margin-top: 12px;
+  display: grid;
+  gap: 16px;
+}
+
+.deliverable-link-banner {
+  margin-bottom: 0;
+  border-right: 2px solid var(--primary);
+}
+
+.deliverable-link-banner > .material-symbols-outlined {
+  color: var(--tertiary);
+  font-size: 22px;
+}
+
+.deliverable-hint {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.icon-18 {
+  font-size: 18px;
+}
+
 /* ——— Upload progress ——— */
 .upload-progress {
   display: grid;

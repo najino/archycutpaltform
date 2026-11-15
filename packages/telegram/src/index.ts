@@ -31,6 +31,8 @@ export type PortfolioCaptionInput = {
   clientSlug?: string | null;
   videoType: string;
   editorName: string;
+  /** Optional media / drive / cloud link shown in the channel post */
+  mediaUrl?: string | null;
 };
 
 export function formatPortfolioCaption(input: PortfolioCaptionInput): string {
@@ -46,16 +48,21 @@ export function formatPortfolioCaption(input: PortfolioCaptionInput): string {
     tags.push(`#${slugifyHashtag(input.clientSlug)}`);
   }
 
-  return [
+  const lines = [
     `🎬 <b>${escapeHtml(input.title)}</b>`,
     "",
     `🏷 ${escapeHtml(input.categoryName)}`,
     clientLine,
     `📐 ${escapeHtml(typeLabel)}`,
     `✂️ ${escapeHtml(input.editorName)}`,
-    "",
-    tags.join(" "),
-  ].join("\n");
+  ];
+
+  if (input.mediaUrl?.trim()) {
+    lines.push("", `🔗 ${escapeHtml(input.mediaUrl.trim())}`);
+  }
+
+  lines.push("", tags.join(" "));
+  return lines.join("\n");
 }
 
 export function channelPostUrl(

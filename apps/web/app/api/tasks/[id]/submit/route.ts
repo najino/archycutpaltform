@@ -10,14 +10,14 @@ import { formatPortfolioCaption, slugifyHashtag } from "@eth/telegram";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import {
+  normalizeMediaUrl,
   notifyAdminsDelivered,
-  publishFileToPortfolioChannel,
-  TELEGRAM_UPLOAD_MAX_BYTES,
+  publishLinkToPortfolioChannel,
 } from "@/lib/telegram-bot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 const VIDEO_TYPES = new Set<VideoType>([
   "reels",
@@ -42,13 +42,13 @@ export async function POST(
   }
   if (task.assigneeId !== user.id && user.role === "editor") {
     return NextResponse.json(
-      { error: "فقط ادیتور همین تسک می‌تواند آپلود کند" },
+      { error: "فقط ادیتور همین تسک می‌تواند تحویل بدهد" },
       { status: 403 },
     );
   }
   if (task.status === "approved") {
     return NextResponse.json(
-      { error: "تسک تأییدشده قابل آپلود مجدد نیست" },
+      { error: "تسک تأییدشده قابل تحویل مجدد نیست" },
       { status: 400 },
     );
   }
@@ -63,19 +63,17 @@ export async function POST(
     );
   }
 
-  const file = form.get("file");
-  if (!(file instanceof File) || file.size <= 0) {
-    return NextResponse.json({ error: "فایل ویدیو الزامی است" }, { status: 400 });
-  }
-  if (file.size > TELEGRAM_UPLOAD_MAX_BYTES) {
+  let mediaUrl: string;
+  try {
+    mediaUrl = normalizeMediaUrl(String(form.get("mediaUrl") ?? ""));
+  } catch (err) {
     return NextResponse.json(
-      { error: "حداکثر حجم فایل ۴۹ مگابایت است" },
+      { error: err instanceof Error ? err.message : "لینک نامعتبر است" },
       { status: 400 },
     );
   }
 
-  const title =
-    String(form.get("title") ?? "").trim() || task.title;
+  const title = String(form.get("title") ?? "").trim() || task.title;
   const categoryId = String(form.get("categoryId") ?? "").trim();
   const clientRaw = String(form.get("clientId") ?? "").trim();
   const clientId = clientRaw || null;
@@ -109,10 +107,14 @@ export async function POST(
     clientSlug: client ? slugifyHashtag(client.name) : null,
     videoType,
     editorName: user.displayName,
+    mediaUrl,
   });
 
   try {
-    const published = await publishFileToPortfolioChannel({ file, caption });
+    const published = await publishLinkToPortfolioChannel({
+      mediaUrl,
+      caption,
+    });
 
     const deliverable = await submitDeliverable(
       db(),
@@ -143,9 +145,10 @@ export async function POST(
       deliverableId: deliverable.id,
       channelMsgId: deliverable.channelMsgId,
       channelChatId: String(deliverable.channelChatId),
+      mediaUrl,
     });
   } catch (err) {
-    console.error("web submit failed:", err);
+    console.error("web link submit failed:", err);
     return NextResponse.json(
       {
         error:

@@ -14,7 +14,7 @@ import {
   toPersianDigits,
 } from "@eth/core";
 import { deliverables } from "@eth/db";
-import { channelPostUrl, submitDeepLink } from "@eth/telegram";
+import { channelPostUrl } from "@eth/telegram";
 import type { TaskStatus } from "@eth/db";
 import { DeliverableUpload } from "@/components/deliverable-upload";
 import { EditorShell } from "@/components/editor-shell";
@@ -60,10 +60,6 @@ export default async function TaskDetailPage({
   const channelConfigured = Boolean(
     process.env.TELEGRAM_PORTFOLIO_CHANNEL_ID?.trim(),
   );
-  const botUsername = process.env.TELEGRAM_BOT_USERNAME?.trim() || "";
-  const telegramSubmitUrl = botUsername
-    ? submitDeepLink(botUsername, task.shortCode)
-    : null;
 
   return (
     <EditorShell user={user}>
@@ -130,42 +126,61 @@ export default async function TaskDetailPage({
             className="material-symbols-outlined"
             style={{ color: "var(--primary)" }}
           >
-            cloud_upload
+            link
           </span>
           تحویل‌ها
         </h2>
 
         {dels.length === 0 ? (
           <p className="muted" style={{ marginTop: 0 }}>
-            هنوز فایلی ارسال نشده.
+            هنوز لینکی ارسال نشده.
           </p>
         ) : (
           <div className="task-list" style={{ marginBottom: 16 }}>
-            {dels.map((d) => (
-              <a
-                key={d.id}
-                href={channelPostUrl(d.channelChatId, d.channelMsgId)}
-                target="_blank"
-                rel="noreferrer"
-                className="task-row"
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ color: "var(--status-delivered)" }}
-                >
-                  play_circle
-                </span>
-                <div>
-                  <strong>{d.title}</strong>
-                  <div className="muted" style={{ fontSize: 12 }}>
-                    msg {d.channelMsgId} · {d.videoType}
+            {dels.map((d) => {
+              const isLink = d.tgFileUniqueId.startsWith("link:");
+              const mediaHref =
+                isLink && /^https?:\/\//i.test(d.tgFileId)
+                  ? d.tgFileId
+                  : channelPostUrl(d.channelChatId, d.channelMsgId);
+              return (
+                <div key={d.id} className="task-row">
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ color: "var(--status-delivered)" }}
+                  >
+                    {isLink ? "link" : "play_circle"}
+                  </span>
+                  <div>
+                    <strong>{d.title}</strong>
+                    <div className="muted" style={{ fontSize: 12 }}>
+                      {d.videoType}
+                      {isLink ? " · لینک" : ` · msg ${d.channelMsgId}`}
+                    </div>
+                  </div>
+                  <div className="actions">
+                    {isLink && (
+                      <a
+                        href={mediaHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn"
+                      >
+                        لینک فایل
+                      </a>
+                    )}
+                    <a
+                      href={channelPostUrl(d.channelChatId, d.channelMsgId)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn"
+                    >
+                      کانال
+                    </a>
                   </div>
                 </div>
-                <span className="muted" style={{ fontSize: 12 }}>
-                  مشاهده در کانال
-                </span>
-              </a>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -186,12 +201,10 @@ export default async function TaskDetailPage({
               categories={categories.map((c) => ({ id: c.id, name: c.name }))}
               clients={clients.map((c) => ({ id: c.id, name: c.name }))}
               disabled={!channelConfigured}
-              telegramSubmitUrl={telegramSubmitUrl}
-              shortCode={task.shortCode}
             />
           </>
         ) : (
-          <p className="muted">تسک تأیید شده؛ آپلود جدید غیرفعال است.</p>
+          <p className="muted">تسک تأیید شده؛ ارسال لینک جدید غیرفعال است.</p>
         )}
       </div>
 

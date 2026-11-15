@@ -105,20 +105,29 @@ export default async function TaskDetailPage({
         <h2 style={{ marginTop: 0 }}>تحویل‌ها</h2>
         {dels.length === 0 && (
           <p className="muted">
-            هنوز فایلی ارسال نشده. ارسال فقط از طریق ربات تلگرام (/submit).
+            هنوز تحویلی ثبت نشده.
           </p>
         )}
-        {dels.map((d) => (
-          <p key={d.id}>
-            <a
-              href={channelPostUrl(d.channelChatId, d.channelMsgId)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {d.title} → پست کانال
-            </a>
-          </p>
-        ))}
+        {dels.map((d) => {
+          const isLink = d.tgFileUniqueId.startsWith("link:");
+          return (
+            <p key={d.id} className="actions" style={{ flexWrap: "wrap" }}>
+              <strong>{d.title}</strong>
+              {isLink && /^https?:\/\//i.test(d.tgFileId) && (
+                <a href={d.tgFileId} target="_blank" rel="noreferrer">
+                  لینک فایل
+                </a>
+              )}
+              <a
+                href={channelPostUrl(d.channelChatId, d.channelMsgId)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                پست کانال
+              </a>
+            </p>
+          );
+        })}
       </div>
 
       <div className="panel" style={{ marginTop: 16 }}>

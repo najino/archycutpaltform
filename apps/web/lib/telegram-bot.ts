@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 const MAX_BYTES = 49 * 1024 * 1024;
 
 export type PublishedTelegramMedia = {
@@ -6,6 +8,26 @@ export type PublishedTelegramMedia = {
   tgFileId: string;
   tgFileUniqueId: string;
 };
+
+export function normalizeMediaUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) throw new Error("لینک خالی است");
+  let url: URL;
+  try {
+    url = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
+  } catch {
+    throw new Error("لینک نامعتبر است");
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("فقط لینک http/https مجاز است");
+  }
+  return url.toString();
+}
+
+export function linkUniqueId(url: string): string {
+  const hash = createHash("sha256").update(url).digest("hex").slice(0, 32);
+  return `link:${hash}`;
+}
 
 function botToken() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -51,6 +73,34 @@ type SentMessage = {
   video?: { file_id: string; file_unique_id: string };
   document?: { file_id: string; file_unique_id: string };
 };
+
+type SentTextMessage = {
+  message_id: number;
+};
+
+/** Publish a text post with caption + media link to the portfolio channel. */
+export async function publishLinkToPortfolioChannel(input: {
+  mediaUrl: string;
+  caption: string;
+}): Promise<PublishedTelegramMedia> {
+  const url = normalizeMediaUrl(input.mediaUrl);
+  const channelChatId = portfolioChannelId();
+  const body = new URLSearchParams({
+    chat_id: channelChatId.toString(),
+    text: input.caption,
+    parse_mode: "HTML",
+    disable_web_page_preview: "false",
+  });
+
+  const sent = await callTelegram<SentTextMessage>("sendMessage", body);
+
+  return {
+    channelChatId,
+    channelMsgId: sent.message_id,
+    tgFileId: url,
+    tgFileUniqueId: linkUniqueId(url),
+  };
+}
 
 export async function publishFileToPortfolioChannel(input: {
   file: File;
