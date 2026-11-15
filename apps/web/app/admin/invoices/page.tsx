@@ -34,8 +34,26 @@ async function issueAction(formData: FormData) {
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
   const id = String(formData.get("id") ?? "");
-  await issueInvoice(db(), user, id, "web");
-  redirect("/admin/invoices");
+  const inv = await issueInvoice(db(), user, id, "web");
+  try {
+    const { notifyEditorInvoiceIssued } = await import("@/lib/telegram-bot");
+    const members = await listMembers(db());
+    const editor = members.find((m) => m.id === inv.userId);
+    const base =
+      process.env.WEB_BASE_URL?.replace(/\/$/, "") || "http://localhost:3010";
+    if (editor?.telegramId) {
+      await notifyEditorInvoiceIssued({
+        telegramId: editor.telegramId,
+        invoiceNumber: inv.number,
+        periodLabel: jalaliMonthLabel(inv.periodKey),
+        totalLabel: formatToman(inv.totalAmount),
+        webUrl: `${base}/invoices/${inv.id}`,
+      });
+    }
+  } catch (err) {
+    console.error("issue notify failed:", err);
+  }
+  redirect(`/admin/invoices?month=${inv.periodKey}`);
 }
 
 async function payAction(formData: FormData) {
@@ -83,12 +101,18 @@ export default async function InvoicesPage({
       <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
 
       {isAdmin && (
-        <form action={generateAction} className="actions" style={{ marginBottom: 16 }}>
-          <input type="hidden" name="periodKey" value={periodKey} />
-          <button className="btn primary" type="submit">
-            تولید / به‌روزرسانی پیش‌نویس‌های {jalaliMonthLabel(periodKey)}
-          </button>
-        </form>
+        <div className="actions" style={{ marginBottom: 16, flexWrap: "wrap" }}>
+          <Link className="btn primary" href={`/admin/invoices/compose?month=${periodKey}`}>
+            <span className="material-symbols-outlined icon-18">fact_check</span>
+            فاکتور شخصی‌سازی (تیک پروژه‌ها)
+          </Link>
+          <form action={generateAction}>
+            <input type="hidden" name="periodKey" value={periodKey} />
+            <button className="btn" type="submit">
+              تولید خودکار همهٔ پیش‌نویس‌های {jalaliMonthLabel(periodKey)}
+            </button>
+          </form>
+        </div>
       )}
 
       <div className="panel">
@@ -117,14 +141,24 @@ export default async function InvoicesPage({
                   </div>
                 </td>
                 <td>{formatToman(inv.totalAmount)}</td>
-                <td>{inv.status}</td>
+                <td>
+                  {inv.status === "draft"
+                    ? "پیش‌نویس"
+                    : inv.status === "issued"
+                      ? "صادر شده"
+                      : inv.status === "paid"
+                        ? "پرداخت شده"
+                        : inv.status === "void"
+                          ? "باطل"
+                          : inv.status}
+                </td>
                 <td>
                   <div className="actions">
                     {isAdmin && inv.status === "draft" && (
                       <form action={issueAction}>
                         <input type="hidden" name="id" value={inv.id} />
                         <button className="btn" type="submit">
-                          Issue
+                          صدور به پنل
                         </button>
                       </form>
                     )}
@@ -132,7 +166,7 @@ export default async function InvoicesPage({
                       <form action={payAction}>
                         <input type="hidden" name="id" value={inv.id} />
                         <button className="btn primary" type="submit">
-                          Mark paid
+                          پرداخت شد
                         </button>
                       </form>
                     )}
@@ -140,7 +174,7 @@ export default async function InvoicesPage({
                       <form action={voidAction}>
                         <input type="hidden" name="id" value={inv.id} />
                         <button className="btn danger" type="submit">
-                          Void
+                          ابطال
                         </button>
                       </form>
                     )}

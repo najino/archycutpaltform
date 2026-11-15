@@ -13,6 +13,8 @@ type Props = {
   placeholder?: string;
   "aria-label"?: string;
   id?: string;
+  disabled?: boolean;
+  allowClear?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -21,6 +23,8 @@ export function SoftSelect({
   options,
   placeholder = "انتخاب",
   id,
+  disabled,
+  allowClear = true,
   onChange,
   "aria-label": ariaLabel,
 }: Props) {
@@ -48,7 +52,7 @@ export function SoftSelect({
 
   return (
     <div
-      className={`soft-select${open ? " is-open" : ""}`}
+      className={`soft-select${open ? " is-open" : ""}${disabled ? " is-disabled" : ""}`}
       ref={rootRef}
     >
       <button
@@ -59,32 +63,37 @@ export function SoftSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
-        onClick={() => setOpen((v) => !v)}
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setOpen((v) => !v);
+        }}
       >
         <span className={!selected ? "is-placeholder" : undefined}>{label}</span>
         <span className="material-symbols-outlined soft-select-caret">
           expand_more
         </span>
       </button>
-      {open ? (
+      {open && !disabled ? (
         <ul
           id={listId}
           className="soft-select-menu"
           role="listbox"
           aria-label={ariaLabel}
         >
-          <li role="option" aria-selected={!value}>
-            <button
-              type="button"
-              className={`soft-select-option${!value ? " is-active" : ""}`}
-              onClick={() => {
-                onChange("");
-                setOpen(false);
-              }}
-            >
-              {placeholder}
-            </button>
-          </li>
+          {allowClear ? (
+            <li role="option" aria-selected={!value}>
+              <button
+                type="button"
+                className={`soft-select-option${!value ? " is-active" : ""}`}
+                onClick={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
+              >
+                {placeholder}
+              </button>
+            </li>
+          ) : null}
           {options.map((opt) => (
             <li key={opt.value} role="option" aria-selected={opt.value === value}>
               <button

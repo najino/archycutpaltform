@@ -1239,6 +1239,15 @@ code {
   box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.16);
 }
 
+.soft-select.is-disabled .soft-select-trigger {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.invoice-compose .soft-select-menu {
+  z-index: 60;
+}
+
 .soft-select-caret {
   font-size: 18px;
   color: var(--outline);
@@ -1710,6 +1719,89 @@ code {
   .admin-main {
     margin-right: 0;
   }
+}
+
+/* ——— Invoice compose ——— */
+.invoice-compose {
+  display: grid;
+  gap: 16px;
+}
+
+.invoice-compose-meta {
+  grid-template-columns: 1.4fr 1fr;
+  align-items: end;
+}
+
+@media (max-width: 720px) {
+  .invoice-compose-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+.invoice-compose-period {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.invoice-compose-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.invoice-compose-list .check-row {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.invoice-compose-list .check-row.is-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.invoice-compose-task {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+.invoice-compose-task-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.invoice-compose-amount {
+  margin-right: auto;
+  color: var(--primary);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.invoice-compose-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+}
+
+.invoice-compose-total .metric-value {
+  font-size: 1.35rem;
+  color: var(--primary);
+}
+
+.text-11 {
+  font-size: 11px;
 }
 
 /* ——— Deliverable link submit ——— */

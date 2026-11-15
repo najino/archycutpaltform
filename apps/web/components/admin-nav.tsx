@@ -9,6 +9,11 @@ const LINKS = [
   { href: "/admin/projects", label: "پروژه‌ها و نرخ‌ها", icon: "folder_special" },
   { href: "/admin/earnings", label: "درآمد ادیتورها", icon: "payments" },
   { href: "/admin/invoices", label: "فاکتورها", icon: "receipt_long" },
+  {
+    href: "/admin/invoices/compose",
+    label: "فاکتور شخصی",
+    icon: "fact_check",
+  },
   { href: "/admin/portfolio", label: "تحویل‌ها و پورتفولیو", icon: "video_library" },
   { href: "/admin/settings", label: "تنظیمات سیستم", icon: "tune" },
 ] as const;
@@ -57,7 +62,11 @@ export function AdminNav({ user }: { user: User }) {
           <nav className="side-nav">
             {LINKS.map((item) => {
               const active =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
+                item.href === "/admin/invoices"
+                  ? pathname === "/admin/invoices" ||
+                    /^\/admin\/invoices\/[^/]+$/.test(pathname)
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}

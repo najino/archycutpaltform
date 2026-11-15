@@ -157,6 +157,33 @@ export async function publishFileToPortfolioChannel(input: {
   };
 }
 
+export async function notifyEditorInvoiceIssued(input: {
+  telegramId: bigint | number | string;
+  invoiceNumber: string;
+  periodLabel: string;
+  totalLabel: string;
+  webUrl: string;
+}) {
+  const text =
+    `📄 فاکتور <b>${escapeHtml(input.invoiceNumber)}</b> صادر شد\n` +
+    `دوره: ${escapeHtml(input.periodLabel)}\n` +
+    `مبلغ: ${escapeHtml(input.totalLabel)}\n` +
+    `در پنل ادیتور قابل مشاهده است:\n${escapeHtml(input.webUrl)}`;
+
+  const body = new URLSearchParams({
+    chat_id: String(input.telegramId),
+    text,
+    parse_mode: "HTML",
+    disable_web_page_preview: "true",
+  });
+
+  try {
+    await callTelegram("sendMessage", body);
+  } catch (err) {
+    console.error("notifyEditorInvoiceIssued failed:", err);
+  }
+}
+
 export async function notifyAdminsDelivered(input: {
   editorName: string;
   shortCode: string;

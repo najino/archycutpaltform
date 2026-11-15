@@ -25,7 +25,8 @@ export default async function EditorInvoicesPage({
     <EditorShell user={user}>
       <h1 className="hero-title">فاکتورهای من</h1>
       <p className="hero-sub">
-        فاکتورهای ماه شمسی مربوط به خودتان — {jalaliMonthLabel(periodKey)}.
+        فاکتورهای صادرشدهٔ ماه شمسی — {jalaliMonthLabel(periodKey)}. پیش‌نویس‌ها
+        تا صدور ادمین اینجا دیده نمی‌شوند.
       </p>
 
       <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
@@ -53,7 +54,13 @@ export default async function EditorInvoicesPage({
                   </div>
                 </td>
                 <td>{formatToman(inv.totalAmount)}</td>
-                <td>{inv.status}</td>
+                <td>
+                  {inv.status === "issued"
+                    ? "صادر شده"
+                    : inv.status === "paid"
+                      ? "پرداخت شده"
+                      : inv.status}
+                </td>
               </tr>
             ))}
           </tbody>

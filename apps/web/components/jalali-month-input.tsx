@@ -13,6 +13,8 @@ type Props = {
   name?: string;
   defaultValue?: string;
   submitLabel?: string;
+  /** Extra query fields preserved on month change (e.g. userId) */
+  hiddenFields?: Record<string, string>;
 };
 
 const FA = "۰۱۲۳۴۵۶۷۸۹";
@@ -24,6 +26,7 @@ export function JalaliMonthInput({
   name = "month",
   defaultValue,
   submitLabel = "نمایش",
+  hiddenFields,
 }: Props) {
   const fallback = currentMonthPeriod().periodKey;
   const initial = defaultValue || fallback;
@@ -54,6 +57,10 @@ export function JalaliMonthInput({
   return (
     <form className="form-grid jalali-month-form">
       <input type="hidden" name={name} value={periodKey} />
+      {hiddenFields &&
+        Object.entries(hiddenFields).map(([k, v]) =>
+          v ? <input key={k} type="hidden" name={k} value={v} /> : null,
+        )}
       <label>
         ماه شمسی
         <div className="jalali-date-fields">

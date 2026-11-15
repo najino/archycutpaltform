@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type {
   ActivitySource,
   Db,
@@ -135,6 +135,229 @@ async function nextInvoiceNumber(
     .where(eq(invoices.periodKey, periodKey));
   const n = (existing[0]?.count ?? 0) + 1;
   return `INV-${periodKey}-${String(n).padStart(3, "0")}`;
+}
+
+export type BillableTaskRow = {
+  task: Task;
+  projectName: string | null;
+};
+
+/** Approved tasks with amount in the Jalali month — for personalized invoicing. */
+export async function listBillableTasks(
+  db: Db,
+  actor: User,
+  periodKey: string,
+  userId?: string,
+): Promise<BillableTaskRow[]> {
+  assertCan(actor, "invoice.manage");
+  const period = parsePeriodKey(periodKey);
+  const start = new Date(`${period.periodStart}T00:00:00+03:30`);
+  const end = new Date(`${period.periodEnd}T23:59:59.999+03:30`);
+
+  const conds = [
+    eq(tasks.status, "approved"),
+    sql`${tasks.amount} IS NOT NULL`,
+    gte(tasks.approvedAt, start),
+    lte(tasks.approvedAt, end),
+  ];
+  if (userId) conds.push(eq(tasks.assigneeId, userId));
+
+  const rows = await db
+    .select({
+      task: tasks,
+      projectName: projects.name,
+    })
+    .from(tasks)
+    .leftJoin(projects, eq(tasks.projectId, projects.id))
+    .where(and(...conds))
+    .orderBy(asc(tasks.approvedAt));
+
+  return rows.map((r) => ({
+    task: r.task,
+    projectName: r.projectName ?? null,
+  }));
+}
+
+export type PersonalizedInvoiceInput = {
+  userId: string;
+  periodKey: string;
+  taskIds: string[];
+  /** If true, set status to issued so it appears in the editor panel */
+  issue?: boolean;
+};
+
+/**
+ * Build / rebuild a draft invoice from explicitly selected tasks for one editor.
+ * Reuses draft/void row for the same (user, period) unique key.
+ */
+export async function createPersonalizedInvoice(
+  db: Db,
+  actor: User,
+  input: PersonalizedInvoiceInput,
+  source: ActivitySource = "web",
+): Promise<Invoice> {
+  assertCan(actor, "invoice.manage");
+
+  const period = parsePeriodKey(input.periodKey);
+  const taskIds = [...new Set(input.taskIds.filter(Boolean))];
+  if (taskIds.length === 0) {
+    throw new ValidationError("حداقل یک تسک را انتخاب کنید");
+  }
+
+  const editor = (
+    await db.select().from(users).where(eq(users.id, input.userId)).limit(1)
+  )[0];
+  if (!editor || !editor.isActive) {
+    throw new NotFoundError("ادیتور پیدا نشد");
+  }
+
+  const selected = await db
+    .select()
+    .from(tasks)
+    .where(inArray(tasks.id, taskIds));
+
+  if (selected.length !== taskIds.length) {
+    throw new ValidationError("برخی تسک‌ها پیدا نشدند");
+  }
+
+  const start = new Date(`${period.periodStart}T00:00:00+03:30`);
+  const end = new Date(`${period.periodEnd}T23:59:59.999+03:30`);
+
+  for (const t of selected) {
+    if (t.assigneeId !== input.userId) {
+      throw new ValidationError(`تسک ${t.shortCode} متعلق به این ادیتور نیست`);
+    }
+    if (t.status !== "approved" || t.amount == null || !t.approvedAt) {
+      throw new ValidationError(`تسک ${t.shortCode} قابل فاکتور نیست`);
+    }
+    if (t.approvedAt < start || t.approvedAt > end) {
+      throw new ValidationError(
+        `تسک ${t.shortCode} خارج از ماه ${period.periodKey} است`,
+      );
+    }
+  }
+
+  const existing = (
+    await db
+      .select()
+      .from(invoices)
+      .where(
+        and(
+          eq(invoices.userId, input.userId),
+          eq(invoices.periodKey, period.periodKey),
+        ),
+      )
+      .limit(1)
+  )[0];
+
+  if (existing && (existing.status === "issued" || existing.status === "paid")) {
+    throw new ValidationError(
+      "فاکتور این ماه صادر/پرداخت شده — برای تغییر ابتدا باطل کنید",
+    );
+  }
+
+  // Tasks already locked to another (non-this) invoice
+  for (const t of selected) {
+    if (t.invoiceId && t.invoiceId !== existing?.id) {
+      throw new ValidationError(
+        `تسک ${t.shortCode} قبلاً در فاکتور دیگری قفل شده`,
+      );
+    }
+  }
+
+  let invoice = existing ?? null;
+
+  if (invoice) {
+    await db
+      .update(tasks)
+      .set({ invoiceId: null, updatedAt: new Date() })
+      .where(eq(tasks.invoiceId, invoice.id));
+    await db.delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoice.id));
+  }
+
+  let total = 0n;
+  for (const t of selected) total += t.amount ?? 0n;
+
+  if (!invoice) {
+    const number = await nextInvoiceNumber(db, period.periodKey);
+    const [created] = await db
+      .insert(invoices)
+      .values({
+        number,
+        userId: input.userId,
+        periodKey: period.periodKey,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
+        totalAmount: total,
+        status: "draft",
+      })
+      .returning();
+    if (!created) throw new Error("Failed to create invoice");
+    invoice = created;
+  } else {
+    const [updated] = await db
+      .update(invoices)
+      .set({
+        totalAmount: total,
+        status: "draft",
+        issuedAt: null,
+        paidAt: null,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
+      })
+      .where(eq(invoices.id, invoice.id))
+      .returning();
+    if (!updated) throw new Error("Failed to update invoice");
+    invoice = updated;
+  }
+
+  for (const t of selected) {
+    let projectName: string | null = null;
+    if (t.projectId) {
+      const p = (
+        await db
+          .select()
+          .from(projects)
+          .where(eq(projects.id, t.projectId))
+          .limit(1)
+      )[0];
+      projectName = p?.name ?? null;
+    }
+    await db.insert(invoiceLines).values({
+      invoiceId: invoice.id,
+      taskId: t.id,
+      projectName,
+      description: t.title,
+      units: t.units,
+      unitPrice: t.unitPriceSnapshot ?? 0n,
+      amount: t.amount ?? 0n,
+    });
+    await db
+      .update(tasks)
+      .set({ invoiceId: invoice.id, updatedAt: new Date() })
+      .where(eq(tasks.id, t.id));
+  }
+
+  await logAndEmit(db, {
+    actorId: actor.id,
+    source,
+    action: "invoice.personalized",
+    entityType: "invoice",
+    entityId: invoice.id,
+    payload: {
+      number: invoice.number,
+      userId: input.userId,
+      total: total.toString(),
+      periodKey: period.periodKey,
+      taskCount: selected.length,
+    },
+    eventType: "invoice.updated",
+  });
+
+  if (input.issue) {
+    return issueInvoice(db, actor, invoice.id, source);
+  }
+  return invoice;
 }
 
 /**
@@ -397,7 +620,12 @@ export async function listInvoices(
   const rows = await db
     .select()
     .from(invoices)
-    .where(eq(invoices.userId, actor.id))
+    .where(
+      and(
+        eq(invoices.userId, actor.id),
+        or(eq(invoices.status, "issued"), eq(invoices.status, "paid")),
+      ),
+    )
     .orderBy(asc(invoices.createdAt));
   return periodKey ? rows.filter((r) => r.periodKey === periodKey) : rows;
 }
