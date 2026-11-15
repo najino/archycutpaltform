@@ -61,8 +61,8 @@ export default async function ProjectsPage() {
       <h1 className="hero-title">پروژه‌ها</h1>
       <p className="hero-sub">قیمت هر واحد و دسترسی ادیتورها.</p>
 
-      <div className="panel" style={{ marginBottom: 24 }}>
-        <h2 style={{ marginTop: 0 }}>پروژه جدید</h2>
+      <div className="panel panel-spaced">
+        <h2 className="panel-title">پروژه جدید</h2>
         <form action={createAction} className="form-grid">
           <label>
             نام
@@ -87,19 +87,11 @@ export default async function ProjectsPage() {
               ))}
             </select>
           </label>
-          <fieldset>
+          <fieldset className="member-fieldset" suppressHydrationWarning>
             <legend className="muted">ادیتورهای مجاز</legend>
-            <div style={{ display: "grid", gap: 6 }}>
+            <div className="check-list">
               {editors.map((m) => (
-                <label
-                  key={m.id}
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    alignItems: "center",
-                    color: "var(--ink)",
-                  }}
-                >
+                <label key={m.id} className="check-row" suppressHydrationWarning>
                   <input type="checkbox" name="memberIds" value={m.id} />
                   {m.displayName}
                 </label>
