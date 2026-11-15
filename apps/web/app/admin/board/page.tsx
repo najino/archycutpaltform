@@ -77,114 +77,53 @@ export default async function AdminBoardPage({
   };
 
   return (
-    <>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          gap: 16,
-          marginBottom: 20,
-        }}
-      >
+    <div suppressHydrationWarning>
+      <div className="page-header-row">
         <div>
-          <div
-            className="muted"
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              marginBottom: 6,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
+          <div className="breadcrumb-row">
             داشبورد مدیریت
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              chevron_left
-            </span>
-            <span className="font-mono" style={{ color: "var(--primary)" }}>
-              ADMIN::TASK_GRID
-            </span>
+            <span className="material-symbols-outlined icon-14">chevron_left</span>
+            <span className="font-mono text-primary">ADMIN::TASK_GRID</span>
           </div>
-          <h1 className="hero-title" style={{ marginBottom: 4 }}>
-            برد تسک‌های تیم
-          </h1>
-          <p className="hero-sub" style={{ marginBottom: 0 }}>
+          <h1 className="hero-title hero-title-tight">برد تسک‌های تیم</h1>
+          <p className="hero-sub hero-sub-tight">
             مدیریت، تخصیص و تأیید خروجی‌های تدوین در چرخه هفتگی
           </p>
         </div>
         <span className="sys-pill">
-          <span className="sys-dot" style={{ animation: "none" }} />
-          <span className="font-mono" style={{ color: "var(--primary)" }}>
-            {weekKey}
-          </span>
+          <span className="sys-dot sys-dot-static" />
+          <span className="font-mono text-primary">{weekKey}</span>
         </span>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
+      <div className="metrics-grid">
         <div className="metric-card">
           <div className="metric-label">کل تسک‌های هفته</div>
           <div className="metric-value font-mono">{counts.total}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-label" style={{ color: "var(--status-in-progress)" }}>
-            در حال انجام
-          </div>
-          <div
-            className="metric-value font-mono"
-            style={{ color: "var(--status-in-progress)" }}
-          >
+          <div className="metric-label tone-progress">در حال انجام</div>
+          <div className="metric-value font-mono tone-progress">
             {counts.in_progress}
           </div>
         </div>
         <div
-          className="metric-card"
-          style={{
-            borderColor:
-              counts.delivered > 0
-                ? "rgba(56,189,248,0.4)"
-                : "var(--border-glass)",
-          }}
+          className={`metric-card${counts.delivered > 0 ? " metric-card-alert" : ""}`}
         >
-          <div className="metric-label" style={{ color: "var(--status-delivered)" }}>
-            در انتظار بررسی
-          </div>
-          <div
-            className="metric-value font-mono"
-            style={{ color: "var(--status-delivered)" }}
-          >
+          <div className="metric-label tone-delivered">در انتظار بررسی</div>
+          <div className="metric-value font-mono tone-delivered">
             {counts.delivered}
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-label" style={{ color: "var(--status-approved)" }}>
-            تأییدشده
-          </div>
-          <div
-            className="metric-value font-mono"
-            style={{ color: "var(--primary)" }}
-          >
+          <div className="metric-label tone-approved">تأییدشده</div>
+          <div className="metric-value font-mono text-primary">
             {counts.approved}
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-label" style={{ color: "var(--status-rejected)" }}>
-            رد / بازنگری
-          </div>
-          <div
-            className="metric-value font-mono"
-            style={{ color: "var(--status-rejected)" }}
-          >
+          <div className="metric-label tone-rejected">رد / بازنگری</div>
+          <div className="metric-value font-mono tone-rejected">
             {counts.rejected}
           </div>
         </div>
@@ -195,16 +134,9 @@ export default async function AdminBoardPage({
           const items = tasks.filter((t) => t.status === col.status);
           return (
             <div key={col.status} className="board-col">
-              <h3
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 8,
-                }}
-              >
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+              <h3 className="board-col-head">
+                <span className="board-col-title">
+                  <span className="material-symbols-outlined icon-16">
                     {col.icon}
                   </span>
                   {col.label}
@@ -214,9 +146,9 @@ export default async function AdminBoardPage({
               {items.map((t) => (
                 <div key={t.id} className="board-item">
                   <Link href={`/admin/tasks/${t.id}`}>
-                    <strong style={{ fontSize: 13 }}>{t.title}</strong>
+                    <strong className="board-item-title">{t.title}</strong>
                   </Link>
-                  <div className="muted font-mono" style={{ fontSize: 11, marginTop: 4 }}>
+                  <div className="muted font-mono board-item-code">
                     {t.shortCode}
                   </div>
                   {(col.status === "delivered" || col.status === "rejected") && (
@@ -257,26 +189,16 @@ export default async function AdminBoardPage({
                 </div>
               ))}
               {items.length === 0 && (
-                <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>
-                  خالی
-                </p>
+                <p className="muted board-empty">خالی</p>
               )}
             </div>
           );
         })}
       </div>
 
-      <div className="panel" style={{ marginTop: 28 }} id="assign">
-        <h2
-          style={{
-            marginTop: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 18,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>
+      <div className="panel panel-assign" id="assign">
+        <h2 className="section-title">
+          <span className="material-symbols-outlined text-primary">
             add_circle
           </span>
           ثبت و تخصیص تسک جدید
@@ -323,13 +245,13 @@ export default async function AdminBoardPage({
             <input name="dueDate" type="date" />
           </label>
           <button className="btn primary" type="submit">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+            <span className="material-symbols-outlined icon-18">
               assignment_ind
             </span>
             تخصیص
           </button>
         </form>
       </div>
-    </>
+    </div>
   );
 }

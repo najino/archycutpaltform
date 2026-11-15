@@ -458,6 +458,117 @@ code {
   line-height: 1.4;
 }
 
+/* ——— Board page (no inline styles; Dark Reader-safe) ——— */
+.page-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.breadcrumb-row {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--on-surface-variant);
+}
+
+.hero-title-tight {
+  margin-bottom: 4px;
+}
+
+.hero-sub-tight {
+  margin-bottom: 0;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card-alert {
+  border-color: rgba(110, 200, 240, 0.4);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.tone-progress {
+  color: var(--status-in-progress);
+}
+
+.tone-delivered {
+  color: var(--status-delivered);
+}
+
+.tone-approved {
+  color: var(--status-approved);
+}
+
+.tone-rejected {
+  color: var(--status-rejected);
+}
+
+.sys-dot-static {
+  animation: none;
+}
+
+.board-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.board-col-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.board-item-title {
+  font-size: 13px;
+}
+
+.board-item-code {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.board-empty {
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+
+.panel-assign {
+  margin-top: 28px;
+}
+
+.section-title {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+}
+
+.icon-14 {
+  font-size: 14px;
+}
+
+.icon-16 {
+  font-size: 16px;
+}
+
 .editor-shell {
   min-height: 100vh;
   background: transparent;
