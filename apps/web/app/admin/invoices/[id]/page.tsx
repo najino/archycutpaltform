@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import {
-  englishMonthLabel,
+  jalaliMonthLabel,
   formatToman,
   getAgencySettings,
   getInvoiceDetail,
@@ -64,7 +64,7 @@ export default async function InvoicePrintPage({
       <div style={{ color: "#555", marginBottom: 24, fontSize: 14 }}>
         شماره فاکتور: <b>{invoice.number}</b>
         <br />
-        دوره: {englishMonthLabel(invoice.periodKey)} (
+        دوره: {jalaliMonthLabel(invoice.periodKey)} (
         {toPersianDigits(invoice.periodKey)})
         <br />
         ادیتور: {editor?.displayName ?? "—"}

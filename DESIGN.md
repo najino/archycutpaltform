@@ -116,7 +116,7 @@ JWT در کوکی httpOnly: eth_session
 - `deliverables` — فقط متادیتا + `tg_file_id` / `channel_msg_id` (بدون بایت ویدیو روی سرور)
 
 ### فاکتور
-- `invoices` — دوره میلادی `YYYY-MM`، unique(user_id, period_key)
+- `invoices` — دوره شمسی `YYYY-MM` (مثلاً `1404-08`)، unique(user_id, period_key)
 - `invoice_lines` — اسنپ‌شات پروژه/مبلغ هر تسک
 
 ### زیرساخت بات
@@ -146,8 +146,8 @@ todo → in_progress → delivered → approved
 3. با Approve:  
    `rate = rate_override ?? project.unit_price`  
    `amount = units × rate` (اسنپ‌شات؛ تغییر قیمت بعدی روی گذشته اثر ندارد).
-4. درآمد ماهانه = تسک‌های `approved` در ماه میلادی (Asia/Tehran).
-5. جاب ماهانه (`cron-invoices`) روی روز ۱ ماه، ماه قبل را فاکتور می‌کند (idempotent).
+4. درآمد ماهانه = تسک‌های `approved` در ماه شمسی (Asia/Tehran).
+5. جاب ماهانه (`cron-invoices`) روی روز ۱ ماه شمسی، ماه قبل را فاکتور می‌کند (idempotent).
 6. Issue → ارسال PDF به ادیتور در تلگرام؛ Mark paid → فقط‌خواندنی.
 
 پول همیشه `bigint` تومان است؛ در UI با ارقام فارسی و جداکننده نمایش داده می‌شود.

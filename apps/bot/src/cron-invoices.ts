@@ -5,8 +5,8 @@ import { env } from "./env.js";
 import { runMonthlyInvoiceJob } from "./commands/invoices.js";
 
 /**
- * Run on 1st of each Gregorian month at 09:00 Asia/Tehran.
- * Example cron (Tehran): 0 9 1 * *
+ * Run on 1st of each Jalali month at 09:00 Asia/Tehran (previous Shamsi month).
+ * Example: schedule manually / via cron that fires on Jalali 01 (e.g. Farvardin 1).
  */
 async function main() {
   const db = getDb(env.databaseUrl);

@@ -4,6 +4,7 @@ import {
   formatToman,
   monthlyEarnings,
   parsePeriodKey,
+  jalaliMonthLabel,
   toPersianDigits,
 } from "@eth/core";
 import type { BotContext } from "../context.js";
@@ -16,7 +17,7 @@ export async function earningsCommand(ctx: BotContext) {
     try {
       periodKey = parsePeriodKey(arg).periodKey;
     } catch {
-      await ctx.reply("فرمت ماه: YYYY-MM");
+      await ctx.reply("فرمت ماه شمسی: YYYY-MM (مثلاً 1404-08)");
       return;
     }
   }
@@ -30,7 +31,7 @@ export async function earningsCommand(ctx: BotContext) {
   );
 
   if (rows.length === 0) {
-    await ctx.reply(`درآمدی برای ${periodKey} نیست.`);
+    await ctx.reply(`درآمدی برای ${jalaliMonthLabel(periodKey)} نیست.`);
     return;
   }
 
@@ -38,5 +39,5 @@ export async function earningsCommand(ctx: BotContext) {
     (r) =>
       `• ${r.displayName}: ${toPersianDigits(r.approvedCount)} تسک · ${toPersianDigits(r.units)} واحد · ${formatToman(r.amount)}`,
   );
-  await ctx.reply(`💰 درآمد ${periodKey}\n${lines.join("\n")}`);
+  await ctx.reply(`💰 درآمد ${jalaliMonthLabel(periodKey)}\n${lines.join("\n")}`);
 }

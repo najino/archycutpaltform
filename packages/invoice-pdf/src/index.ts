@@ -1,4 +1,9 @@
-import { englishMonthLabel, formatToman, toPersianDigits } from "@eth/core";
+import {
+  formatJalaliDate,
+  formatToman,
+  jalaliMonthLabel,
+  toPersianDigits,
+} from "@eth/core";
 
 export type InvoicePdfLine = {
   projectName?: string | null;
@@ -42,7 +47,7 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
     .join("");
 
   const issueDate = input.issuedAt
-    ? toPersianDigits(input.issuedAt.toISOString().slice(0, 10))
+    ? formatJalaliDate(input.issuedAt)
     : "—";
 
   return `<!DOCTYPE html>
@@ -67,7 +72,7 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
   <h1>${escapeHtml(input.agencyName)}</h1>
   <div class="meta">
     شماره فاکتور: <b>${escapeHtml(input.number)}</b><br/>
-    دوره: ${escapeHtml(englishMonthLabel(input.periodKey))} (${toPersianDigits(input.periodKey)})<br/>
+    دوره: ${escapeHtml(jalaliMonthLabel(input.periodKey))} (${toPersianDigits(input.periodKey)})<br/>
     ادیتور: ${escapeHtml(input.editorName)}<br/>
     تاریخ صدور: ${issueDate}<br/>
     وضعیت: <span class="status">${STATUS_FA[input.status] ?? input.status}</span>

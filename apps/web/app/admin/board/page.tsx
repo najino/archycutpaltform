@@ -10,6 +10,7 @@ import {
   listWeekTasks,
 } from "@eth/core";
 import type { TaskStatus } from "@eth/db";
+import { JalaliDateInput } from "@/components/jalali-date-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { requireAdmin } from "@/lib/authz";
@@ -241,8 +242,8 @@ export default async function AdminBoardPage({
             />
           </label>
           <label>
-            موعد
-            <input name="dueDate" type="date" />
+            موعد (شمسی)
+            <JalaliDateInput name="dueDate" />
           </label>
           <button className="btn primary" type="submit">
             <span className="material-symbols-outlined icon-18">

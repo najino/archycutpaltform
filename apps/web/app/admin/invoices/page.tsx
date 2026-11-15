@@ -6,13 +6,16 @@ import {
   formatToman,
   generateInvoicesForPeriod,
   issueInvoice,
+  jalaliMonthLabel,
   listInvoices,
   listMembers,
   markInvoicePaid,
   parsePeriodKey,
   previousMonthPeriod,
+  toPersianDigits,
   voidInvoice,
 } from "@eth/core";
+import { JalaliMonthInput } from "@/components/jalali-month-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 
@@ -73,23 +76,17 @@ export default async function InvoicesPage({
   return (
     <>
       <h1 className="hero-title">فاکتورها</h1>
-      <p className="hero-sub">فاکتور ماهانه میلادی برای هر ادیتور.</p>
+      <p className="hero-sub">
+        فاکتور ماهانه شمسی برای هر ادیتور — {jalaliMonthLabel(periodKey)}.
+      </p>
 
-      <form className="form-grid" style={{ maxWidth: 280, marginBottom: 16 }}>
-        <label>
-          ماه
-          <input name="month" defaultValue={periodKey} />
-        </label>
-        <button className="btn" type="submit">
-          فیلتر
-        </button>
-      </form>
+      <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
 
       {isAdmin && (
         <form action={generateAction} className="actions" style={{ marginBottom: 16 }}>
           <input type="hidden" name="periodKey" value={periodKey} />
           <button className="btn primary" type="submit">
-            تولید / به‌روزرسانی پیش‌نویس‌های {periodKey}
+            تولید / به‌روزرسانی پیش‌نویس‌های {jalaliMonthLabel(periodKey)}
           </button>
         </form>
       )}
@@ -113,7 +110,12 @@ export default async function InvoicesPage({
                   <Link href={`/admin/invoices/${inv.id}`}>{inv.number}</Link>
                 </td>
                 <td>{nameById.get(inv.userId) ?? inv.userId}</td>
-                <td>{inv.periodKey}</td>
+                <td>
+                  {jalaliMonthLabel(inv.periodKey)}
+                  <div className="muted" style={{ fontSize: 11 }}>
+                    {toPersianDigits(inv.periodKey)}
+                  </div>
+                </td>
                 <td>{formatToman(inv.totalAmount)}</td>
                 <td>{inv.status}</td>
                 <td>

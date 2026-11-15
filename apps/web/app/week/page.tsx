@@ -3,11 +3,13 @@ import { redirect } from "next/navigation";
 import {
   createTask,
   currentWeekKey,
+  formatJalaliDate,
   getMyWeekStats,
   listProjects,
   listWeekTasks,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
+import { JalaliDateInput } from "@/components/jalali-date-input";
 import { requireEditorPortal } from "@/lib/authz";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -119,7 +121,7 @@ export default async function WeekPage() {
                 {task.shortCode}
               </div>
             </div>
-            <span className="muted">{task.dueDate ?? "—"}</span>
+            <span className="muted">{formatJalaliDate(task.dueDate)}</span>
           </Link>
         ))}
         {tasks.length === 0 && <p className="muted">این هفته تسکی ندارید.</p>}
@@ -167,8 +169,8 @@ export default async function WeekPage() {
             />
           </label>
           <label>
-            موعد (اختیاری)
-            <input name="dueDate" type="date" />
+            موعد شمسی (اختیاری)
+            <JalaliDateInput name="dueDate" />
           </label>
           <button className="btn primary" type="submit">
             ذخیره

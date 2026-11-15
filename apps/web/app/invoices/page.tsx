@@ -2,9 +2,12 @@ import Link from "next/link";
 import {
   currentMonthPeriod,
   formatToman,
+  jalaliMonthLabel,
   listInvoices,
+  toPersianDigits,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
+import { JalaliMonthInput } from "@/components/jalali-month-input";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 
@@ -21,17 +24,11 @@ export default async function EditorInvoicesPage({
   return (
     <EditorShell user={user}>
       <h1 className="hero-title">فاکتورهای من</h1>
-      <p className="hero-sub">فاکتورهای ماهانه مربوط به خودتان.</p>
+      <p className="hero-sub">
+        فاکتورهای ماه شمسی مربوط به خودتان — {jalaliMonthLabel(periodKey)}.
+      </p>
 
-      <form className="form-grid" style={{ maxWidth: 280, marginBottom: 16 }}>
-        <label>
-          ماه
-          <input name="month" defaultValue={periodKey} />
-        </label>
-        <button className="btn" type="submit">
-          فیلتر
-        </button>
-      </form>
+      <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
 
       <div className="panel">
         <table className="table">
@@ -49,7 +46,12 @@ export default async function EditorInvoicesPage({
                 <td>
                   <Link href={`/invoices/${inv.id}`}>{inv.number}</Link>
                 </td>
-                <td>{inv.periodKey}</td>
+                <td>
+                  {jalaliMonthLabel(inv.periodKey)}
+                  <div className="muted" style={{ fontSize: 11 }}>
+                    {toPersianDigits(inv.periodKey)}
+                  </div>
+                </td>
                 <td>{formatToman(inv.totalAmount)}</td>
                 <td>{inv.status}</td>
               </tr>

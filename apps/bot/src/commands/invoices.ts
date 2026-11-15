@@ -7,6 +7,7 @@ import {
   getAgencySettings,
   getInvoiceDetail,
   issueInvoice,
+  jalaliMonthLabel,
   listInvoices,
   listMembers,
   markInvoicePaid,
@@ -41,7 +42,7 @@ export async function invoicesCommand(ctx: BotContext) {
   }
 
   if (invoices.length === 0) {
-    await ctx.reply(`فاکتوری برای ${periodKey} نیست.`);
+    await ctx.reply(`فاکتوری برای ${jalaliMonthLabel(periodKey)} نیست.`);
     return;
   }
 
@@ -190,7 +191,7 @@ export async function handleInvoiceCallbacks(ctx: BotContext) {
   }
 }
 
-/** Monthly job: previous Gregorian month */
+/** Monthly job: previous Jalali (Shamsi) month */
 export async function runMonthlyInvoiceJob(botApi: BotContext["api"], db: BotContext["db"]) {
   const period = previousMonthPeriod();
   const owners = (await listMembers(db)).filter((m) => m.role === "owner");
@@ -215,7 +216,7 @@ export async function runMonthlyInvoiceJob(botApi: BotContext["api"], db: BotCon
 
   await notifyAdminGroup(
     botApi,
-    `🧾 فاکتور ماه ${period.periodKey}\n${lines.join("\n") || "خالی"}\nجمع: ${formatToman(grand)}`,
+    `🧾 فاکتور ماه ${jalaliMonthLabel(period.periodKey)}\n${lines.join("\n") || "خالی"}\nجمع: ${formatToman(grand)}`,
     kb,
   );
 

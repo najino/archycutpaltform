@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import {
   can,
   changeStatus,
+  formatJalaliDate,
+  formatJalaliDateTime,
   formatToman,
   getTaskById,
   listActivityForEntity,
@@ -63,7 +65,7 @@ export default async function TaskDetailPage({
       {task.description && <p>{task.description}</p>}
       <p className="muted">
         هفته {task.weekKey}
-        {task.dueDate ? ` · موعد ${task.dueDate}` : ""}
+        {task.dueDate ? ` · موعد ${formatJalaliDate(task.dueDate)}` : ""}
         {task.projectId
           ? ` · ${toPersianDigits(task.units)} واحد · ${formatToman(task.amount)}`
           : ""}
@@ -124,7 +126,7 @@ export default async function TaskDetailPage({
         <ul>
           {history.map((h) => (
             <li key={h.id} className="muted">
-              {h.createdAt.toISOString()} · {h.source} · {h.action}
+              {formatJalaliDateTime(h.createdAt)} · {h.source} · {h.action}
             </li>
           ))}
         </ul>

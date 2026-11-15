@@ -51,7 +51,7 @@ pnpm dev
 - ورود وب: Telegram Login Widget (کاربر باید از قبل عضو باشد)
 - تحویل فایل: فقط `/submit` در تلگرام → کپی به کانال → `status=delivered`
 - Approve/Reject: وب یا دکمه اینلاین / دستورات `/approve` `/reject`
-- پروژه‌ها و درآمد: ادمین پروژه با قیمت واحد می‌سازد (`/project` یا صفحه Projects)؛ با approve مبلغ snapshot می‌شود؛ فاکتور ماهانه میلادی با `pnpm --filter @eth/bot exec tsx src/cron-invoices.ts` (روز ۱ هر ماه ۰۹:۰۰ تهران)
+- پروژه‌ها و درآمد: ادمین پروژه با قیمت واحد می‌سازد (`/project` یا صفحه Projects)؛ با approve مبلغ snapshot می‌شود؛ فاکتور ماهانه شمسی با `pnpm --filter @eth/bot exec tsx src/cron-invoices.ts` (روز ۱ هر ماه شمسی ۰۹:۰۰ تهران)
 
 ## امنیت (چک‌لیست MVP)
 

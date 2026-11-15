@@ -1165,6 +1165,21 @@ code {
   box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.15);
 }
 
+.jalali-date-fields {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 8px;
+}
+
+.jalali-month-form .jalali-date-fields {
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.jalali-date-input .jalali-date-fields select,
+.jalali-month-form .jalali-date-fields select {
+  min-width: 0;
+}
+
 /* ——— Tables / lists ——— */
 .table {
   width: 100%;

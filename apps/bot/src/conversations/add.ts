@@ -1,5 +1,5 @@
 import type { Conversation } from "@grammyjs/conversations";
-import { createTask } from "@eth/core";
+import { createTask, parseFlexibleDate } from "@eth/core";
 import type { BotContext, InsideContext } from "../context.js";
 
 export async function addConversation(
@@ -19,12 +19,12 @@ export async function addConversation(
     return;
   }
 
-  await ctx.reply("تاریخ موعد (YYYY-MM-DD) یا /skip برای رد کردن:");
+  await ctx.reply("موعد شمسی YYYY/MM/DD یا میلادی YYYY-MM-DD یا /skip:");
   const dueCtx = await conversation.waitFor("message:text");
   let dueDate: string | null = null;
   const dueText = dueCtx.message.text.trim();
-  if (dueText !== "/skip" && /^\d{4}-\d{2}-\d{2}$/.test(dueText)) {
-    dueDate = dueText;
+  if (dueText !== "/skip") {
+    dueDate = parseFlexibleDate(dueText);
   }
 
   const task = await conversation.external((c) =>

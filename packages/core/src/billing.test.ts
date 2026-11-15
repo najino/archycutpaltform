@@ -2,9 +2,12 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { computeAmount, formatToman, toPersianDigits } from "./money.js";
 import {
+  formatJalaliDate,
   monthPeriod,
   parsePeriodKey,
   previousMonthPeriod,
+  toGregorian,
+  toJalali,
 } from "./calendar.js";
 
 describe("money math", () => {
@@ -21,21 +24,43 @@ describe("money math", () => {
   });
 });
 
-describe("calendar periods", () => {
-  it("builds gregorian month bounds", () => {
-    const p = monthPeriod(2026, 11);
-    assert.equal(p.periodKey, "2026-11");
-    assert.equal(p.periodStart, "2026-11-01");
-    assert.equal(p.periodEnd, "2026-11-30");
+describe("jalali calendar periods", () => {
+  it("converts known Gregorian↔Jalali anchors", () => {
+    // 2026-03-21 ≈ 1405-01-01
+    const j = toJalali(2026, 3, 21);
+    assert.equal(j.jy, 1405);
+    assert.equal(j.jm, 1);
+    assert.equal(j.jd, 1);
+    const g = toGregorian(1405, 1, 1);
+    assert.equal(g.gy, 2026);
+    assert.equal(g.gm, 3);
+    assert.equal(g.gd, 21);
   });
 
-  it("parses period key", () => {
-    assert.equal(parsePeriodKey("2026-02").periodEnd, "2026-02-28");
+  it("builds jalali month bounds as gregorian ISO", () => {
+    const p = monthPeriod(1404, 8);
+    assert.equal(p.periodKey, "1404-08");
+    // آبان ۱۴۰۴ starts around 2025-10-23
+    assert.match(p.periodStart, /^\d{4}-\d{2}-\d{2}$/);
+    assert.match(p.periodEnd, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(p.periodStart < p.periodEnd);
   });
 
-  it("previous month from fixed date", () => {
-    // 2026-12-01 Tehran ≈ late Nov UTC; use noon UTC Dec 1
-    const p = previousMonthPeriod(new Date("2026-12-01T12:00:00+03:30"));
-    assert.equal(p.periodKey, "2026-11");
+  it("parses jalali period key", () => {
+    const p = parsePeriodKey("1404-12");
+    assert.equal(p.periodKey, "1404-12");
+  });
+
+  it("previous jalali month from fixed date", () => {
+    // 1404-09-10 ≈ mid Azar → previous = Aban 1404
+    const g = toGregorian(1404, 9, 10);
+    const p = previousMonthPeriod(
+      new Date(`${g.gy}-${String(g.gm).padStart(2, "0")}-${String(g.gd).padStart(2, "0")}T12:00:00+03:30`),
+    );
+    assert.equal(p.periodKey, "1404-08");
+  });
+
+  it("formats iso date as jalali", () => {
+    assert.equal(formatJalaliDate("2026-03-21", { persianDigits: false }), "1405/01/01");
   });
 });

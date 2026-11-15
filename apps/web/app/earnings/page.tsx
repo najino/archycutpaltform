@@ -1,10 +1,12 @@
 import {
   currentMonthPeriod,
   formatToman,
+  jalaliMonthLabel,
   monthlyEarnings,
   toPersianDigits,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
+import { JalaliMonthInput } from "@/components/jalali-month-input";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -24,18 +26,11 @@ export default async function EarningsPage({
     <EditorShell user={user}>
       <h1 className="hero-title">درآمد</h1>
       <p className="hero-sub">
-        فقط تسک‌های تأییدشده (approved) در ماه میلادی شمرده می‌شوند.
+        فقط تسک‌های تأییدشده در ماه شمسی ({jalaliMonthLabel(periodKey)}) شمرده
+        می‌شوند.
       </p>
 
-      <form className="form-grid" style={{ maxWidth: 240, marginBottom: 20 }}>
-        <label>
-          ماه (YYYY-MM)
-          <input name="month" defaultValue={periodKey} />
-        </label>
-        <button className="btn" type="submit">
-          نمایش
-        </button>
-      </form>
+      <JalaliMonthInput defaultValue={periodKey} submitLabel="نمایش" />
 
       <div className="panel">
         <table className="table">
@@ -59,7 +54,9 @@ export default async function EarningsPage({
           </tbody>
         </table>
         {rows.length === 0 && (
-          <p className="muted">برای {periodKey} درآمدی ثبت نشده.</p>
+          <p className="muted">
+            برای {jalaliMonthLabel(periodKey)} درآمدی ثبت نشده.
+          </p>
         )}
       </div>
 

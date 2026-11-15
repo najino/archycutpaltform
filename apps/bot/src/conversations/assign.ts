@@ -6,6 +6,7 @@ import {
   listCategories,
   listClients,
   listMembers,
+  parseFlexibleDate,
 } from "@eth/core";
 import type { VideoType } from "@eth/db";
 import type { BotContext, InsideContext } from "../context.js";
@@ -87,12 +88,12 @@ export async function assignConversation(
   const videoType =
     typeRaw && typeRaw !== "skip" ? (typeRaw as VideoType) : null;
 
-  await ctx.reply("موعد YYYY-MM-DD یا /skip:");
+  await ctx.reply("موعد شمسی YYYY/MM/DD یا میلادی YYYY-MM-DD یا /skip:");
   const dueCtx = await conversation.waitFor("message:text");
   let dueDate: string | null = null;
   const dueText = dueCtx.message.text.trim();
-  if (dueText !== "/skip" && /^\d{4}-\d{2}-\d{2}$/.test(dueText)) {
-    dueDate = dueText;
+  if (dueText !== "/skip") {
+    dueDate = parseFlexibleDate(dueText);
   }
 
   const task = await conversation.external((c) =>
