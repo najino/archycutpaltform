@@ -25,7 +25,8 @@ export function EditorNav({ user }: { user: User }) {
           </div>
           <div>
             <div className="brand-title" dir="ltr">
-              ARSHYCUTPLATFORM
+              ARSHYCUT
+              <span className="brand-title-soft">PLATFORM</span>
             </div>
             <div className="brand-sub">میز کار ادیتور</div>
           </div>

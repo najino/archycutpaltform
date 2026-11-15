@@ -26,31 +26,29 @@ export function AdminNav({ user }: { user: User }) {
     <aside className="admin-sidebar" suppressHydrationWarning>
       <div>
         <div className="admin-sidebar-head">
-          <div className="admin-sidebar-brand-row">
-            <Link href="/admin" className="admin-sidebar-brand">
-              <div className="brand-mark">
-                <span className="material-symbols-outlined icon-20">
-                  movie_edit
-                </span>
+          <Link href="/admin" className="admin-sidebar-brand">
+            <div className="brand-mark">
+              <span className="material-symbols-outlined icon-20">
+                movie_edit
+              </span>
+            </div>
+            <div className="admin-sidebar-brand-text">
+              <div className="brand-title" dir="ltr">
+                ARSHYCUT
+                <span className="brand-title-soft">PLATFORM</span>
               </div>
-              <div>
-                <div className="brand-title" dir="ltr">
-                  ARSHYCUTPLATFORM
-                </div>
-                <div className="brand-sub">استودیو تدوین ویدیو</div>
-              </div>
-            </Link>
-            <span className="chip chip-role" suppressHydrationWarning>
-              ادمین
-            </span>
-          </div>
+              <div className="brand-sub">استودیو تدوین ویدیو</div>
+            </div>
+          </Link>
 
           <div className="admin-status-bar" suppressHydrationWarning>
             <span className="admin-status-online">
               <span className="sys-dot" />
               <span className="font-mono muted text-11">SYS.ONLINE</span>
             </span>
-            <span className="muted text-11">نسخه ۲.۴.۰</span>
+            <span className="chip chip-role" suppressHydrationWarning>
+              ادمین
+            </span>
           </div>
         </div>
 

@@ -56,7 +56,7 @@
   --radius: 1rem;
   --radius-lg: 1.25rem;
   --radius-xl: 1.5rem;
-  --sidebar-w: 18rem;
+  --sidebar-w: 19rem;
   --shadow-soft: 0 8px 28px -12px rgba(8, 6, 18, 0.55);
   --shadow-lift: 0 14px 40px -16px rgba(8, 6, 18, 0.65);
   --focus-ring: 0 0 0 3px rgba(196, 181, 253, 0.35);
@@ -195,17 +195,16 @@ code {
   padding: 20px 20px 8px;
 }
 
-.admin-sidebar-brand-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .admin-sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-sidebar-brand-text {
+  min-width: 0;
+  flex: 1;
 }
 
 .chip-role {
@@ -214,6 +213,8 @@ code {
   border-color: transparent;
   text-transform: none;
   letter-spacing: 0;
+  flex-shrink: 0;
+  padding: 3px 9px;
 }
 
 .admin-status-bar {
@@ -865,11 +866,18 @@ code {
 }
 
 .brand-title {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1.25;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
   color: #f4f0ff;
+  white-space: nowrap;
+}
+
+.brand-title-soft {
+  font-weight: 700;
+  opacity: 0.72;
+  letter-spacing: 0.05em;
 }
 
 .brand-sub {
@@ -877,6 +885,7 @@ code {
   font-weight: 600;
   letter-spacing: 0.03em;
   color: var(--on-surface-variant);
+  margin-top: 2px;
 }
 
 .brand-hero-name {
