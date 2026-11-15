@@ -83,6 +83,23 @@ bot.use(
 bot.use(authMiddleware);
 
 bot.command("start", startCommand);
+bot.command("id", async (ctx) => {
+  const chat = ctx.chat;
+  const from = ctx.from;
+  const lines = [
+    from ? `👤 شما: <code>${from.id}</code>` : null,
+    from?.username ? `یوزرنیم: @${from.username}` : null,
+    chat
+      ? `💬 چت: <code>${chat.id}</code> (${chat.type})`
+      : null,
+    chat && "title" in chat && chat.title
+      ? `عنوان: ${chat.title}`
+      : null,
+  ].filter(Boolean);
+  await ctx.reply(lines.join("\n") || "شناسه‌ای پیدا نشد.", {
+    parse_mode: "HTML",
+  });
+});
 bot.command("my", myCommand);
 bot.command("week", weekCommand);
 bot.command("tasks", tasksCommand);
