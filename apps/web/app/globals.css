@@ -1721,6 +1721,60 @@ code {
   }
 }
 
+/* ——— Agency logo upload ——— */
+.agency-logo-field {
+  display: grid;
+  gap: 10px;
+}
+
+.agency-logo-preview-wrap {
+  width: 100%;
+  min-height: 96px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  border: 1px dashed rgba(196, 181, 253, 0.28);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+}
+
+.agency-logo-preview {
+  max-height: 88px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.agency-logo-placeholder {
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  color: var(--outline);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.agency-logo-placeholder .material-symbols-outlined {
+  font-size: 28px;
+  color: var(--primary);
+  opacity: 0.75;
+}
+
+.agency-logo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agency-logo-pick {
+  cursor: pointer;
+}
+
+.agency-logo-hint {
+  margin: 0;
+  font-size: 12px;
+}
+
 /* ——— Invite link card ——— */
 .invite-link-card {
   display: grid;

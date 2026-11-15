@@ -12,10 +12,19 @@ import {
   setUserPassword,
 } from "@eth/core";
 import { inviteDeepLink } from "@eth/telegram";
+import { AgencyLogoField } from "@/components/agency-logo-field";
 import { InviteLinkCard } from "@/components/invite-link-card";
 import { InviteRoleSelect } from "@/components/invite-role-select";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
+
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+
+async function fileToDataUrl(file: File): Promise<string> {
+  const buf = Buffer.from(await file.arrayBuffer());
+  const mime = file.type || "image/png";
+  return `data:${mime};base64,${buf.toString("base64")}`;
+}
 
 const ROLE_FA: Record<string, string> = {
   owner: "مالک",
@@ -56,6 +65,28 @@ async function saveAgency(formData: FormData) {
   "use server";
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
+
+  const current = await getAgencySettings(db());
+  const removeLogo = String(formData.get("removeLogo") ?? "") === "1";
+  const keepLogoUrl = String(formData.get("keepLogoUrl") ?? "").trim();
+  const logoFile = formData.get("logoFile");
+
+  let logoUrl: string | null = current.logoUrl ?? null;
+
+  if (removeLogo) {
+    logoUrl = null;
+  } else if (logoFile instanceof File && logoFile.size > 0) {
+    if (!logoFile.type.startsWith("image/")) {
+      redirect("/admin/settings?logoError=type");
+    }
+    if (logoFile.size > LOGO_MAX_BYTES) {
+      redirect("/admin/settings?logoError=size");
+    }
+    logoUrl = await fileToDataUrl(logoFile);
+  } else if (keepLogoUrl) {
+    logoUrl = keepLogoUrl;
+  }
+
   await setAgencySettings(
     db(),
     user,
@@ -63,7 +94,7 @@ async function saveAgency(formData: FormData) {
       name:
         String(formData.get("name") ?? "").trim() ||
         "فاکتور تسویه حساب ماهانه آرشی کات",
-      logoUrl: String(formData.get("logoUrl") ?? "").trim() || null,
+      logoUrl,
     },
     "web",
   );
@@ -83,7 +114,7 @@ async function savePassword(formData: FormData) {
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ invite?: string }>;
+  searchParams: Promise<{ invite?: string; logoError?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
@@ -116,17 +147,26 @@ export default async function SettingsPage({
 
       <div className="panel" style={{ marginBottom: 16 }}>
         <h2 style={{ marginTop: 0 }}>سربرگ فاکتور</h2>
-        <form action={saveAgency} className="form-grid">
+        <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>
+          نام و لوگوی بالای فاکتور — فاکتور جدید از اینجا ساخته نمی‌شود.
+        </p>
+        {sp.logoError === "size" && (
+          <p className="login-form-error">حجم لوگو بیش از ۲ مگابایت است.</p>
+        )}
+        {sp.logoError === "type" && (
+          <p className="login-form-error">فقط فایل تصویر مجاز است.</p>
+        )}
+        <form action={saveAgency} className="form-grid" encType="multipart/form-data">
           <label>
             نام آژانس
             <input name="name" defaultValue={agency.name} required />
           </label>
           <label>
-            آدرس لوگو (URL)
-            <input name="logoUrl" defaultValue={agency.logoUrl ?? ""} />
+            لوگوی آژانس
+            <AgencyLogoField currentUrl={agency.logoUrl} />
           </label>
-          <button className="btn" type="submit">
-            ذخیره
+          <button className="btn primary" type="submit">
+            ذخیره سربرگ
           </button>
         </form>
       </div>
