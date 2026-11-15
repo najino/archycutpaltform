@@ -60,7 +60,13 @@
   --shadow-soft: 0 8px 28px -12px rgba(8, 6, 18, 0.55);
   --shadow-lift: 0 14px 40px -16px rgba(8, 6, 18, 0.65);
   --focus-ring: 0 0 0 3px rgba(196, 181, 253, 0.35);
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Soft motion tokens — slower, less snappy */
+  --ease: cubic-bezier(0.33, 1, 0.32, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --dur-fast: 280ms;
+  --dur: 420ms;
+  --dur-slow: 560ms;
 }
 
 * {
@@ -384,8 +390,11 @@ code {
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 220ms var(--ease), border-color 220ms var(--ease),
-    box-shadow 220ms var(--ease);
+  transition:
+    background var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out),
+    transform var(--dur) var(--ease-out);
 }
 
 .form-grid .check-row:hover,
@@ -416,21 +425,31 @@ code {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   position: relative;
-  transition: background 200ms var(--ease), border-color 200ms var(--ease),
-    box-shadow 200ms var(--ease), transform 200ms var(--ease);
+  transition:
+    background var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out),
+    transform var(--dur) var(--ease-spring);
 }
 
 .form-grid .check-row input[type="checkbox"]:hover,
 .check-row input[type="checkbox"]:hover {
   border-color: rgba(196, 181, 253, 0.55);
-  transform: scale(1.04);
+  transform: scale(1.06);
+}
+
+.form-grid .check-row input[type="checkbox"]:active,
+.check-row input[type="checkbox"]:active {
+  transform: scale(0.92);
+  transition-duration: 160ms;
 }
 
 .form-grid .check-row input[type="checkbox"]:checked,
 .check-row input[type="checkbox"]:checked {
   background: linear-gradient(145deg, #c4b5fd, #8b7cf6);
   border-color: transparent;
-  box-shadow: 0 6px 14px -8px var(--glow);
+  box-shadow: 0 8px 18px -8px var(--glow);
+  animation: check-pop var(--dur-slow) var(--ease-spring);
 }
 
 .form-grid .check-row input[type="checkbox"]:checked::after,
@@ -443,7 +462,32 @@ code {
   height: 11px;
   border: solid var(--on-primary);
   border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translate(-1px, -1px);
+  opacity: 0;
+  transform: rotate(45deg) translate(-1px, -1px) scale(0.4);
+  animation: check-mark var(--dur) var(--ease-out) 80ms forwards;
+}
+
+@keyframes check-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes check-mark {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) translate(-1px, -1px) scale(0.35);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) translate(-1px, -1px) scale(1);
+  }
 }
 
 .form-grid .check-row input[type="checkbox"]:focus-visible,
@@ -668,8 +712,7 @@ code {
   color: var(--on-surface-variant);
   font-size: 14.5px;
   font-weight: 600;
-  transition: background 240ms var(--ease), color 240ms var(--ease),
-    box-shadow 240ms var(--ease), transform 240ms var(--ease);
+  transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out), transform var(--dur) var(--ease-out);
 }
 
 .side-nav a:hover {
@@ -719,14 +762,18 @@ code {
   min-height: 44px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 240ms var(--ease), border-color 240ms var(--ease),
-    box-shadow 240ms var(--ease), transform 240ms var(--ease);
+  transition: background var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out), transform var(--dur) var(--ease-out);
 }
 
 .btn:hover {
   background: rgba(196, 181, 253, 0.1);
   border-color: rgba(196, 181, 253, 0.28);
   transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 160ms;
 }
 
 .btn.primary {
@@ -741,6 +788,10 @@ code {
   box-shadow: 0 14px 28px -10px rgba(139, 124, 246, 0.45);
   background: linear-gradient(135deg, #c4b5fd 0%, #9b8cfa 100%);
   border-color: transparent;
+}
+
+.btn.primary:active {
+  transform: translateY(1px) scale(0.985);
 }
 
 .btn.danger {
@@ -813,7 +864,7 @@ code {
   overflow: hidden;
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-soft);
-  transition: transform 260ms var(--ease), box-shadow 260ms var(--ease);
+  transition: transform var(--dur) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out);
 }
 
 .metric-card:hover {
@@ -870,8 +921,7 @@ code {
   color: var(--on-surface);
   padding: 12px 14px;
   outline: none;
-  transition: border-color 220ms var(--ease), box-shadow 220ms var(--ease),
-    background 220ms var(--ease);
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out), background var(--dur) var(--ease-out);
 }
 
 .form-grid input:focus,
@@ -924,8 +974,7 @@ code {
   backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
-  transition: border-color 240ms var(--ease), box-shadow 240ms var(--ease),
-    transform 240ms var(--ease);
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur-slow) var(--ease-out), transform var(--dur) var(--ease-out);
 }
 
 .task-row:hover {
@@ -967,7 +1016,7 @@ code {
   border: 1px solid var(--border-glass);
   background: rgba(36, 32, 54, 0.85);
   box-shadow: 0 6px 18px -12px rgba(0, 0, 0, 0.4);
-  transition: border-color 220ms var(--ease), transform 220ms var(--ease);
+  transition: border-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
 }
 
 .board-item:hover {
@@ -1043,7 +1092,7 @@ code {
   font-size: 14px;
   font-weight: 600;
   color: var(--outline);
-  transition: all 240ms var(--ease);
+  transition: all var(--dur) var(--ease-out);
 }
 
 .portal-switch a.active {
@@ -1138,11 +1187,11 @@ code {
   width: 0;
   border-radius: inherit;
   background: linear-gradient(90deg, #8b7cf6, #c4b5fd);
-  transition: width 220ms var(--ease);
+  transition: width var(--dur-slow) var(--ease-out);
 }
 
 .upload-progress-fill.pulse {
-  animation: upload-pulse 1.2s ease-in-out infinite;
+  animation: upload-pulse 1.8s ease-in-out infinite;
 }
 
 @keyframes upload-pulse {
