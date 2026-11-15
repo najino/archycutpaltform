@@ -24,7 +24,7 @@ export function BrandLoader({
         <div className="brand-loader-name" dir="ltr">
           ARSHYCUTPLATFORM
         </div>
-        <div className="brand-loader-sub">Edit Team Hub</div>
+        <div className="brand-loader-sub">استودیو تدوین ویدیو</div>
 
         <div className="brand-loader-bar" aria-hidden>
           <span className="brand-loader-bar-fill" />

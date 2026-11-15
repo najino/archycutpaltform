@@ -34,7 +34,9 @@ export function AdminNav({ user }: { user: User }) {
                 </span>
               </div>
               <div>
-                <div className="brand-title">Edit Team Hub</div>
+                <div className="brand-title" dir="ltr">
+                  ARSHYCUTPLATFORM
+                </div>
                 <div className="brand-sub">استودیو تدوین ویدیو</div>
               </div>
             </Link>

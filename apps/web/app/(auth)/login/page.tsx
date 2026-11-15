@@ -52,10 +52,10 @@ export default async function LoginPage({
                 movie_filter
               </span>
             </div>
-            <h1 className="hero-title" style={{ marginBottom: 4 }}>
-              Edit Team Hub
+            <h1 className="hero-title brand-hero-name" dir="ltr">
+              ARSHYCUTPLATFORM
             </h1>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+            <p className="muted brand-hero-sub">
               پلتفرم مدیریت جریان کار و تسک‌های تدوین استودیو
             </p>
           </div>

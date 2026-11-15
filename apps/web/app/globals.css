@@ -865,10 +865,11 @@ code {
 }
 
 .brand-title {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  color: #f4f0ff;
 }
 
 .brand-sub {
@@ -876,6 +877,17 @@ code {
   font-weight: 600;
   letter-spacing: 0.03em;
   color: var(--on-surface-variant);
+}
+
+.brand-hero-name {
+  margin-bottom: 6px;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+}
+
+.brand-hero-sub {
+  margin: 0;
+  font-size: 13px;
 }
 
 /* ——— Typography ——— */
