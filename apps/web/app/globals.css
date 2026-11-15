@@ -73,6 +73,10 @@
   box-sizing: border-box;
 }
 
+html {
+  color-scheme: dark only;
+}
+
 html,
 body {
   margin: 0;
@@ -83,7 +87,7 @@ body {
   font-size: 14.5px;
   line-height: 1.6;
   letter-spacing: 0.01em;
-  color-scheme: dark;
+  color-scheme: dark only;
   -webkit-font-smoothing: antialiased;
   background-color: var(--surface-base);
   background-image:
@@ -93,6 +97,8 @@ body {
     linear-gradient(180deg, #12101c 0%, #100e18 100%);
   background-attachment: fixed;
 }
+
+/* Dark Reader: قفل اصلی در layout (meta darkreader-lock) است */
 
 a {
   color: inherit;
@@ -1009,17 +1015,26 @@ code {
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, #b7a6fb 0%, #8b7cf6 100%);
-  border-color: transparent;
-  color: var(--on-primary);
+  background: #8b7cf6;
+  border-color: rgba(196, 181, 253, 0.35);
+  color: #1a1430;
   font-weight: 700;
   box-shadow: 0 10px 24px -12px var(--glow);
 }
 
 .btn.primary:hover {
   box-shadow: 0 14px 28px -10px rgba(139, 124, 246, 0.45);
-  background: linear-gradient(135deg, #c4b5fd 0%, #9b8cfa 100%);
-  border-color: transparent;
+  background: #9b8cfa;
+  border-color: rgba(196, 181, 253, 0.45);
+}
+
+/* در فرم‌ها دکمه کش نیاید (گرادیان نصفه / ظاهر خراب) */
+.form-grid > .btn,
+.form-grid > button[type="submit"],
+.form-grid > button.btn {
+  width: fit-content;
+  max-width: 100%;
+  justify-self: start;
 }
 
 .btn.primary:active {
@@ -1764,10 +1779,14 @@ code {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .agency-logo-pick {
   cursor: pointer;
+  width: fit-content;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .agency-logo-hint {
