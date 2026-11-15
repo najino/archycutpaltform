@@ -30,7 +30,11 @@ export default async function EarningsPage({
         می‌شوند.
       </p>
 
-      <JalaliMonthInput defaultValue={periodKey} submitLabel="نمایش" />
+      <JalaliMonthInput
+        key={periodKey}
+        defaultValue={periodKey}
+        submitLabel="نمایش"
+      />
 
       <div className="panel">
         <table className="table">

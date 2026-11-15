@@ -29,7 +29,11 @@ export default async function EditorInvoicesPage({
         تا صدور ادمین اینجا دیده نمی‌شوند.
       </p>
 
-      <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
+      <JalaliMonthInput
+        key={periodKey}
+        defaultValue={periodKey}
+        submitLabel="فیلتر"
+      />
 
       <div className="panel">
         <table className="table">

@@ -85,7 +85,9 @@ export function SoftSelect({
               <button
                 type="button"
                 className={`soft-select-option${!value ? " is-active" : ""}`}
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   onChange("");
                   setOpen(false);
                 }}
@@ -101,7 +103,9 @@ export function SoftSelect({
                 className={`soft-select-option${
                   opt.value === value ? " is-active" : ""
                 }`}
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   onChange(opt.value);
                   setOpen(false);
                 }}

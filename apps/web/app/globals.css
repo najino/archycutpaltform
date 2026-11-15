@@ -1233,6 +1233,17 @@ code {
   margin-bottom: 16px;
 }
 
+.jalali-month-field {
+  display: grid;
+  gap: 5px;
+}
+
+.jalali-month-label {
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 550;
+}
+
 .jalali-month-form .jalali-date-fields {
   grid-template-columns: 1.6fr 1fr;
 }
@@ -1240,7 +1251,7 @@ code {
 .jalali-month-hint {
   display: block;
   font-size: 12px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .jalali-required-proxy {
@@ -1318,7 +1329,7 @@ code {
 
 .soft-select-menu {
   position: absolute;
-  z-index: 40;
+  z-index: 80;
   inset-inline: 0;
   top: calc(100% + 6px);
   margin: 0;

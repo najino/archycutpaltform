@@ -100,7 +100,11 @@ export default async function InvoicesPage({
         />
       )}
 
-      <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
+      <JalaliMonthInput
+        key={periodKey}
+        defaultValue={periodKey}
+        submitLabel="فیلتر"
+      />
 
       {isAdmin && (
         <div className="board-item-actions invoice-toolbar">

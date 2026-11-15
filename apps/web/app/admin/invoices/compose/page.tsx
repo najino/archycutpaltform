@@ -80,6 +80,7 @@ export default async function InvoiceComposePage({
       </p>
 
       <JalaliMonthInput
+        key={periodKey}
         defaultValue={periodKey}
         submitLabel="تغییر ماه"
         hiddenFields={selectedUserId ? { userId: selectedUserId } : undefined}
