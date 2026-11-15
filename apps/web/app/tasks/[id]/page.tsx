@@ -82,12 +82,13 @@ export default async function TaskDetailPage({
           : ""}
       </p>
 
-      <div className="actions">
+      <div className="board-item-actions">
         {task.status === "todo" && task.assigneeId === user.id && (
           <form action={statusAction}>
             <input type="hidden" name="taskId" value={task.id} />
             <input type="hidden" name="status" value="in_progress" />
-            <button className="btn primary" type="submit">
+            <button className="btn-mini btn-mini-ok" type="submit">
+              <span className="material-symbols-outlined">play_arrow</span>
               شروع
             </button>
           </form>
@@ -97,14 +98,16 @@ export default async function TaskDetailPage({
             <form action={statusAction}>
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="status" value="approved" />
-              <button className="btn primary" type="submit">
+              <button className="btn-mini btn-mini-ok" type="submit">
+                <span className="material-symbols-outlined">check</span>
                 تأیید
               </button>
             </form>
             <form action={statusAction}>
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="status" value="rejected" />
-              <button className="btn danger" type="submit">
+              <button className="btn-mini btn-mini-no" type="submit">
+                <span className="material-symbols-outlined">close</span>
                 رد
               </button>
             </form>
@@ -158,13 +161,13 @@ export default async function TaskDetailPage({
                       {isLink ? " · لینک" : ` · msg ${d.channelMsgId}`}
                     </div>
                   </div>
-                  <div className="actions">
+                  <div className="board-item-actions">
                     {isLink && (
                       <a
                         href={mediaHref}
                         target="_blank"
                         rel="noreferrer"
-                        className="btn"
+                        className="btn-mini"
                       >
                         لینک فایل
                       </a>
@@ -173,7 +176,7 @@ export default async function TaskDetailPage({
                       href={channelPostUrl(d.channelChatId, d.channelMsgId)}
                       target="_blank"
                       rel="noreferrer"
-                      className="btn"
+                      className="btn-mini"
                     >
                       کانال
                     </a>

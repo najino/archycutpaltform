@@ -94,7 +94,7 @@ export default async function PortfolioPage({
             </select>
           </label>
         </div>
-        <button className="btn" type="submit">
+        <button className="btn-mini" type="submit">
           فیلتر
         </button>
       </form>

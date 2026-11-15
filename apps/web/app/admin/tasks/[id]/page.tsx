@@ -71,13 +71,14 @@ export default async function TaskDetailPage({
           : ""}
       </p>
 
-      <div className="actions">
+      <div className="board-item-actions">
         {task.status === "todo" && task.assigneeId === user.id && (
           <form action={statusAction}>
             <input type="hidden" name="taskId" value={task.id} />
             <input type="hidden" name="status" value="in_progress" />
-            <button className="btn primary" type="submit">
-              Start
+            <button className="btn-mini btn-mini-ok" type="submit">
+              <span className="material-symbols-outlined">play_arrow</span>
+              شروع
             </button>
           </form>
         )}
@@ -86,15 +87,17 @@ export default async function TaskDetailPage({
             <form action={statusAction}>
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="status" value="approved" />
-              <button className="btn primary" type="submit">
-                Approve
+              <button className="btn-mini btn-mini-ok" type="submit">
+                <span className="material-symbols-outlined">check</span>
+                تأیید
               </button>
             </form>
             <form action={statusAction}>
               <input type="hidden" name="taskId" value={task.id} />
               <input type="hidden" name="status" value="rejected" />
-              <button className="btn danger" type="submit">
-                Reject
+              <button className="btn-mini btn-mini-no" type="submit">
+                <span className="material-symbols-outlined">close</span>
+                رد
               </button>
             </form>
           </>

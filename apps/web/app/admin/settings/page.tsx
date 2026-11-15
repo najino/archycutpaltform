@@ -272,7 +272,7 @@ export default async function SettingsPage({
                 <td>{ROLE_FA[m.role] ?? m.role}</td>
                 <td>{m.isActive ? "فعال" : "غیرفعال"}</td>
                 <td>
-                  <form action={savePassword} className="form-grid">
+                  <form action={savePassword} className="member-pass-form">
                     <input type="hidden" name="userId" value={m.id} />
                     <input
                       name="password"
@@ -281,7 +281,7 @@ export default async function SettingsPage({
                       minLength={6}
                       placeholder="رمز جدید"
                     />
-                    <button className="btn" type="submit">
+                    <button className="btn-mini" type="submit">
                       ذخیره
                     </button>
                   </form>

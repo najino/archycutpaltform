@@ -154,7 +154,7 @@ export default async function ProjectsPage({
                           name="status"
                           value={p.status === "open" ? "closed" : "open"}
                         />
-                        <button className="btn" type="submit">
+                        <button className="btn-mini" type="submit">
                           {p.status === "open" ? "بستن" : "باز کردن"}
                         </button>
                       </form>

@@ -183,8 +183,9 @@ export default async function InvoicePrintPage({
                 placeholder="کد پیگیری، شماره کارت، یا توضیح دریافت وجه…"
               />
             </label>
-            <button className="btn" type="submit">
-              ذخیره (قابل ویرایش)
+            <button className="btn-mini btn-mini-ok" type="submit">
+              <span className="material-symbols-outlined">save</span>
+              ذخیره فیش
             </button>
             <p className="muted" style={{ margin: 0, fontSize: 12 }}>
               تا قبل از تأیید نهایی ادمین می‌توانید متن فیش را عوض کنید.

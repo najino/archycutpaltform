@@ -19,9 +19,9 @@ const LINKS = [
 ] as const;
 
 function roleLabel(role: User["role"]) {
-  if (role === "owner") return "مالک سیستم (Owner)";
+  if (role === "owner") return "مالک";
   if (role === "admin") return "ادمین";
-  return role;
+  return "ادیتور";
 }
 
 export function AdminNav({ user }: { user: User }) {
@@ -89,20 +89,21 @@ export function AdminNav({ user }: { user: User }) {
         <div className="admin-user-card" suppressHydrationWarning>
           <div className="admin-user-meta">
             <div className="admin-user-avatar">
-              <span className="material-symbols-outlined icon-18">person</span>
+              <span className="material-symbols-outlined">person</span>
             </div>
-            <div>
+            <div className="admin-user-text">
               <div className="admin-user-name">{user.displayName}</div>
-              <div className="muted text-11">{roleLabel(user.role)}</div>
+              <div className="admin-user-role">{roleLabel(user.role)}</div>
             </div>
           </div>
           <form action="/api/auth/logout" method="post">
             <button
-              className="btn btn-ghost-icon"
+              className="btn-ghost-icon"
               type="submit"
               title="خروج"
+              aria-label="خروج"
             >
-              <span className="material-symbols-outlined icon-20">logout</span>
+              <span className="material-symbols-outlined">logout</span>
             </button>
           </form>
         </div>

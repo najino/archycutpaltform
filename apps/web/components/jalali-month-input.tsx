@@ -83,7 +83,7 @@ export function JalaliMonthInput({
           {jalaliMonthLabel(periodKey)} · {faDigits(periodKey)}
         </span>
       </label>
-      <button className="btn" type="submit">
+      <button className="btn-mini" type="submit">
         {submitLabel}
       </button>
     </form>

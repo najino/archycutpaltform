@@ -42,10 +42,10 @@ export function InviteLinkCard({
         </code>
         <button
           type="button"
-          className="btn"
+          className="btn-mini"
           onClick={() => copy("code", code)}
         >
-          <span className="material-symbols-outlined icon-18">
+          <span className="material-symbols-outlined">
             {copied === "code" ? "check" : "content_copy"}
           </span>
           {copied === "code" ? "کپی شد" : "کپی کد"}
@@ -66,21 +66,21 @@ export function InviteLinkCard({
         <div className="invite-link-actions">
           <button
             type="button"
-            className="btn"
+            className="btn-mini"
             onClick={() => copy("link", link)}
           >
-            <span className="material-symbols-outlined icon-18">
+            <span className="material-symbols-outlined">
               {copied === "link" ? "check" : "content_copy"}
             </span>
             {copied === "link" ? "کپی شد" : "کپی لینک"}
           </button>
           <a
-            className="btn primary"
+            className="btn-mini btn-mini-ok"
             href={link}
             target="_blank"
             rel="noreferrer"
           >
-            <span className="material-symbols-outlined icon-18">open_in_new</span>
+            <span className="material-symbols-outlined">open_in_new</span>
             باز کردن بات
           </a>
         </div>

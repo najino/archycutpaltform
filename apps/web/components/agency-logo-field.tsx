@@ -50,8 +50,8 @@ export function AgencyLogoField({
       </div>
 
       <div className="agency-logo-actions">
-        <label className="btn agency-logo-pick">
-          <span className="material-symbols-outlined icon-18">upload</span>
+        <label className="btn-mini agency-logo-pick">
+          <span className="material-symbols-outlined">upload</span>
           انتخاب تصویر
           <input
             ref={inputRef}
@@ -65,7 +65,7 @@ export function AgencyLogoField({
         {(preview || currentUrl) && !remove && (
           <button
             type="button"
-            className="btn danger"
+            className="btn-mini btn-mini-no"
             onClick={() => {
               setRemove(true);
               setPreview(null);
@@ -78,7 +78,7 @@ export function AgencyLogoField({
         {remove && (
           <button
             type="button"
-            className="btn"
+            className="btn-mini"
             onClick={() => {
               setRemove(false);
               setPreview(currentUrl ?? null);

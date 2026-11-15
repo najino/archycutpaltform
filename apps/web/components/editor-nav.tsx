@@ -16,12 +16,10 @@ export function EditorNav({ user }: { user: User }) {
 
   return (
     <header className="editor-topbar">
-      <div style={{ display: "flex", alignItems: "center", gap: 20, minWidth: 0 }}>
-        <Link href="/week" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="editor-topbar-left">
+        <Link href="/week" className="editor-brand-link">
           <div className="brand-mark">
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-              movie_edit
-            </span>
+            <span className="material-symbols-outlined icon-18">movie_edit</span>
           </div>
           <div>
             <div className="brand-title" dir="ltr">
@@ -32,10 +30,7 @@ export function EditorNav({ user }: { user: User }) {
           </div>
         </Link>
 
-        <nav
-          className="nav-links"
-          style={{ gap: 4, flexWrap: "nowrap", overflowX: "auto" }}
-        >
+        <nav className="editor-nav-links">
           {LINKS.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -43,19 +38,9 @@ export function EditorNav({ user }: { user: User }) {
               <Link
                 key={item.href}
                 href={item.href}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 12px",
-                  borderRadius: "var(--radius)",
-                  background: active ? "var(--surface-raised)" : "transparent",
-                  color: active ? "var(--primary)" : "var(--on-surface-variant)",
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                }}
+                className={`editor-nav-link${active ? " is-active" : ""}`}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+                <span className="material-symbols-outlined icon-16">
                   {item.icon}
                 </span>
                 {item.label}
@@ -65,20 +50,20 @@ export function EditorNav({ user }: { user: User }) {
         </nav>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="editor-topbar-right">
         <span className="sys-pill">
           <span className="sys-dot" />
           زنده
         </span>
-        <span className="muted" style={{ fontSize: 12 }}>
-          {user.displayName}
-        </span>
+        <span className="editor-user-name">{user.displayName}</span>
         <form action="/api/auth/logout" method="post">
-          <button className="btn" type="submit" style={{ padding: "8px 12px" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-              logout
-            </span>
-            خروج
+          <button
+            className="btn-ghost-icon"
+            type="submit"
+            title="خروج"
+            aria-label="خروج"
+          >
+            <span className="material-symbols-outlined">logout</span>
           </button>
         </form>
       </div>

@@ -155,24 +155,22 @@ export default async function InvoicePrintPage({
                     placeholder="مثال: کارت‌به‌کارت ۱۴۰۴/۰۸/۲۰ — پیگیری ۱۲۳۴۵۶ — مبلغ …"
                   />
                 </label>
-                <div className="actions" style={{ flexWrap: "wrap" }}>
+                <div className="board-item-actions">
                   <button
-                    className="btn"
+                    className="btn-mini"
                     type="submit"
                     formAction={saveReceiptAction}
                   >
-                    ذخیره (قابل ویرایش)
+                    ذخیره فیش
                   </button>
                   {invoice.status === "issued" && canPay && (
                     <button
-                      className="btn primary"
+                      className="btn-mini btn-mini-ok"
                       type="submit"
                       formAction={finalizePaymentAction}
                     >
-                      <span className="material-symbols-outlined icon-18">
-                        done_all
-                      </span>
-                      تأیید نهایی پرداخت
+                      <span className="material-symbols-outlined">done_all</span>
+                      تأیید نهایی
                     </button>
                   )}
                 </div>

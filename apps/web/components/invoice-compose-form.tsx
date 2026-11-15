@@ -176,7 +176,7 @@ export function InvoiceComposeForm({
           <div className="invoice-compose-toolbar">
             <button
               type="button"
-              className="btn"
+              className="btn-mini"
               onClick={() => toggleAll(true)}
               disabled={pending || locked || selectable.length === 0}
             >
@@ -184,13 +184,13 @@ export function InvoiceComposeForm({
             </button>
             <button
               type="button"
-              className="btn"
+              className="btn-mini"
               onClick={() => toggleAll(false)}
               disabled={pending || locked}
             >
               حذف انتخاب
             </button>
-            <span className="muted">
+            <span className="muted text-11">
               {selectedIds.length} مورد · جمع {formatFa(total)}
             </span>
           </div>
@@ -234,10 +234,10 @@ export function InvoiceComposeForm({
               <div className="muted">مجموع فاکتور</div>
               <div className="metric-value">{formatFa(total)}</div>
             </div>
-            <div className="actions">
+            <div className="board-item-actions">
               <button
                 type="button"
-                className="btn"
+                className="btn-mini"
                 disabled={pending || locked || selectedIds.length === 0}
                 onClick={() => submit(false)}
               >
@@ -245,12 +245,12 @@ export function InvoiceComposeForm({
               </button>
               <button
                 type="button"
-                className="btn primary"
+                className="btn-mini btn-mini-ok"
                 disabled={pending || locked || selectedIds.length === 0}
                 onClick={() => submit(true)}
               >
-                <span className="material-symbols-outlined icon-18">send</span>
-                {pending ? "در حال ارسال…" : "صدور و ارسال به پنل ادیتور"}
+                <span className="material-symbols-outlined">send</span>
+                {pending ? "در حال ارسال…" : "صدور به پنل ادیتور"}
               </button>
             </div>
           </div>
