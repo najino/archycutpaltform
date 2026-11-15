@@ -93,7 +93,7 @@ export default async function ProjectsPage() {
               {editors.map((m) => (
                 <label key={m.id} className="check-row" suppressHydrationWarning>
                   <input type="checkbox" name="memberIds" value={m.id} />
-                  {m.displayName}
+                  <span className="check-row-text">{m.displayName}</span>
                 </label>
               ))}
             </div>
