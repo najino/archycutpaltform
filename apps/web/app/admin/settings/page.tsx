@@ -12,8 +12,15 @@ import {
   setUserPassword,
 } from "@eth/core";
 import { inviteDeepLink } from "@eth/telegram";
+import { InviteRoleSelect } from "@/components/invite-role-select";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
+
+const ROLE_FA: Record<string, string> = {
+  owner: "مالک",
+  admin: "ادمین",
+  editor: "ادیتور",
+};
 
 async function addCategory(formData: FormData) {
   "use server";
@@ -180,10 +187,7 @@ export default async function SettingsPage({
           <form action={makeInvite} className="form-grid">
             <label>
               نقش
-              <select name="role" defaultValue="editor">
-                <option value="editor">editor</option>
-                <option value="admin">admin</option>
-              </select>
+              <InviteRoleSelect defaultValue="editor" />
             </label>
             <button className="btn primary" type="submit">
               ساخت لینک دعوت
@@ -225,8 +229,8 @@ export default async function SettingsPage({
                 <td>
                   <code>{m.telegramId.toString()}</code>
                 </td>
-                <td>{m.role}</td>
-                <td>{m.isActive ? "active" : "inactive"}</td>
+                <td>{ROLE_FA[m.role] ?? m.role}</td>
+                <td>{m.isActive ? "فعال" : "غیرفعال"}</td>
                 <td>
                   <form action={savePassword} className="form-grid">
                     <input type="hidden" name="userId" value={m.id} />
@@ -238,7 +242,7 @@ export default async function SettingsPage({
                       placeholder="رمز جدید"
                     />
                     <button className="btn" type="submit">
-                      Set
+                      ذخیره
                     </button>
                   </form>
                 </td>
