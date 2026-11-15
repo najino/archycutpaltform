@@ -14,6 +14,7 @@ import {
   notifyAdminsDelivered,
   publishLinkToPortfolioChannel,
 } from "@/lib/telegram-bot";
+import { toUserError } from "@/lib/user-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,7 +33,10 @@ export async function POST(
 ) {
   const user = await getSessionUser();
   if (!user || !user.isActive) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "نشست شما منقضی شده. دوباره وارد شوید." },
+      { status: 401 },
+    );
   }
 
   const { id: taskId } = await params;
@@ -150,10 +154,7 @@ export async function POST(
   } catch (err) {
     console.error("web link submit failed:", err);
     return NextResponse.json(
-      {
-        error:
-          err instanceof Error ? err.message : "خطا در انتشار به تلگرام",
-      },
+      { error: toUserError(err, "خطا در انتشار به تلگرام") },
       { status: 500 },
     );
   }

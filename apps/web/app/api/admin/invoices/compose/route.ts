@@ -10,6 +10,7 @@ import {
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { notifyEditorInvoiceIssued } from "@/lib/telegram-bot";
+import { toUserError } from "@/lib/user-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +18,10 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   const user = await getSessionUser();
   if (!user || !can(user, "invoice.manage")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "نشست شما منقضی شده. دوباره وارد شوید." },
+      { status: 401 },
+    );
   }
 
   let body: {
@@ -82,10 +86,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("compose invoice failed:", err);
     return NextResponse.json(
-      {
-        error:
-          err instanceof Error ? err.message : "خطا در ساخت فاکتور شخصی",
-      },
+      { error: toUserError(err, "خطا در ساخت فاکتور شخصی") },
       { status: 400 },
     );
   }

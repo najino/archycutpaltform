@@ -3,6 +3,7 @@ import { loginWithTelegramId } from "@eth/core";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/session";
 import { homeForUser, isAdminUser } from "@/lib/authz";
+import { toUserError } from "@/lib/user-error";
 
 export async function POST(req: Request) {
   const body = (await req.json()) as {
@@ -41,9 +42,13 @@ export async function POST(req: Request) {
       redirectTo: homeForUser(user),
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "ورود ناموفق";
+    const message = toUserError(err, "ورود ناموفق");
     const status =
-      message.includes("اشتباه") || message.includes("پیدا نشد") ? 401 : 400;
+      message.includes("اشتباه") || message.includes("پیدا نشد")
+        ? 401
+        : message.includes("دیتابیس") || message.includes("شلوغ")
+          ? 503
+          : 400;
     return NextResponse.json({ error: message }, { status });
   }
 }

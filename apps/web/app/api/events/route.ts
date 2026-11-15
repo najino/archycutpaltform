@@ -1,10 +1,10 @@
-import postgres from "postgres";
+import { subscribePgEvents } from "@/lib/pg-listen";
 import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
   const user = await getSessionUser();
   if (!user) {
     return new Response("Unauthorized", { status: 401 });
@@ -17,20 +17,39 @@ export async function GET() {
 
   const encoder = new TextEncoder();
   let closed = false;
-  let sql: ReturnType<typeof postgres> | null = null;
+  let unsubscribe: (() => void) | null = null;
   let heartbeat: ReturnType<typeof setInterval> | null = null;
 
   const stream = new ReadableStream({
     start(controller) {
       const send = (event: string, data: string) => {
         if (closed) return;
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${data}\n\n`));
+        try {
+          controller.enqueue(
+            encoder.encode(`event: ${event}\ndata: ${data}\n\n`),
+          );
+        } catch {
+          cleanup();
+        }
+      };
+
+      const cleanup = () => {
+        if (closed) return;
+        closed = true;
+        if (heartbeat) clearInterval(heartbeat);
+        heartbeat = null;
+        unsubscribe?.();
+        unsubscribe = null;
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
       };
 
       send("ready", "{}");
 
-      sql = postgres(url, { max: 1, idle_timeout: 0, max_lifetime: 0 });
-      void sql.listen("events", (payload) => {
+      unsubscribe = subscribePgEvents(url, (payload) => {
         try {
           const parsed = JSON.parse(payload) as { type?: string };
           send(parsed.type ?? "message", payload);
@@ -42,11 +61,13 @@ export async function GET() {
       heartbeat = setInterval(() => {
         send("ping", "{}");
       }, 25000);
+
+      req.signal.addEventListener("abort", cleanup);
     },
     cancel() {
       closed = true;
       if (heartbeat) clearInterval(heartbeat);
-      void sql?.end({ timeout: 1 });
+      unsubscribe?.();
     },
   });
 
