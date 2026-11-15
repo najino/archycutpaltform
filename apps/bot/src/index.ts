@@ -83,23 +83,40 @@ bot.use(
 bot.use(authMiddleware);
 
 bot.command("start", startCommand);
-bot.command("id", async (ctx) => {
+
+async function idCommand(ctx: BotContext) {
   const chat = ctx.chat;
   const from = ctx.from;
   const lines = [
     from ? `👤 شما: <code>${from.id}</code>` : null,
     from?.username ? `یوزرنیم: @${from.username}` : null,
-    chat
-      ? `💬 چت: <code>${chat.id}</code> (${chat.type})`
-      : null,
-    chat && "title" in chat && chat.title
-      ? `عنوان: ${chat.title}`
-      : null,
+    chat ? `💬 چت: <code>${chat.id}</code> (${chat.type})` : null,
+    chat && "title" in chat && chat.title ? `عنوان: ${chat.title}` : null,
   ].filter(Boolean);
-  await ctx.reply(lines.join("\n") || "شناسه‌ای پیدا نشد.", {
-    parse_mode: "HTML",
-  });
+  const text = lines.join("\n") || "شناسه‌ای پیدا نشد.";
+  try {
+    await ctx.reply(text, { parse_mode: "HTML" });
+  } catch {
+    // در بعضی کانال‌ها reply به پست کار نمی‌کند → پیام جدید
+    if (chat) {
+      await ctx.api.sendMessage(chat.id, text, { parse_mode: "HTML" });
+    }
+  }
+}
+
+bot.command("id", idCommand);
+bot.on("channel_post:text", async (ctx, next) => {
+  const text = ctx.channelPost.text?.trim() ?? "";
+  const cmd = text.startsWith("/")
+    ? text.slice(1).split(/\s+/)[0]?.split("@")[0]?.toLowerCase()
+    : null;
+  if (cmd === "id") {
+    await idCommand(ctx);
+    return;
+  }
+  return next();
 });
+
 bot.command("my", myCommand);
 bot.command("week", weekCommand);
 bot.command("tasks", tasksCommand);

@@ -2,7 +2,7 @@ import type { NextFunction } from "grammy";
 import { getUserByTelegramId } from "@eth/core";
 import type { BotContext } from "../context.js";
 
-const PUBLIC_COMMANDS = new Set(["start"]);
+const PUBLIC_COMMANDS = new Set(["start", "id"]);
 
 export async function authMiddleware(ctx: BotContext, next: NextFunction) {
   ctx.user = null;
@@ -11,7 +11,11 @@ export async function authMiddleware(ctx: BotContext, next: NextFunction) {
     ctx.user = await getUserByTelegramId(ctx.db, BigInt(tgId));
   }
 
-  const text = ctx.message?.text?.trim() ?? "";
+  // message (private/group) یا channel_post (کانال)
+  const text =
+    ctx.message?.text?.trim() ??
+    ctx.channelPost?.text?.trim() ??
+    "";
   const command = text.startsWith("/")
     ? text.slice(1).split(/\s+/)[0]?.split("@")[0]?.toLowerCase()
     : null;
@@ -19,6 +23,10 @@ export async function authMiddleware(ctx: BotContext, next: NextFunction) {
   if (!ctx.user) {
     if (command && PUBLIC_COMMANDS.has(command)) {
       return next();
+    }
+    // در کانال فقط /id عمومی است؛ بقیه را بی‌صدا رد کن
+    if (ctx.channelPost && command !== "id") {
+      return;
     }
     if (ctx.callbackQuery) {
       await ctx.answerCallbackQuery({
