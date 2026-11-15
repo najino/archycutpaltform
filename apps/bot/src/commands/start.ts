@@ -52,12 +52,7 @@ export async function startCommand(ctx: BotContext) {
 
   if (!payload) {
     if (ctx.user) {
-      const portal =
-        ctx.user.role === "editor" ? "editor" : "admin";
-      await ctx.reply(
-        `سلام ${ctx.user.displayName}!\nنقش: <b>${roleFa(ctx.user.role)}</b>\nدستورات: /my /add /submit /week\n\n🖥 پنل وب:\n${panelLoginUrl(portal)}`,
-        { parse_mode: "HTML" },
-      );
+      await replyAlreadyMember(ctx, ctx.user);
       return;
     }
     await ctx.reply("برای عضویت لینک دعوت لازم است: /start <code>");
@@ -65,6 +60,12 @@ export async function startCommand(ctx: BotContext) {
   }
 
   if (!ctx.from) return;
+
+  // عضو قبلی دوباره لینک دعوت را زده
+  if (ctx.user) {
+    await replyAlreadyMember(ctx, ctx.user);
+    return;
+  }
 
   try {
     const { user, initialPassword } = await redeemInviteWithPasswordHint(
@@ -85,23 +86,40 @@ export async function startCommand(ctx: BotContext) {
     const portal = user.role === "editor" ? "editor" : "admin";
     const loginUrl = panelLoginUrl(portal);
 
-    let msg =
-      `✅ خوش آمدید <b>${user.displayName}</b>!\n` +
-      `نقش شما: <b>${roleFa(user.role)}</b>`;
-
-    if (initialPassword) {
-      msg +=
-        `\n\n🖥 ورود به پنل وب:\n` +
-        `🔗 <a href="${loginUrl}">${loginUrl}</a>\n` +
-        `آیدی: <code>${user.telegramId.toString()}</code>\n` +
-        `رمز اولیه: <code>${initialPassword}</code>\n` +
-        `<i>(بعداً از تنظیمات پنل عوض کنید)</i>`;
-    } else {
-      msg += `\n\n🖥 پنل وب:\n🔗 <a href="${loginUrl}">${loginUrl}</a>`;
+    // اگر از قبل در دیتابیس بود (رمز اولیه برنمی‌گردد)
+    if (!initialPassword) {
+      await replyAlreadyMember(ctx, user);
+      return;
     }
+
+    const msg =
+      `✅ خوش آمدید <b>${user.displayName}</b>!\n` +
+      `نقش شما: <b>${roleFa(user.role)}</b>\n\n` +
+      `🖥 ورود به پنل وب:\n` +
+      `🔗 <a href="${loginUrl}">${loginUrl}</a>\n` +
+      `آیدی: <code>${user.telegramId.toString()}</code>\n` +
+      `رمز اولیه: <code>${initialPassword}</code>\n` +
+      `<i>(بعداً از تنظیمات پنل عوض کنید)</i>`;
 
     await ctx.reply(msg, { parse_mode: "HTML" });
   } catch (err) {
     await ctx.reply(`عضویت ناموفق: ${translateInviteError(err)}`);
   }
+}
+
+async function replyAlreadyMember(
+  ctx: BotContext,
+  user: NonNullable<BotContext["user"]>,
+) {
+  const portal = user.role === "editor" ? "editor" : "admin";
+  const loginUrl = panelLoginUrl(portal);
+  await ctx.reply(
+    `ℹ️ شما <b>قبلاً عضو</b> تیم شده‌اید.\n` +
+      `نام: <b>${user.displayName}</b>\n` +
+      `نقش: <b>${roleFa(user.role)}</b>\n\n` +
+      `دستورات: /my /add /submit /week\n\n` +
+      `🖥 پنل وب:\n🔗 <a href="${loginUrl}">${loginUrl}</a>\n` +
+      `آیدی: <code>${user.telegramId.toString()}</code>`,
+    { parse_mode: "HTML" },
+  );
 }
