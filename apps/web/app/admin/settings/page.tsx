@@ -13,6 +13,7 @@ import {
 } from "@eth/core";
 import { inviteDeepLink } from "@eth/telegram";
 import { AgencyLogoField } from "@/components/agency-logo-field";
+import { FlashAlert, resolveFlash } from "@/components/flash-alert";
 import { InviteLinkCard } from "@/components/invite-link-card";
 import { InviteRoleSelect } from "@/components/invite-role-select";
 import { db } from "@/lib/db";
@@ -39,7 +40,7 @@ async function addCategory(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
   await createCategory(db(), user, name, "web");
-  redirect("/admin/settings");
+  redirect("/admin/settings?ok=category");
 }
 
 async function addClient(formData: FormData) {
@@ -49,7 +50,7 @@ async function addClient(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
   await createClient(db(), user, name, "web");
-  redirect("/admin/settings");
+  redirect("/admin/settings?ok=client");
 }
 
 async function makeInvite(formData: FormData) {
@@ -98,7 +99,7 @@ async function saveAgency(formData: FormData) {
     },
     "web",
   );
-  redirect("/admin/settings");
+  redirect("/admin/settings?ok=agency");
 }
 
 async function savePassword(formData: FormData) {
@@ -108,19 +109,20 @@ async function savePassword(formData: FormData) {
   const targetUserId = String(formData.get("userId") ?? user.id);
   const password = String(formData.get("password") ?? "");
   await setUserPassword(db(), user, targetUserId, password);
-  redirect("/admin/settings");
+  redirect("/admin/settings?ok=password");
 }
 
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ invite?: string; logoError?: string }>;
+  searchParams: Promise<{ invite?: string; logoError?: string; ok?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
   if (!can(user, "settings.manage")) redirect("/admin");
 
   const sp = await searchParams;
+  const flash = resolveFlash(sp);
   const [cats, clients, members, agency] = await Promise.all([
     listCategories(db()),
     listClients(db()),
@@ -141,6 +143,15 @@ export default async function SettingsPage({
       <h1 className="hero-title">تنظیمات</h1>
       <p className="hero-sub">دسته‌ها، کارفرماها، دعوت‌ها و اعضا.</p>
 
+      {flash && (
+        <FlashAlert
+          tone={flash.tone}
+          title={flash.title}
+          detail={flash.detail}
+          clearKeys={flash.clearKeys}
+        />
+      )}
+
       {sp.invite && inviteLink && (
         <InviteLinkCard code={sp.invite} link={inviteLink} />
       )}
@@ -150,12 +161,6 @@ export default async function SettingsPage({
         <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>
           نام و لوگوی بالای فاکتور — فاکتور جدید از اینجا ساخته نمی‌شود.
         </p>
-        {sp.logoError === "size" && (
-          <p className="login-form-error">حجم لوگو بیش از ۲ مگابایت است.</p>
-        )}
-        {sp.logoError === "type" && (
-          <p className="login-form-error">فقط فایل تصویر مجاز است.</p>
-        )}
         <form action={saveAgency} className="form-grid" encType="multipart/form-data">
           <label>
             نام آژانس

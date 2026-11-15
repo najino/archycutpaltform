@@ -14,6 +14,7 @@ import {
   toPersianDigits,
   voidInvoice,
 } from "@eth/core";
+import { FlashAlert, resolveFlash } from "@/components/flash-alert";
 import { JalaliMonthInput } from "@/components/jalali-month-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
@@ -25,7 +26,7 @@ async function generateAction(formData: FormData) {
   const periodKey =
     String(formData.get("periodKey") ?? "") || previousMonthPeriod().periodKey;
   await generateInvoicesForPeriod(db(), user, parsePeriodKey(periodKey), "web");
-  redirect(`/admin/invoices?month=${periodKey}`);
+  redirect(`/admin/invoices?month=${periodKey}&ok=invoice`);
 }
 
 async function issueAction(formData: FormData) {
@@ -52,7 +53,7 @@ async function issueAction(formData: FormData) {
   } catch (err) {
     console.error("issue notify failed:", err);
   }
-  redirect(`/admin/invoices?month=${inv.periodKey}`);
+  redirect(`/admin/invoices?month=${inv.periodKey}&ok=invoice`);
 }
 
 async function voidAction(formData: FormData) {
@@ -61,18 +62,19 @@ async function voidAction(formData: FormData) {
   if (!user) redirect("/login?portal=admin");
   const id = String(formData.get("id") ?? "");
   await voidInvoice(db(), user, id, "web");
-  redirect("/admin/invoices");
+  redirect("/admin/invoices?ok=void");
 }
 
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; ok?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
 
   const sp = await searchParams;
+  const flash = resolveFlash(sp);
   const periodKey = sp.month || currentMonthPeriod().periodKey;
   const isAdmin = can(user, "invoice.manage");
   const [invoices, members] = await Promise.all([
@@ -87,6 +89,15 @@ export default async function InvoicesPage({
       <p className="hero-sub">
         فاکتور ماهانه شمسی برای هر ادیتور — {jalaliMonthLabel(periodKey)}.
       </p>
+
+      {flash && (
+        <FlashAlert
+          tone={flash.tone}
+          title={flash.title}
+          detail={flash.detail}
+          clearKeys={flash.clearKeys}
+        />
+      )}
 
       <JalaliMonthInput defaultValue={periodKey} submitLabel="فیلتر" />
 

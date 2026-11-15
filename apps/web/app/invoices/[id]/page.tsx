@@ -9,6 +9,7 @@ import {
   toPersianDigits,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
+import { FlashAlert, resolveFlash } from "@/components/flash-alert";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -27,17 +28,20 @@ async function saveReceiptAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const paymentReceipt = String(formData.get("paymentReceipt") ?? "");
   await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
-  redirect(`/invoices/${id}#payment`);
+  redirect(`/invoices/${id}?ok=receipt#payment`);
 }
 
 export default async function InvoicePrintPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ ok?: string }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   const { id } = await params;
+  const flash = resolveFlash(await searchParams);
 
   let detail;
   try {
@@ -66,6 +70,15 @@ export default async function InvoicePrintPage({
         {STATUS_FA[invoice.status] ?? invoice.status} ·{" "}
         {formatToman(invoice.totalAmount)}
       </p>
+
+      {flash && (
+        <FlashAlert
+          tone={flash.tone}
+          title={flash.title}
+          detail={flash.detail}
+          clearKeys={flash.clearKeys}
+        />
+      )}
 
       <div className="panel">
         <div className="muted" style={{ marginBottom: 16, fontSize: 13 }}>

@@ -10,6 +10,7 @@ import {
   parseTomanInput,
   updateProject,
 } from "@eth/core";
+import { FlashAlert, resolveFlash } from "@/components/flash-alert";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 
@@ -30,7 +31,7 @@ async function createAction(formData: FormData) {
     { name, unitLabel, unitPrice, clientId, memberIds },
     "web",
   );
-  redirect("/admin/projects");
+  redirect("/admin/projects?ok=project");
 }
 
 async function toggleStatus(formData: FormData) {
@@ -40,14 +41,20 @@ async function toggleStatus(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "") as "open" | "closed";
   await updateProject(db(), user, id, { status }, "web");
-  redirect("/admin/projects");
+  redirect("/admin/projects?ok=project_status");
 }
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ok?: string }>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
   if (!can(user, "project.manage")) redirect("/admin");
 
+  const sp = await searchParams;
+  const flash = resolveFlash(sp);
   const [projects, members, clients] = await Promise.all([
     listProjects(db(), user),
     listMembers(db()),
@@ -60,6 +67,15 @@ export default async function ProjectsPage() {
     <>
       <h1 className="hero-title">پروژه‌ها</h1>
       <p className="hero-sub">قیمت هر واحد و دسترسی ادیتورها.</p>
+
+      {flash && (
+        <FlashAlert
+          tone={flash.tone}
+          title={flash.title}
+          detail={flash.detail}
+          clearKeys={flash.clearKeys}
+        />
+      )}
 
       <div className="panel panel-spaced">
         <h2 className="panel-title">پروژه جدید</h2>

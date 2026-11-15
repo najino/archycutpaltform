@@ -2085,6 +2085,131 @@ code {
   }
 }
 
+/* ——— Flash / toast alerts ——— */
+.flash-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  background: rgba(36, 32, 54, 0.88);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-soft);
+  animation: flash-in 420ms var(--ease-out);
+}
+
+@keyframes flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flash-alert-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.flash-alert-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.flash-alert-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  line-height: 1.35;
+}
+
+.flash-alert-detail {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--on-surface-variant);
+  line-height: 1.5;
+}
+
+.flash-alert-close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+}
+
+.flash-alert-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--on-surface);
+}
+
+.flash-alert-close .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.flash-alert-success {
+  border-color: rgba(184, 164, 248, 0.35);
+  background: linear-gradient(
+    105deg,
+    rgba(139, 124, 246, 0.16),
+    rgba(36, 32, 54, 0.9) 55%
+  );
+}
+
+.flash-alert-success .flash-alert-icon {
+  color: var(--primary);
+}
+
+.flash-alert-error {
+  border-color: rgba(240, 122, 142, 0.4);
+  background: linear-gradient(
+    105deg,
+    rgba(240, 122, 142, 0.14),
+    rgba(36, 32, 54, 0.9) 55%
+  );
+}
+
+.flash-alert-error .flash-alert-icon {
+  color: var(--danger);
+}
+
+.flash-alert-info {
+  border-color: rgba(110, 200, 240, 0.35);
+  background: linear-gradient(
+    105deg,
+    rgba(110, 200, 240, 0.12),
+    rgba(36, 32, 54, 0.9) 55%
+  );
+}
+
+.flash-alert-info .flash-alert-icon {
+  color: var(--status-delivered);
+}
+
+.flash-alert-warning {
+  border-color: rgba(240, 180, 90, 0.4);
+  background: linear-gradient(
+    105deg,
+    rgba(240, 180, 90, 0.14),
+    rgba(36, 32, 54, 0.9) 55%
+  );
+}
+
+.flash-alert-warning .flash-alert-icon {
+  color: var(--status-in-progress);
+}
+
 @media (max-width: 640px) {
   .task-row {
     grid-template-columns: 1fr;

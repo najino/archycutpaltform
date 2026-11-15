@@ -105,8 +105,8 @@ export function InvoiceComposeForm({
         }
         router.push(
           data.invoiceId
-            ? `/admin/invoices/${data.invoiceId}`
-            : `/admin/invoices?month=${periodKey}`,
+            ? `/admin/invoices/${data.invoiceId}?ok=invoice`
+            : `/admin/invoices?month=${periodKey}&ok=invoice`,
         );
         router.refresh();
       } catch (err) {

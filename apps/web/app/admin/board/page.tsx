@@ -10,6 +10,7 @@ import {
   listWeekTasks,
 } from "@eth/core";
 import type { TaskStatus } from "@eth/db";
+import { FlashAlert, resolveFlash } from "@/components/flash-alert";
 import { JalaliDateInput } from "@/components/jalali-date-input";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
@@ -39,7 +40,7 @@ async function assignAction(formData: FormData) {
     { title, assigneeId, dueDate, projectId, units },
     "web",
   );
-  redirect("/admin/board");
+  redirect("/admin/board?ok=task");
 }
 
 async function statusAction(formData: FormData) {
@@ -49,16 +50,17 @@ async function statusAction(formData: FormData) {
   const taskId = String(formData.get("taskId") ?? "");
   const status = String(formData.get("status") ?? "") as TaskStatus;
   await changeStatus(db(), user, taskId, status, "web");
-  redirect("/admin/board");
+  redirect("/admin/board?ok=status");
 }
 
 export default async function AdminBoardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string }>;
+  searchParams: Promise<{ week?: string; ok?: string }>;
 }) {
   const user = await requireAdmin();
   const sp = await searchParams;
+  const flash = resolveFlash(sp);
   const weekKey = sp.week || currentWeekKey();
   const [tasks, members, projects] = await Promise.all([
     listWeekTasks(db(), user, weekKey),
@@ -96,6 +98,15 @@ export default async function AdminBoardPage({
           <span className="font-mono text-primary">{weekKey}</span>
         </span>
       </div>
+
+      {flash && (
+        <FlashAlert
+          tone={flash.tone}
+          title={flash.title}
+          detail={flash.detail}
+          clearKeys={flash.clearKeys}
+        />
+      )}
 
       <div className="metrics-grid">
         <div className="metric-card">
