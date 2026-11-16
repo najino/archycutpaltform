@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -8,6 +8,8 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 const DISMISS_KEY = "eth-pwa-install-dismissed";
+const SHOW_MS = 10000;
+const FADE_OUT_MS = 520;
 
 function queuedPrompt() {
   return (window as Window & { __ethInstallPrompt?: BeforeInstallPromptEvent | null })
@@ -26,7 +28,10 @@ export function PwaRegister() {
   const [promptEvent, setPromptEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [iosHint, setIosHint] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const hideTimer = useRef(0);
+  const leaveTimer = useRef(0);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -48,14 +53,20 @@ export function PwaRegister() {
         setIosHint(true);
       }
       window.clearTimeout(showTimer);
-      showTimer = window.setTimeout(() => setVisible(true), 900);
+      showTimer = window.setTimeout(() => {
+        setLeaving(false);
+        setMounted(true);
+      }, 900);
     };
 
     const waiting = queuedPrompt();
     if (waiting) reveal(waiting);
     else {
       if (ios && safari) setIosHint(true);
-      showTimer = window.setTimeout(() => setVisible(true), 900);
+      showTimer = window.setTimeout(() => {
+        setLeaving(false);
+        setMounted(true);
+      }, 900);
     }
 
     const onReady = () => {
@@ -63,9 +74,8 @@ export function PwaRegister() {
       if (event) reveal(event);
     };
     const onInstalled = () => {
-      setVisible(false);
-      setPromptEvent(null);
       localStorage.setItem(DISMISS_KEY, "1");
+      setLeaving(true);
     };
 
     window.addEventListener("eth-install-ready", onReady);
@@ -78,35 +88,44 @@ export function PwaRegister() {
   }, []);
 
   useEffect(() => {
-    if (!visible) return;
-    const timer = window.setTimeout(() => {
+    if (!mounted || leaving) return;
+    hideTimer.current = window.setTimeout(() => {
       localStorage.setItem(DISMISS_KEY, "1");
-      setVisible(false);
-    }, 10000);
-    return () => window.clearTimeout(timer);
-  }, [visible]);
+      setLeaving(true);
+    }, SHOW_MS);
+    return () => window.clearTimeout(hideTimer.current);
+  }, [mounted, leaving]);
+
+  useEffect(() => {
+    if (!leaving) return;
+    leaveTimer.current = window.setTimeout(() => {
+      setMounted(false);
+      setPromptEvent(null);
+    }, FADE_OUT_MS);
+    return () => window.clearTimeout(leaveTimer.current);
+  }, [leaving]);
+
+  function beginLeave(persist: boolean) {
+    if (persist) localStorage.setItem(DISMISS_KEY, "1");
+    window.clearTimeout(hideTimer.current);
+    setLeaving(true);
+  }
 
   async function install() {
     const event = promptEvent || queuedPrompt();
     if (!event) return;
     await event.prompt();
     const choice = await event.userChoice;
-    setPromptEvent(null);
-    setVisible(false);
-    if (choice.outcome === "dismissed") {
-      localStorage.setItem(DISMISS_KEY, "1");
-    }
+    beginLeave(choice.outcome === "dismissed");
   }
 
-  function dismiss() {
-    localStorage.setItem(DISMISS_KEY, "1");
-    setVisible(false);
-  }
-
-  if (!visible) return null;
+  if (!mounted) return null;
 
   return (
-    <div className="pwa-install" role="status">
+    <div
+      className={`pwa-install${leaving ? " is-leaving" : ""}`}
+      role="status"
+    >
       <div className="brand-mark" aria-hidden>
         <span className="material-symbols-outlined icon-20">movie_edit</span>
       </div>
@@ -126,7 +145,7 @@ export function PwaRegister() {
       <button
         type="button"
         className="pwa-install-close"
-        onClick={dismiss}
+        onClick={() => beginLeave(true)}
         aria-label="بستن"
       >
         <span className="material-symbols-outlined" aria-hidden>
