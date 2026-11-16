@@ -5,6 +5,7 @@ import {
   changeStatus,
   createTask,
   currentWeekKey,
+  jalaliWeekLabelFromKey,
   listMembers,
   listProjects,
   listWeekTasks,
@@ -96,7 +97,9 @@ export default async function AdminBoardPage({
         </div>
         <span className="sys-pill">
           <span className="sys-dot sys-dot-static" />
-          <span className="font-mono text-primary">{weekKey}</span>
+          <span className="text-primary">
+            {jalaliWeekLabelFromKey(weekKey)}
+          </span>
         </span>
       </div>
 

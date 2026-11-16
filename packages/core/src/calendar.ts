@@ -271,15 +271,10 @@ function tehranMondayIndex(now: Date): number {
   return index[name] ?? 0;
 }
 
-/**
- * بازهٔ هفتهٔ جاری (دوشنبه تا یکشنبه) به شمسی.
- * مثلاً «۲۵ آبان تا ۱ آذر ۱۴۰۵»
- */
-export function jalaliWeekLabel(now = new Date()): string {
-  const g = partsInTehran(now);
-  const mondayIndex = tehranMondayIndex(now);
-  const start = addGregorianDays(g.year, g.month, g.day, -mondayIndex);
-  const end = addGregorianDays(g.year, g.month, g.day, 6 - mondayIndex);
+function formatJalaliWeekRange(
+  start: { gy: number; gm: number; gd: number },
+  end: { gy: number; gm: number; gd: number },
+): string {
   const js = toJalali(start.gy, start.gm, start.gd);
   const je = toJalali(end.gy, end.gm, end.gd);
   const startDay = toFaDigits(js.jd);
@@ -291,6 +286,51 @@ export function jalaliWeekLabel(now = new Date()): string {
     return `${startDay} ${jalaliMonthName(js.jm)} تا ${endDay} ${jalaliMonthName(je.jm)} ${toFaDigits(js.jy)}`;
   }
   return `${startDay} ${jalaliMonthName(js.jm)} ${toFaDigits(js.jy)} تا ${endDay} ${jalaliMonthName(je.jm)} ${toFaDigits(je.jy)}`;
+}
+
+/** Monday of ISO week YYYY-Www (UTC), week 1 = week with Jan 4 */
+function mondayOfIsoWeek(year: number, week: number): {
+  gy: number;
+  gm: number;
+  gd: number;
+} {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const day = jan4.getUTCDay() || 7;
+  const mondayWeek1 = new Date(jan4);
+  mondayWeek1.setUTCDate(jan4.getUTCDate() - (day - 1));
+  mondayWeek1.setUTCDate(mondayWeek1.getUTCDate() + (week - 1) * 7);
+  return {
+    gy: mondayWeek1.getUTCFullYear(),
+    gm: mondayWeek1.getUTCMonth() + 1,
+    gd: mondayWeek1.getUTCDate(),
+  };
+}
+
+/**
+ * بازهٔ هفتهٔ جاری (دوشنبه تا یکشنبه) به شمسی.
+ * مثلاً «۲۵ آبان تا ۱ آذر ۱۴۰۵»
+ */
+export function jalaliWeekLabel(now = new Date()): string {
+  const g = partsInTehran(now);
+  const mondayIndex = tehranMondayIndex(now);
+  const start = addGregorianDays(g.year, g.month, g.day, -mondayIndex);
+  const end = addGregorianDays(g.year, g.month, g.day, 6 - mondayIndex);
+  return formatJalaliWeekRange(start, end);
+}
+
+/** کلید ISO مثل 2024-W47 یا W47-2024 → برچسب شمسی */
+export function jalaliWeekLabelFromKey(weekKey: string): string {
+  const key = weekKey.trim();
+  const iso = /^(\d{4})-W(\d{1,2})$/i.exec(key);
+  const flipped = /^W(\d{1,2})-(\d{4})$/i.exec(key);
+  const y = iso ? Number(iso[1]) : flipped ? Number(flipped[2]) : NaN;
+  const w = iso ? Number(iso[2]) : flipped ? Number(flipped[1]) : NaN;
+  if (!Number.isFinite(y) || !Number.isFinite(w) || w < 1 || w > 53) {
+    return weekKey;
+  }
+  const start = mondayOfIsoWeek(y, w);
+  const end = addGregorianDays(start.gy, start.gm, start.gd, 6);
+  return formatJalaliWeekRange(start, end);
 }
 
 /** e.g. «آبان ۱۴۰۴» — کلید میلادی قدیمی را هم درست نشان می‌دهد */

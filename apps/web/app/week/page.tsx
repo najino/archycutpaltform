@@ -5,6 +5,7 @@ import {
   currentWeekKey,
   formatJalaliDate,
   getMyWeekStats,
+  jalaliWeekLabelFromKey,
   listProjects,
   listWeekTasks,
 } from "@eth/core";
@@ -69,8 +70,8 @@ export default async function WeekPage() {
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
             calendar_view_week
           </span>
-          <span className="font-mono" style={{ color: "var(--primary)" }}>
-            {weekKey}
+          <span style={{ color: "var(--primary)" }}>
+            {jalaliWeekLabelFromKey(weekKey)}
           </span>
         </span>
       </div>

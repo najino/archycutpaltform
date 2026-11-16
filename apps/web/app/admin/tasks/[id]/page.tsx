@@ -8,6 +8,7 @@ import {
   formatJalaliDateTime,
   formatToman,
   getTaskById,
+  jalaliWeekLabelFromKey,
   listActivityForEntity,
   toPersianDigits,
 } from "@eth/core";
@@ -64,7 +65,7 @@ export default async function TaskDetailPage({
       </p>
       {task.description && <p>{task.description}</p>}
       <p className="muted">
-        هفته {task.weekKey}
+        هفته {jalaliWeekLabelFromKey(task.weekKey)}
         {task.dueDate ? ` · موعد ${formatJalaliDate(task.dueDate)}` : ""}
         {task.projectId
           ? ` · ${toPersianDigits(task.units)} واحد · ${formatToman(task.amount)}`
