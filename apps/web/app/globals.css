@@ -2710,13 +2710,13 @@ button:disabled:active {
 .pwa-install {
   position: fixed;
   z-index: 90;
-  right: 16px;
-  bottom: 16px;
+  left: 50%;
+  bottom: 18px;
   display: flex;
   align-items: center;
   gap: 12px;
-  width: min(420px, calc(100vw - 32px));
-  padding: 12px 12px 12px 14px;
+  width: min(440px, calc(100vw - 32px));
+  padding: 14px;
   border-radius: 16px;
   border: 1px solid rgba(255, 79, 154, 0.35);
   background: rgba(22, 16, 28, 0.94);
@@ -2724,13 +2724,8 @@ button:disabled:active {
     0 16px 40px -18px rgba(0, 0, 0, 0.7),
     0 0 0 1px rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(16px);
+  transform: translateX(-50%);
   animation: pwa-install-in 420ms var(--ease-out);
-}
-
-@media (min-width: 960px) {
-  .pwa-install {
-    right: calc(var(--sidebar-w) + 20px);
-  }
 }
 
 .pwa-install-copy {
@@ -2749,6 +2744,23 @@ button:disabled:active {
   color: var(--on-surface-variant);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.pwa-install-go {
+  flex: none;
+  min-height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #ff3d8a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pwa-install-go:hover {
+  background: #ff5c9c;
 }
 
 .pwa-install-close {
@@ -2776,10 +2788,10 @@ button:disabled:active {
 @keyframes pwa-install-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateX(-50%) translateY(12px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%);
   }
 }

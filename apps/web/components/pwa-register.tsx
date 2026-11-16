@@ -78,9 +78,10 @@ export function PwaRegister() {
   }, []);
 
   async function install() {
-    if (!promptEvent) return;
-    await promptEvent.prompt();
-    const choice = await promptEvent.userChoice;
+    const event = promptEvent || queuedPrompt();
+    if (!event) return;
+    await event.prompt();
+    const choice = await event.userChoice;
     setPromptEvent(null);
     setVisible(false);
     if (choice.outcome === "dismissed") {
@@ -105,16 +106,14 @@ export function PwaRegister() {
         <p>
           {iosHint
             ? "از دکمه اشتراک Safari بزنید و «افزودن به صفحهٔ اصلی» را انتخاب کنید."
-            : promptEvent
-              ? "مثل یک اپ باز می‌شود، بدون نوار مرورگر."
-              : "آیکون نصب کنار نوار آدرس را بزنید تا مثل یک اپ باز شود."}
+            : "مثل یک اپ باز می‌شود، بدون نوار مرورگر."}
         </p>
       </div>
-      {promptEvent ? (
-        <button type="button" className="btn-mini btn-mini-ok" onClick={install}>
+      {iosHint ? null : (
+        <button type="button" className="pwa-install-go" onClick={install}>
           نصب
         </button>
-      ) : null}
+      )}
       <button
         type="button"
         className="pwa-install-close"
