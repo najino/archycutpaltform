@@ -2725,6 +2725,7 @@ button:disabled:active {
     0 0 0 1px rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(16px);
   transform: translateX(-50%);
+  overflow: hidden;
   animation: pwa-install-in 420ms var(--ease-out);
 }
 
@@ -2783,6 +2784,33 @@ button:disabled:active {
 .pwa-install-close:hover {
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
+}
+
+.pwa-install-time {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pwa-install-time > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #ff3d8a;
+  transform-origin: right center;
+  animation: pwa-install-time 10s linear forwards;
+}
+
+@keyframes pwa-install-time {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 @keyframes pwa-install-in {

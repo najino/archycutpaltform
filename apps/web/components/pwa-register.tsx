@@ -77,6 +77,15 @@ export function PwaRegister() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!visible) return;
+    const timer = window.setTimeout(() => {
+      localStorage.setItem(DISMISS_KEY, "1");
+      setVisible(false);
+    }, 10000);
+    return () => window.clearTimeout(timer);
+  }, [visible]);
+
   async function install() {
     const event = promptEvent || queuedPrompt();
     if (!event) return;
@@ -124,6 +133,9 @@ export function PwaRegister() {
           close
         </span>
       </button>
+      <span className="pwa-install-time" aria-hidden>
+        <span />
+      </span>
     </div>
   );
 }
