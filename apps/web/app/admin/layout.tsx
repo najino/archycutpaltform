@@ -1,7 +1,7 @@
 import { AdminNav } from "@/components/admin-nav";
 import { RealtimeRefetch } from "@/components/realtime-refetch";
 import { requireAdmin } from "@/lib/authz";
-import { currentWeekKey } from "@eth/core";
+import { jalaliWeekLabel } from "@eth/core";
 
 export default async function AdminLayout({
   children,
@@ -9,7 +9,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await requireAdmin();
-  const weekKey = currentWeekKey();
+  const weekLabel = jalaliWeekLabel();
 
   return (
     <div className="admin-shell" suppressHydrationWarning>
@@ -23,7 +23,7 @@ export default async function AdminLayout({
                 date_range
               </span>
               <span className="muted text-11">هفته جاری:</span>
-              <span className="font-mono admin-week-key">{weekKey}</span>
+              <span className="admin-week-key">{weekLabel}</span>
             </div>
           </div>
           <div className="admin-topbar-right">

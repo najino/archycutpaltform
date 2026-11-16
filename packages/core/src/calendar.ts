@@ -239,6 +239,60 @@ function toFaDigits(value: number | string): string {
   return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]!);
 }
 
+function addGregorianDays(
+  gy: number,
+  gm: number,
+  gd: number,
+  delta: number,
+): { gy: number; gm: number; gd: number } {
+  const t = new Date(Date.UTC(gy, gm - 1, gd + delta));
+  return {
+    gy: t.getUTCFullYear(),
+    gm: t.getUTCMonth() + 1,
+    gd: t.getUTCDate(),
+  };
+}
+
+/** Monday = 0 … Sunday = 6, in Asia/Tehran */
+function tehranMondayIndex(now: Date): number {
+  const name = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "short",
+  }).format(now);
+  const index: Record<string, number> = {
+    Mon: 0,
+    Tue: 1,
+    Wed: 2,
+    Thu: 3,
+    Fri: 4,
+    Sat: 5,
+    Sun: 6,
+  };
+  return index[name] ?? 0;
+}
+
+/**
+ * بازهٔ هفتهٔ جاری (دوشنبه تا یکشنبه) به شمسی.
+ * مثلاً «۲۵ آبان تا ۱ آذر ۱۴۰۵»
+ */
+export function jalaliWeekLabel(now = new Date()): string {
+  const g = partsInTehran(now);
+  const mondayIndex = tehranMondayIndex(now);
+  const start = addGregorianDays(g.year, g.month, g.day, -mondayIndex);
+  const end = addGregorianDays(g.year, g.month, g.day, 6 - mondayIndex);
+  const js = toJalali(start.gy, start.gm, start.gd);
+  const je = toJalali(end.gy, end.gm, end.gd);
+  const startDay = toFaDigits(js.jd);
+  const endDay = toFaDigits(je.jd);
+  if (js.jy === je.jy && js.jm === je.jm) {
+    return `${startDay} تا ${endDay} ${jalaliMonthName(js.jm)} ${toFaDigits(js.jy)}`;
+  }
+  if (js.jy === je.jy) {
+    return `${startDay} ${jalaliMonthName(js.jm)} تا ${endDay} ${jalaliMonthName(je.jm)} ${toFaDigits(js.jy)}`;
+  }
+  return `${startDay} ${jalaliMonthName(js.jm)} ${toFaDigits(js.jy)} تا ${endDay} ${jalaliMonthName(je.jm)} ${toFaDigits(je.jy)}`;
+}
+
 /** e.g. «آبان ۱۴۰۴» — کلید میلادی قدیمی را هم درست نشان می‌دهد */
 export function jalaliMonthLabel(periodKey: string): string {
   const key = coerceToJalaliPeriodKey(periodKey);
