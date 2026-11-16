@@ -856,7 +856,13 @@ code {
   .brand-loader-bar-fill,
   .brand-loader-name,
   .brand-loader-mark .material-symbols-outlined,
-  .brand-loader-orb {
+  .brand-loader-orb,
+  .brand-mark,
+  .brand-mark::before,
+  .brand-mark::after,
+  .brand-mark .material-symbols-outlined,
+  .brand-title,
+  .brand-sub {
     animation: none !important;
   }
 
@@ -894,16 +900,111 @@ code {
 
 /* ——— Brand ——— */
 .brand-mark {
-  width: 32px;
-  height: 32px;
+  position: relative;
+  width: 34px;
+  height: 34px;
   border-radius: 9px;
-  background: rgba(196, 181, 253, 0.1);
-  border: 1px solid rgba(196, 181, 253, 0.16);
+  overflow: hidden;
+  isolation: isolate;
+  background: #ff3d8a;
+  border: 2px solid #fff;
   display: grid;
   place-items: center;
-  color: var(--primary);
+  color: #fff;
   flex-shrink: 0;
-  box-shadow: none;
+  animation: brand-mark-glow 1.1s ease-in-out infinite;
+}
+
+.brand-mark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, #ffd0e4 0%, #ff3d8a 42%, #ff7eb3 100%);
+  animation: brand-mark-stripes 1.6s ease-in-out infinite alternate;
+}
+
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.85) 48%,
+    transparent 76%
+  );
+  transform: translateX(-120%);
+  animation: brand-mark-shine 1.3s ease-in-out infinite;
+}
+
+.brand-mark .material-symbols-outlined {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-variation-settings: "FILL" 1, "wght" 650, "GRAD" 0, "opsz" 24;
+  filter: drop-shadow(0 1px 2px rgba(28, 12, 70, 0.7));
+  animation: brand-mark-icon 1.1s ease-in-out infinite;
+}
+
+@keyframes brand-mark-stripes {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes brand-mark-shine {
+  0% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes brand-mark-icon {
+  0%,
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  35% {
+    transform: translateY(-4px) scale(1.28) rotate(-22deg);
+  }
+  70% {
+    transform: translateY(1px) scale(0.86) rotate(16deg);
+  }
+}
+
+@keyframes brand-mark-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 79, 154, 0);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(255, 61, 138, 0.95);
+  }
+}
+
+.brand-title,
+.brand-sub {
+  background-image: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ff4f9a 16%,
+    #ffffff 34%,
+    #ff8cbe 52%,
+    #ffffff 70%,
+    #ff4f9a 88%,
+    #ffffff 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: brand-name-flow 2.2s linear infinite;
 }
 
 .brand-title {
@@ -911,22 +1012,32 @@ code {
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1.3;
-  color: #f4f0ff;
   white-space: nowrap;
 }
 
 .brand-title-soft {
   font-weight: 700;
-  opacity: 0.72;
+  opacity: 1;
   letter-spacing: 0.05em;
+  -webkit-text-fill-color: transparent;
 }
 
 .brand-sub {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.03em;
-  color: var(--on-surface-variant);
   margin-top: 2px;
+  animation-duration: 2.8s;
+  animation-direction: reverse;
+}
+
+@keyframes brand-name-flow {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
 }
 
 .brand-hero-name {
@@ -2512,4 +2623,86 @@ label.btn-mini {
   .editor-content {
     padding: 16px;
   }
+}
+
+/* Soft interaction — hover lift, press, icon nudge */
+button,
+.btn,
+.btn-mini,
+.btn-ghost-icon,
+.side-nav a,
+.editor-nav-link,
+.soft-select-trigger,
+.soft-select-option,
+.metric-card,
+.board-item,
+.task-row,
+.table td a {
+  transition:
+    transform var(--dur) var(--ease-out),
+    background var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out),
+    opacity var(--dur) var(--ease-out);
+}
+
+button:hover,
+.btn:hover,
+.btn-mini:hover,
+.btn-ghost-icon:hover,
+.side-nav a:hover,
+.editor-nav-link:hover,
+.soft-select-trigger:hover,
+.metric-card:hover,
+.board-item:hover,
+.task-row:hover {
+  transform: translateY(-2px);
+}
+
+button:active,
+.btn:active,
+.btn-mini:active,
+.btn-ghost-icon:active,
+.side-nav a:active,
+.soft-select-trigger:active,
+.soft-select-option:active,
+.board-item:active,
+.task-row:active {
+  transform: scale(0.97);
+  transition-duration: 120ms;
+}
+
+button:disabled,
+button:disabled:hover,
+button:disabled:active {
+  transform: none;
+}
+
+.side-nav a .material-symbols-outlined,
+.editor-nav-link .material-symbols-outlined,
+.btn .material-symbols-outlined,
+.btn-mini .material-symbols-outlined,
+.btn-ghost-icon .material-symbols-outlined {
+  transition: transform var(--dur) var(--ease-spring);
+}
+
+.side-nav a:hover .material-symbols-outlined,
+.editor-nav-link:hover .material-symbols-outlined,
+.btn:hover .material-symbols-outlined,
+.btn-mini:hover .material-symbols-outlined,
+.btn-ghost-icon:hover .material-symbols-outlined {
+  transform: scale(1.16);
+}
+
+.soft-select-option:hover {
+  transform: translateX(3px);
+}
+
+.table td a:hover {
+  color: #fff;
+}
+
+.table tbody td {
+  transition: background var(--dur) var(--ease-out);
 }
