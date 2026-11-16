@@ -7,13 +7,14 @@ const ROLE_FA: Record<string, string> = {
   owner: "مالک",
   admin: "ادمین",
   editor: "ادیتور",
+  client: "کارفرما",
 };
 
 function roleFa(role: string) {
   return ROLE_FA[role] ?? role;
 }
 
-function panelLoginUrl(portal: "admin" | "editor") {
+function panelLoginUrl(portal: "admin" | "editor" | "client") {
   const base = env.webBaseUrl.replace(/\/$/, "");
   return `${base}/login?portal=${portal}`;
 }
@@ -83,7 +84,12 @@ export async function startCommand(ctx: BotContext) {
     );
     ctx.user = user;
 
-    const portal = user.role === "editor" ? "editor" : "admin";
+    const portal =
+      user.role === "client"
+        ? "client"
+        : user.role === "editor"
+          ? "editor"
+          : "admin";
     const loginUrl = panelLoginUrl(portal);
 
     // اگر از قبل در دیتابیس بود (رمز اولیه برنمی‌گردد)
@@ -97,7 +103,7 @@ export async function startCommand(ctx: BotContext) {
       `نقش شما: <b>${roleFa(user.role)}</b>\n\n` +
       `🖥 ورود به پنل وب:\n` +
       `🔗 <a href="${loginUrl}">${loginUrl}</a>\n` +
-      `آیدی: <code>${user.telegramId.toString()}</code>\n` +
+      `آیدی: <code>${user.telegramId?.toString() ?? user.username ?? "—"}</code>\n` +
       `رمز اولیه: <code>${initialPassword}</code>\n` +
       `<i>(بعداً از تنظیمات پنل عوض کنید)</i>`;
 
@@ -111,15 +117,24 @@ async function replyAlreadyMember(
   ctx: BotContext,
   user: NonNullable<BotContext["user"]>,
 ) {
-  const portal = user.role === "editor" ? "editor" : "admin";
+  const portal =
+    user.role === "client"
+      ? "client"
+      : user.role === "editor"
+        ? "editor"
+        : "admin";
   const loginUrl = panelLoginUrl(portal);
+  const extra =
+    user.role === "client"
+      ? `از پنل وب پروژه‌ها و فاکتورها را ببینید.\n`
+      : `دستورات: /my /add /submit /week\n\n`;
   await ctx.reply(
     `ℹ️ شما <b>قبلاً عضو</b> تیم شده‌اید.\n` +
       `نام: <b>${user.displayName}</b>\n` +
       `نقش: <b>${roleFa(user.role)}</b>\n\n` +
-      `دستورات: /my /add /submit /week\n\n` +
+      extra +
       `🖥 پنل وب:\n🔗 <a href="${loginUrl}">${loginUrl}</a>\n` +
-      `آیدی: <code>${user.telegramId.toString()}</code>`,
+      `آیدی: <code>${user.telegramId?.toString() ?? user.username ?? "—"}</code>`,
     { parse_mode: "HTML" },
   );
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loginWithTelegramId } from "@eth/core";
+import { loginWithTelegramId, loginWithUsername } from "@eth/core";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/session";
 import { homeForUser, isAdminUser } from "@/lib/authz";
@@ -8,18 +8,31 @@ import { toUserError } from "@/lib/user-error";
 export async function POST(req: Request) {
   const body = (await req.json()) as {
     telegramId?: string;
+    username?: string;
     password?: string;
-    portal?: "admin" | "editor";
+    portal?: "admin" | "editor" | "client";
   };
 
-  const portal = body.portal === "admin" ? "admin" : "editor";
+  const portal =
+    body.portal === "admin"
+      ? "admin"
+      : body.portal === "client"
+        ? "client"
+        : "editor";
 
   try {
-    const user = await loginWithTelegramId(
-      db(),
-      String(body.telegramId ?? ""),
-      String(body.password ?? ""),
-    );
+    const user =
+      portal === "client"
+        ? await loginWithUsername(
+            db(),
+            String(body.username ?? ""),
+            String(body.password ?? ""),
+          )
+        : await loginWithTelegramId(
+            db(),
+            String(body.telegramId ?? ""),
+            String(body.password ?? ""),
+          );
 
     const admin = isAdminUser(user);
     if (portal === "admin" && !admin) {
@@ -28,9 +41,19 @@ export async function POST(req: Request) {
         { status: 403 },
       );
     }
-    if (portal === "editor" && admin) {
+    if (portal === "editor" && (admin || user.role === "client")) {
       return NextResponse.json(
-        { error: "حساب ادمین است. از تب «ادمین» وارد شوید." },
+        {
+          error: admin
+            ? "حساب ادمین است. از تب «مدیر» وارد شوید."
+            : "حساب کارفرما است. از تب «کارفرما» وارد شوید.",
+        },
+        { status: 403 },
+      );
+    }
+    if (portal === "client" && user.role !== "client") {
+      return NextResponse.json(
+        { error: "این حساب کارفرما نیست. تب ورود را عوض کنید." },
         { status: 403 },
       );
     }

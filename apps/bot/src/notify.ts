@@ -16,6 +16,7 @@ export async function notifyAdminGroup(
 }
 
 export async function notifyTaskAssigned(api: Api, task: Task, assignee: User) {
+  if (assignee.telegramId == null) return;
   try {
     await api.sendMessage(
       assignee.telegramId.toString(),

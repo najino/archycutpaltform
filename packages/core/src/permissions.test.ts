@@ -14,6 +14,7 @@ function user(partial: Partial<User> & Pick<User, "role">): User {
     username: null,
     displayName: "Test",
     passwordHash: null,
+    clientId: null,
     isActive: true,
     createdAt: new Date(),
     ...partial,
@@ -64,6 +65,15 @@ describe("permissions", () => {
     const editor = user({ id: "e1", role: "editor" });
     assert.equal(canModifyTask(editor, task({ assigneeId: "e1" })), true);
     assert.equal(canModifyTask(editor, task({ assigneeId: "other" })), false);
+  });
+
+  it("client can only view own projects and invoices", () => {
+    const client = user({ role: "client", clientId: "c1" });
+    assert.equal(can(client, "project.view_own"), true);
+    assert.equal(can(client, "invoice.view_project"), true);
+    assert.equal(can(client, "invoice.manage"), false);
+    assert.equal(can(client, "task.view_all"), false);
+    assert.equal(can(client, "project.manage"), false);
   });
 
   it("invoiced tasks are locked", () => {

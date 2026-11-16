@@ -52,7 +52,7 @@ export async function projectConversation(
   }
 
   const members = (await conversation.external((c) => listMembers(c.db))).filter(
-    (m) => m.isActive && m.role !== "owner",
+    (m) => m.isActive && (m.role === "editor" || m.role === "admin"),
   );
   const selected = new Set<string>();
   const renderKb = () => {

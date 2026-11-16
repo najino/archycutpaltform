@@ -29,6 +29,13 @@
       "when": 1731190800000,
       "tag": "0003_payment_receipt",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1731194400000,
+      "tag": "0004_client_portal",
+      "breakpoints": true
     }
   ]
 }

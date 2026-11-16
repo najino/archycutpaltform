@@ -169,6 +169,14 @@ export async function getProjectById(db: Db, id: string) {
 }
 
 export async function listProjects(db: Db, actor: User) {
+  if (actor.role === "client") {
+    if (!actor.clientId) return [];
+    return db
+      .select()
+      .from(projects)
+      .where(eq(projects.clientId, actor.clientId))
+      .orderBy(asc(projects.createdAt));
+  }
   if (can(actor, "project.manage") || can(actor, "earnings.view_all")) {
     return db.select().from(projects).orderBy(asc(projects.createdAt));
   }

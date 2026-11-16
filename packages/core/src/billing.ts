@@ -732,10 +732,64 @@ export async function listInvoices(
   return query.where(and(...conds)).orderBy(asc(invoices.number));
 }
 
+export type ClientInvoiceRow = {
+  invoice: Invoice;
+  amount: bigint;
+  projectNames: string[];
+};
+
+export async function listClientProjectInvoices(
+  db: Db,
+  actor: User,
+): Promise<ClientInvoiceRow[]> {
+  assertCan(actor, "invoice.view_project");
+  if (actor.role !== "client" || !actor.clientId) return [];
+
+  const rows = await db
+    .select({
+      invoice: invoices,
+      line: invoiceLines,
+      projectName: projects.name,
+    })
+    .from(invoiceLines)
+    .innerJoin(invoices, eq(invoiceLines.invoiceId, invoices.id))
+    .innerJoin(tasks, eq(invoiceLines.taskId, tasks.id))
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(
+      and(
+        eq(projects.clientId, actor.clientId),
+        or(eq(invoices.status, "issued"), eq(invoices.status, "paid"))!,
+      ),
+    )
+    .orderBy(asc(invoices.number));
+
+  const byId = new Map<string, ClientInvoiceRow>();
+  for (const row of rows) {
+    const current = byId.get(row.invoice.id);
+    if (!current) {
+      byId.set(row.invoice.id, {
+        invoice: row.invoice,
+        amount: row.line.amount,
+        projectNames: row.projectName ? [row.projectName] : [],
+      });
+      continue;
+    }
+    current.amount += row.line.amount;
+    if (row.projectName && !current.projectNames.includes(row.projectName)) {
+      current.projectNames.push(row.projectName);
+    }
+  }
+  return [...byId.values()];
+}
+
 export async function getInvoiceDetail(db: Db, actor: User, invoiceId: string) {
   const invoice = await getInvoiceById(db, invoiceId);
   if (!invoice) throw new NotFoundError("Invoice not found");
-  if (
+
+  const isClient = actor.role === "client";
+  if (isClient) {
+    assertCan(actor, "invoice.view_project");
+  } else if (
     invoice.userId !== actor.id &&
     !can(actor, "invoice.manage") &&
     !can(actor, "earnings.view_all")
@@ -743,15 +797,30 @@ export async function getInvoiceDetail(db: Db, actor: User, invoiceId: string) {
     throw new PermissionError("Forbidden");
   }
 
-  const lines = await db
-    .select()
+  const lineRows = await db
+    .select({
+      line: invoiceLines,
+      clientId: projects.clientId,
+    })
     .from(invoiceLines)
+    .innerJoin(tasks, eq(invoiceLines.taskId, tasks.id))
+    .leftJoin(projects, eq(tasks.projectId, projects.id))
     .where(eq(invoiceLines.invoiceId, invoiceId));
+
+  let lines = lineRows.map((row) => row.line);
+  let clientAmount: bigint | null = null;
+  if (isClient) {
+    const visible = lineRows.filter((row) => row.clientId === actor.clientId);
+    if (visible.length === 0) throw new PermissionError("Forbidden");
+    lines = visible.map((row) => row.line);
+    clientAmount = lines.reduce((sum, line) => sum + line.amount, 0n);
+  }
+
   const editor = (
     await db.select().from(users).where(eq(users.id, invoice.userId)).limit(1)
   )[0];
 
-  return { invoice, lines, editor };
+  return { invoice, lines, editor, clientAmount };
 }
 
 export async function assertTaskEditable(task: Task) {

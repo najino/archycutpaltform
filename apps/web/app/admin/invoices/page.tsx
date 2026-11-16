@@ -87,7 +87,7 @@ export default async function InvoicesPage({
   ]);
   const nameById = new Map(members.map((m) => [m.id, m.displayName]));
   const editors = members
-    .filter((m) => m.isActive)
+    .filter((m) => m.isActive && m.role !== "client")
     .map((m) => ({ id: m.id, name: m.displayName }))
     .sort((a, b) => a.name.localeCompare(b.name, "fa"));
   const periodLabel = periodKey ? jalaliMonthLabel(periodKey) : "همهٔ ماه‌ها";

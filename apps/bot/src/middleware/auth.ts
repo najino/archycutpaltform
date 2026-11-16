@@ -46,5 +46,19 @@ export async function authMiddleware(ctx: BotContext, next: NextFunction) {
     return;
   }
 
+  if (ctx.user.role === "client") {
+    if (command && PUBLIC_COMMANDS.has(command)) {
+      return next();
+    }
+    const base = (process.env.WEB_BASE_URL || "http://localhost:3010").replace(
+      /\/$/,
+      "",
+    );
+    await ctx.reply(
+      `حساب کارفرما فقط از پنل وب در دسترس است:\n${base}/login?portal=client`,
+    );
+    return;
+  }
+
   return next();
 }

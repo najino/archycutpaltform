@@ -3,17 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+export type LoginPortal = "admin" | "editor" | "client";
+
 export function LoginForm({
   portal,
   botUsername,
 }: {
-  portal: "admin" | "editor";
+  portal: LoginPortal;
   botUsername: string;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const isClient = portal === "client";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,7 +28,8 @@ export function LoginForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          telegramId: String(fd.get("telegramId") ?? ""),
+          telegramId: isClient ? "" : String(fd.get("telegramId") ?? ""),
+          username: isClient ? String(fd.get("username") ?? "") : "",
           password: String(fd.get("password") ?? ""),
           portal,
         }),
@@ -36,7 +40,14 @@ export function LoginForm({
         setLoading(false);
         return;
       }
-      router.push(data.redirectTo ?? (portal === "admin" ? "/admin" : "/week"));
+      router.push(
+        data.redirectTo ??
+          (portal === "admin"
+            ? "/admin"
+            : portal === "client"
+              ? "/client"
+              : "/week"),
+      );
       router.refresh();
     } catch {
       setError("خطای شبکه");
@@ -46,32 +57,56 @@ export function LoginForm({
 
   return (
     <form onSubmit={onSubmit} className="form-grid login-form">
-      <label>
-        <span className="login-label-row">
-          <span>
-            شناسه عددی تلگرام <span className="login-req">*</span>
+      {isClient ? (
+        <label>
+          <span className="login-label-row">
+            <span>
+              نام کاربری <span className="login-req">*</span>
+            </span>
+            <span className="font-mono login-hint-en">Username</span>
           </span>
-          <span className="font-mono login-hint-en">Telegram ID</span>
-        </span>
-        <div className="field-wrap">
-          <span className="material-symbols-outlined field-icon">send</span>
-          <input
-            className="field-input"
-            name="telegramId"
-            inputMode="numeric"
-            required
-            placeholder="مثال: 987654321"
-            autoComplete="username"
-            dir="ltr"
-          />
-        </div>
-        <span className="login-hint">شناسه یکتا — از دستور /id در بات</span>
-      </label>
+          <div className="field-wrap">
+            <span className="material-symbols-outlined field-icon">person</span>
+            <input
+              className="field-input"
+              name="username"
+              required
+              placeholder="brand.studio"
+              autoComplete="username"
+              dir="ltr"
+            />
+          </div>
+          <span className="login-hint">نام کاربری‌ای که استودیو برایتان ساخته</span>
+        </label>
+      ) : (
+        <label>
+          <span className="login-label-row">
+            <span>
+              شناسه عددی تلگرام <span className="login-req">*</span>
+            </span>
+            <span className="font-mono login-hint-en">Telegram ID</span>
+          </span>
+          <div className="field-wrap">
+            <span className="material-symbols-outlined field-icon">send</span>
+            <input
+              className="field-input"
+              name="telegramId"
+              inputMode="numeric"
+              required
+              placeholder="مثال: 987654321"
+              autoComplete="username"
+              dir="ltr"
+            />
+          </div>
+          <span className="login-hint">شناسه یکتا — از دستور /id در بات</span>
+        </label>
+      )}
 
       <label>
         <span className="login-label-row">
           <span>
-            رمز عبور یا کد دعوت <span className="login-req">*</span>
+            {isClient ? "رمز عبور" : "رمز عبور یا کد دعوت"}{" "}
+            <span className="login-req">*</span>
           </span>
         </span>
         <div className="field-wrap">
@@ -109,26 +144,30 @@ export function LoginForm({
           ? "در حال ورود…"
           : portal === "admin"
             ? "ورود به پنل مدیریت"
-            : "ورود به میز کار ادیتور"}
+            : portal === "client"
+              ? "ورود به پورتال کارفرما"
+              : "ورود به میز کار ادیتور"}
         {!loading && (
           <span className="material-symbols-outlined">arrow_left</span>
         )}
       </button>
 
-      <div className="login-bot-link-wrap">
-        <a
-          href={`https://t.me/${botUsername}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="muted login-bot-link"
-        >
-          <span className="material-symbols-outlined">smart_toy</span>
-          پشتیبانی و کد دعوت از بات:
-          <span className="font-mono login-bot-handle" dir="ltr">
-            @{botUsername}
-          </span>
-        </a>
-      </div>
+      {isClient ? null : (
+        <div className="login-bot-link-wrap">
+          <a
+            href={`https://t.me/${botUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="muted login-bot-link"
+          >
+            <span className="material-symbols-outlined">smart_toy</span>
+            پشتیبانی و کد دعوت از بات:
+            <span className="font-mono login-bot-handle" dir="ltr">
+              @{botUsername}
+            </span>
+          </a>
+        </div>
+      )}
     </form>
   );
 }

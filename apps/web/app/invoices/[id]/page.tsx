@@ -11,6 +11,7 @@ import {
 import { EditorShell } from "@/components/editor-shell";
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
+import { requireEditorPortal } from "@/lib/authz";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -39,8 +40,7 @@ export default async function InvoicePrintPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ ok?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireEditorPortal();
   const { id } = await params;
   const flash = resolveFlash(await searchParams);
 

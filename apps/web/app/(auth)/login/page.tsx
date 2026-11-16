@@ -13,7 +13,12 @@ export default async function LoginPage({
   if (user) redirect(homeForUser(user));
 
   const sp = await searchParams;
-  const portal = sp.portal === "admin" ? "admin" : "editor";
+  const portal =
+    sp.portal === "admin"
+      ? "admin"
+      : sp.portal === "client"
+        ? "client"
+        : "editor";
   const botUsername = process.env.TELEGRAM_BOT_USERNAME || "ArshycutP_bot";
 
   return (
@@ -45,31 +50,42 @@ export default async function LoginPage({
               className={portal === "editor" ? "active" : ""}
             >
               <span className="material-symbols-outlined">video_settings</span>
-              میز کار ادیتور
+              ادیتور
             </Link>
             <Link
               href="/login?portal=admin"
               className={portal === "admin" ? "active" : ""}
             >
               <span className="material-symbols-outlined">shield_person</span>
-              مدیران و سرپرست
+              مدیر
+            </Link>
+            <Link
+              href="/login?portal=client"
+              className={portal === "client" ? "active" : ""}
+            >
+              <span className="material-symbols-outlined">apartment</span>
+              کارفرما
             </Link>
           </div>
 
           <div
-            className={`info-banner${portal === "admin" ? " is-admin" : ""}`}
+            className={`info-banner${portal === "admin" ? " is-admin" : ""}${portal === "client" ? " is-client" : ""}`}
           >
             <span className="material-symbols-outlined">info</span>
             <div>
               <div className="info-banner-title">
                 {portal === "admin"
                   ? "ورود مدیران و سرپرست استودیو:"
-                  : "ورود همکاران بخش تدوین:"}
+                  : portal === "client"
+                    ? "ورود کارفرما:"
+                    : "ورود همکاران بخش تدوین:"}
               </div>
               <p className="muted">
                 {portal === "admin"
                   ? "فقط نقش‌های owner و admin به این پنل دسترسی دارند."
-                  : "عضو جدید هستید؟ رمز اولیه همان کد دعوتی است که از ربات تلگرام گرفته‌اید."}
+                  : portal === "client"
+                    ? "نام کاربری و رمزی که استودیو برایتان ساخته را وارد کنید. پروژه‌ها و فاکتورهای همان کارفرما را می‌بینید."
+                    : "عضو جدید هستید؟ رمز اولیه همان کد دعوتی است که از ربات تلگرام گرفته‌اید."}
               </p>
             </div>
           </div>

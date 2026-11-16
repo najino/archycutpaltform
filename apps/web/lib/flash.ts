@@ -52,6 +52,10 @@ export function resolveFlash(sp: {
       title: "کارفرما اضافه شد",
       detail: "کارفرمای جدید ذخیره شد.",
     },
+    client_user: {
+      title: "حساب کارفرما ساخته شد",
+      detail: "کارفرما می‌تواند از تب ورود کارفرما وارد شود.",
+    },
     password: {
       title: "رمز ذخیره شد",
       detail: "رمز عبور با موفقیت تغییر کرد.",

@@ -15,7 +15,12 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 
-export const userRoleEnum = pgEnum("user_role", ["owner", "admin", "editor"]);
+export const userRoleEnum = pgEnum("user_role", [
+  "owner",
+  "admin",
+  "editor",
+  "client",
+]);
 export const taskStatusEnum = pgEnum("task_status", [
   "todo",
   "in_progress",
@@ -43,18 +48,26 @@ export const invoiceStatusEnum = pgEnum("invoice_status", [
   "void",
 ]);
 
-export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  telegramId: bigint("telegram_id", { mode: "bigint" }).notNull().unique(),
-  username: text("username"),
-  displayName: text("display_name").notNull(),
-  passwordHash: text("password_hash"),
-  role: userRoleEnum("role").notNull().default("editor"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    telegramId: bigint("telegram_id", { mode: "bigint" }).unique(),
+    username: text("username"),
+    displayName: text("display_name").notNull(),
+    passwordHash: text("password_hash"),
+    role: userRoleEnum("role").notNull().default("editor"),
+    clientId: uuid("client_id").references(() => clients.id),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("users_username_lower_idx").on(t.username),
+    uniqueIndex("users_client_id_uidx").on(t.clientId),
+  ],
+);
 
 export const categories = pgTable("categories", {
   id: uuid("id").defaultRandom().primaryKey(),

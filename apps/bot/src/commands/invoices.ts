@@ -123,7 +123,7 @@ export async function handleInvoiceCallbacks(ctx: BotContext) {
     // deliver privately to editor
     const members = await listMembers(ctx.db);
     const editor = members.find((m) => m.id === inv.userId);
-    if (editor) {
+    if (editor?.telegramId != null) {
       try {
         const agency = await getAgencySettings(ctx.db);
         const detail = await getInvoiceDetail(ctx.db, ctx.user, inv.id);

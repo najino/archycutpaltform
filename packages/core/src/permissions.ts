@@ -19,7 +19,9 @@ export type Action =
   | "earnings.view_all"
   | "earnings.view_own"
   | "invoice.manage"
-  | "invoice.pay";
+  | "invoice.pay"
+  | "invoice.view_project"
+  | "project.view_own";
 
 const ROLE_ACTIONS: Record<UserRole, Action[]> = {
   owner: [
@@ -70,7 +72,16 @@ const ROLE_ACTIONS: Record<UserRole, Action[]> = {
     "deliverable.submit",
     "earnings.view_own",
   ],
+  client: ["project.view_own", "invoice.view_project"],
 };
+
+export function isClientUser(user: User): boolean {
+  return user.role === "client";
+}
+
+export function isStudioUser(user: User): boolean {
+  return user.role === "owner" || user.role === "admin" || user.role === "editor";
+}
 
 export function can(user: User, action: Action): boolean {
   if (!user.isActive) return false;

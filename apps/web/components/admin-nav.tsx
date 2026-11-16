@@ -21,6 +21,7 @@ const LINKS = [
 function roleLabel(role: User["role"]) {
   if (role === "owner") return "مالک";
   if (role === "admin") return "ادمین";
+  if (role === "client") return "کارفرما";
   return "ادیتور";
 }
 

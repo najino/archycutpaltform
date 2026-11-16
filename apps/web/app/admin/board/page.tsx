@@ -70,7 +70,9 @@ export default async function AdminBoardPage({
     listProjects(db(), user),
   ]);
 
-  const editors = members.filter((m) => m.isActive);
+  const editors = members.filter(
+    (m) => m.isActive && (m.role === "editor" || m.role === "admin"),
+  );
   const openProjects = projects.filter((p) => p.status === "open");
 
   const counts = {

@@ -156,8 +156,8 @@ export async function setUserRole(
   if (actor.role !== "owner") {
     throw new PermissionError("Only owner can promote/demote");
   }
-  if (role === "owner") {
-    throw new ValidationError("Cannot assign owner via promote");
+  if (role === "owner" || role === "client") {
+    throw new ValidationError("Cannot assign this role via promote");
   }
 
   const [updated] = await db

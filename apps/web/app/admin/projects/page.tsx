@@ -62,7 +62,9 @@ export default async function ProjectsPage({
     listClients(db()),
   ]);
 
-  const editors = members.filter((m) => m.isActive && m.role !== "owner");
+  const editors = members.filter(
+    (m) => m.isActive && (m.role === "editor" || m.role === "admin"),
+  );
 
   return (
     <>

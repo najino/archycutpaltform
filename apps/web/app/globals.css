@@ -1973,6 +1973,10 @@ label.btn-mini {
   border-right: 2px solid var(--primary);
 }
 
+.info-banner.is-client {
+  border-right: 2px solid #ff3d8a;
+}
+
 .info-banner > .material-symbols-outlined {
   color: var(--status-delivered);
   font-size: 20px;
