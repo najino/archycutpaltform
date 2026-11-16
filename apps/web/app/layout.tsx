@@ -1,9 +1,25 @@
 import type { Metadata, Viewport } from "next";
+import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "ARSHYCUTPLATFORM",
-  description: "ARSHYCUTPLATFORM — Edit Team Hub",
+  description: "پنل استودیو تدوین ویدیو آرشی‌کات",
+  applicationName: "ARSHYCUTPLATFORM",
+  appleWebApp: {
+    capable: true,
+    title: "آرشی‌کات",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/icon-192.png", sizes: "192x192" }],
+  },
   // سایت خودش دارک است؛ Dark Reader دوباره رنگ‌ها را خراب نکند
   other: {
     "darkreader-lock": "darkreader-lock",
@@ -14,6 +30,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: "dark",
   themeColor: "#100e18",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -30,7 +49,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var h=document.documentElement;h.style.colorScheme='dark';h.style.backgroundColor='#100e18';if(!document.querySelector('meta[name=\"darkreader-lock\"]')){var m=document.createElement('meta');m.name='darkreader-lock';m.content='darkreader-lock';(document.head||h).prepend(m);}document.querySelectorAll('style.darkreader,link.darkreader').forEach(function(n){n.disabled=true;n.remove();});}catch(e){}})();",
+              "(function(){try{var h=document.documentElement;h.style.colorScheme='dark';h.style.backgroundColor='#100e18';if(!document.querySelector('meta[name=\"darkreader-lock\"]')){var m=document.createElement('meta');m.name='darkreader-lock';m.content='darkreader-lock';(document.head||h).prepend(m);}document.querySelectorAll('style.darkreader,link.darkreader').forEach(function(n){n.disabled=true;n.remove();});window.__ethInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__ethInstallPrompt=e;window.dispatchEvent(new Event('eth-install-ready'));});}catch(e){}})();",
           }}
         />
         <style
@@ -58,6 +77,7 @@ export default function RootLayout({
         suppressHydrationWarning
         style={{ backgroundColor: "#100e18", color: "#ece8f5" }}
       >
+        <PwaRegister />
         {children}
       </body>
     </html>

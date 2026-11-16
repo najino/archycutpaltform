@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC = ["/login", "/api/auth/login", "/api/auth/telegram"];
+const PUBLIC = [
+  "/login",
+  "/api/auth/login",
+  "/api/auth/telegram",
+  "/manifest.webmanifest",
+  "/sw.js",
+];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (
     PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
     pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico"
+    pathname.startsWith("/icons/") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/favicon.svg"
   ) {
     return NextResponse.next();
   }

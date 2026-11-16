@@ -2706,3 +2706,80 @@ button:disabled:active {
 .table tbody td {
   transition: background var(--dur) var(--ease-out);
 }
+
+.pwa-install {
+  position: fixed;
+  z-index: 90;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 12px 12px 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 79, 154, 0.35);
+  background: rgba(22, 16, 28, 0.94);
+  box-shadow:
+    0 16px 40px -18px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  animation: pwa-install-in 420ms var(--ease-out);
+}
+
+@media (min-width: 960px) {
+  .pwa-install {
+    right: calc(var(--sidebar-w) + 20px);
+  }
+}
+
+.pwa-install-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-install-copy strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.pwa-install-copy p {
+  margin: 2px 0 0;
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.pwa-install-close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+}
+
+.pwa-install-close .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.pwa-install-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+@keyframes pwa-install-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
