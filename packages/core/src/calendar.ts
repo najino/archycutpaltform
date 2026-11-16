@@ -183,11 +183,27 @@ export function parsePeriodKey(periodKey: string): MonthPeriod {
 }
 
 /**
+ * اگر کلید میلادی قدیمی باشد (مثل 2026-11) به شمسی برمی‌گرداند.
+ * کلیدهای ۱۳۰۰–۱۶۰۰ همان شمسی فرض می‌شوند.
+ */
+export function coerceToJalaliPeriodKey(periodKey: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(periodKey);
+  if (!m) return periodKey;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  if (mo < 1 || mo > 12) return periodKey;
+  if (y >= 1300 && y <= 1600) return periodKey;
+  const j = toJalali(y, mo, 15);
+  return toPeriodKey(j.jy, j.jm);
+}
+
+/**
  * کلیدهای معادل برای فیلتر: شمسی + ماه‌های میلادی هم‌پوشان
  * (برای دادهٔ قدیمی که اشتباهاً با YYYY-MM میلادی ذخیره شده)
  */
 export function periodKeyAliases(periodKey: string): string[] {
-  const period = parsePeriodKey(periodKey);
+  const jalali = coerceToJalaliPeriodKey(periodKey);
+  const period = parsePeriodKey(jalali);
   const keys = new Set<string>([period.periodKey]);
   keys.add(period.periodStart.slice(0, 7));
   keys.add(period.periodEnd.slice(0, 7));
@@ -218,13 +234,19 @@ export function jalaliMonthName(jm: number): string {
   return JALALI_MONTHS[jm - 1] ?? String(jm);
 }
 
-/** e.g. «آبان ۱۴۰۴» */
+const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+function toFaDigits(value: number | string): string {
+  return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]!);
+}
+
+/** e.g. «آبان ۱۴۰۴» — کلید میلادی قدیمی را هم درست نشان می‌دهد */
 export function jalaliMonthLabel(periodKey: string): string {
-  const m = /^(\d{4})-(\d{2})$/.exec(periodKey);
+  const key = coerceToJalaliPeriodKey(periodKey);
+  const m = /^(\d{4})-(\d{2})$/.exec(key);
   if (!m) return periodKey;
   const jy = Number(m[1]);
   const jm = Number(m[2]);
-  return `${jalaliMonthName(jm)} ${jy}`;
+  return `${jalaliMonthName(jm)} ${toFaDigits(jy)}`;
 }
 
 /** @deprecated use jalaliMonthLabel — kept for call-site compatibility */

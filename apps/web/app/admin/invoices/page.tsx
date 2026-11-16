@@ -2,18 +2,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   can,
+  coerceToJalaliPeriodKey,
   currentMonthPeriod,
   formatToman,
   issueInvoice,
   jalaliMonthLabel,
   listInvoices,
   listMembers,
+  parseInvoiceStatus,
   toPersianDigits,
   voidInvoice,
 } from "@eth/core";
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
-import { JalaliMonthInput } from "@/components/jalali-month-input";
+import { InvoiceSearch } from "@/components/invoice-search";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 
@@ -56,27 +58,68 @@ async function voidAction(formData: FormData) {
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; ok?: string }>;
+  searchParams: Promise<{
+    month?: string;
+    ok?: string;
+    userId?: string;
+    status?: string;
+    q?: string;
+  }>;
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login?portal=admin");
 
   const sp = await searchParams;
   const flash = resolveFlash(sp);
-  const periodKey = sp.month || currentMonthPeriod().periodKey;
+  const periodKey =
+    sp.month === "all" ? undefined : sp.month || currentMonthPeriod().periodKey;
+  const status = parseInvoiceStatus(sp.status);
+  const userId = sp.userId?.trim() || "";
+  const numberQ = sp.q?.trim() || "";
   const isAdmin = can(user, "invoice.manage");
   const [invoices, members] = await Promise.all([
-    listInvoices(db(), user, periodKey),
+    listInvoices(db(), user, periodKey, {
+      userId: userId || undefined,
+      status,
+      number: numberQ || undefined,
+    }),
     listMembers(db()),
   ]);
   const nameById = new Map(members.map((m) => [m.id, m.displayName]));
+  const editors = members
+    .filter((m) => m.isActive)
+    .map((m) => ({ id: m.id, name: m.displayName }))
+    .sort((a, b) => a.name.localeCompare(b.name, "fa"));
+  const periodLabel = periodKey ? jalaliMonthLabel(periodKey) : "همهٔ ماه‌ها";
 
   return (
     <>
       <h1 className="hero-title">فاکتورها</h1>
       <p className="hero-sub">
-        در حال نمایش: <strong>{jalaliMonthLabel(periodKey)}</strong>
-        {" "}({toPersianDigits(periodKey)}) — {invoices.length} فاکتور
+        در حال نمایش: <strong>{periodLabel}</strong>
+        {periodKey ? (
+          <>
+            {" — "}
+            <span className="period-key" dir="ltr">
+              {toPersianDigits(periodKey)}
+            </span>
+          </>
+        ) : null}
+        {userId ? ` — ${nameById.get(userId) ?? ""}` : ""}
+        {status
+          ? ` — ${
+              status === "draft"
+                ? "پیش‌نویس"
+                : status === "issued"
+                  ? "صادر شده"
+                  : status === "paid"
+                    ? "پرداخت شده"
+                    : "باطل"
+            }`
+          : ""}
+        {numberQ ? ` — «${numberQ}»` : ""}
+        {" — "}
+        {toPersianDigits(invoices.length)} فاکتور
       </p>
 
       {flash && (
@@ -88,17 +131,19 @@ export default async function InvoicesPage({
         />
       )}
 
-      <JalaliMonthInput
-        key={periodKey}
-        defaultValue={periodKey}
-        submitLabel="فیلتر"
+      <InvoiceSearch
+        key={`${periodKey ?? "all"}|${userId}|${status ?? ""}|${numberQ}`}
+        month={periodKey ?? ""}
+        userId={userId}
+        status={status ?? ""}
+        q={numberQ}
+        editors={editors}
       />
-
       {isAdmin && (
         <div className="board-item-actions invoice-toolbar">
           <Link
             className="btn-mini btn-mini-ok"
-            href={`/admin/invoices/compose?month=${periodKey}`}
+            href={`/admin/invoices/compose?month=${periodKey ?? currentMonthPeriod().periodKey}`}
           >
             <span className="material-symbols-outlined">fact_check</span>
             فاکتور شخصی‌سازی
@@ -106,7 +151,7 @@ export default async function InvoicesPage({
         </div>
       )}
 
-      <div className="panel">
+      <div className="panel" id="invoice-results">
         <table className="table">
           <thead>
             <tr>
@@ -127,8 +172,12 @@ export default async function InvoicesPage({
                 <td>{nameById.get(inv.userId) ?? inv.userId}</td>
                 <td>
                   {jalaliMonthLabel(inv.periodKey)}
-                  <div className="muted" style={{ fontSize: 11 }}>
-                    {toPersianDigits(inv.periodKey)}
+                  <div
+                    className="muted period-key"
+                    style={{ fontSize: 11 }}
+                    dir="ltr"
+                  >
+                    {toPersianDigits(coerceToJalaliPeriodKey(inv.periodKey))}
                   </div>
                 </td>
                 <td>{formatToman(inv.totalAmount)}</td>
@@ -145,6 +194,12 @@ export default async function InvoicesPage({
                 </td>
                 <td>
                   <div className="board-item-actions">
+                    <Link className="btn-mini" href={`/admin/invoices/${inv.id}`}>
+                      <span className="material-symbols-outlined">
+                        visibility
+                      </span>
+                      مشاهده
+                    </Link>
                     {isAdmin && inv.status === "draft" && (
                       <form action={issueAction}>
                         <input type="hidden" name="id" value={inv.id} />
@@ -189,11 +244,10 @@ export default async function InvoicesPage({
             </span>
             <div className="flash-alert-body">
               <div className="flash-alert-title">
-                برای {jalaliMonthLabel(periodKey)} فاکتوری نیست
+                با این جستجو فاکتوری نیست
               </div>
               <p className="flash-alert-detail">
-                فیلتر اعمال شد — ماه دیگری را انتخاب کنید یا از «فاکتور
-                شخصی‌سازی» بسازید.
+                ماه، ادیتور، وضعیت یا شماره را عوض کنید.
               </p>
             </div>
           </div>

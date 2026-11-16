@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  coerceToJalaliPeriodKey,
   currentMonthPeriod,
   formatToman,
   jalaliMonthLabel,
@@ -35,7 +36,7 @@ export default async function EditorInvoicesPage({
         submitLabel="فیلتر"
       />
 
-      <div className="panel">
+      <div className="panel" id="invoice-results">
         <table className="table">
           <thead>
             <tr>
@@ -53,8 +54,8 @@ export default async function EditorInvoicesPage({
                 </td>
                 <td>
                   {jalaliMonthLabel(inv.periodKey)}
-                  <div className="muted" style={{ fontSize: 11 }}>
-                    {toPersianDigits(inv.periodKey)}
+                  <div className="muted period-key" style={{ fontSize: 11 }} dir="ltr">
+                    {toPersianDigits(coerceToJalaliPeriodKey(inv.periodKey))}
                   </div>
                 </td>
                 <td>{formatToman(inv.totalAmount)}</td>

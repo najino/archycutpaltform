@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gte, ilike, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type {
   ActivitySource,
   Db,
@@ -678,37 +678,58 @@ export async function getInvoiceById(db: Db, id: string) {
   return rows[0] ?? null;
 }
 
+const INVOICE_STATUSES = ["draft", "issued", "paid", "void"] as const;
+export type InvoiceStatusFilter = (typeof INVOICE_STATUSES)[number];
+
+export type InvoiceListFilter = {
+  userId?: string;
+  status?: InvoiceStatusFilter;
+  number?: string;
+};
+
+export function parseInvoiceStatus(
+  value: string | undefined,
+): InvoiceStatusFilter | undefined {
+  if (!value) return undefined;
+  return (INVOICE_STATUSES as readonly string[]).includes(value)
+    ? (value as InvoiceStatusFilter)
+    : undefined;
+}
+
 export async function listInvoices(
   db: Db,
   actor: User,
   periodKey?: string,
+  filter?: InvoiceListFilter,
 ) {
   const aliases = periodKey ? periodKeyAliases(periodKey) : null;
+  const managed =
+    can(actor, "invoice.manage") || can(actor, "earnings.view_all");
+  const conds = [];
 
-  if (can(actor, "invoice.manage") || can(actor, "earnings.view_all")) {
-    if (aliases) {
-      return db
-        .select()
-        .from(invoices)
-        .where(inArray(invoices.periodKey, aliases))
-        .orderBy(asc(invoices.number));
+  if (!managed) {
+    conds.push(eq(invoices.userId, actor.id));
+    if (!filter?.status) {
+      conds.push(
+        or(eq(invoices.status, "issued"), eq(invoices.status, "paid"))!,
+      );
+    } else if (filter.status === "issued" || filter.status === "paid") {
+      conds.push(eq(invoices.status, filter.status));
+    } else {
+      return [];
     }
-    return db.select().from(invoices).orderBy(asc(invoices.createdAt));
+  } else {
+    if (filter?.userId) conds.push(eq(invoices.userId, filter.userId));
+    if (filter?.status) conds.push(eq(invoices.status, filter.status));
   }
 
-  const rows = await db
-    .select()
-    .from(invoices)
-    .where(
-      and(
-        eq(invoices.userId, actor.id),
-        or(eq(invoices.status, "issued"), eq(invoices.status, "paid")),
-      ),
-    )
-    .orderBy(asc(invoices.createdAt));
-  return aliases
-    ? rows.filter((r) => aliases.includes(r.periodKey))
-    : rows;
+  if (aliases) conds.push(inArray(invoices.periodKey, aliases));
+  const numberQ = filter?.number?.trim().replace(/[%_]/g, "");
+  if (numberQ) conds.push(ilike(invoices.number, `%${numberQ}%`));
+
+  const query = db.select().from(invoices);
+  if (!conds.length) return query.orderBy(asc(invoices.createdAt));
+  return query.where(and(...conds)).orderBy(asc(invoices.number));
 }
 
 export async function getInvoiceDetail(db: Db, actor: User, invoiceId: string) {

@@ -59,12 +59,14 @@ export function SoftSelect({
         type="button"
         id={id}
         className="soft-select-trigger"
-        aria-label={ariaLabel}
+        aria-label={ariaLabel ? `${ariaLabel}: ${label}` : undefined}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
         disabled={disabled}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           if (!disabled) setOpen((v) => !v);
         }}
       >
@@ -86,6 +88,7 @@ export function SoftSelect({
                 type="button"
                 className={`soft-select-option${!value ? " is-active" : ""}`}
                 onMouseDown={(e) => {
+                  // mousedown (نه click) تا قبل از blur/close سند هندل شود
                   e.preventDefault();
                   e.stopPropagation();
                   onChange("");

@@ -35,13 +35,17 @@ function buildHref(
 ) {
   const url = new URL(window.location.href);
   url.searchParams.set(name, periodKey);
+  // flash/ok keys should not stick across filter changes
+  url.searchParams.delete("ok");
+  url.searchParams.delete("err");
   if (hiddenFields) {
     for (const [k, v] of Object.entries(hiddenFields)) {
       if (v) url.searchParams.set(k, v);
       else url.searchParams.delete(k);
     }
   }
-  return `${url.pathname}${url.search}`;
+  url.hash = "invoice-results";
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 export function JalaliMonthInput({
@@ -77,56 +81,69 @@ export function JalaliMonthInput({
   );
 
   function go(nextJy: number, nextJm: number) {
-    const key = toPeriodKey(nextJy, nextJm);
-    const href = buildHref(name, key, hiddenFields);
-    // ناوبری کامل تا searchParams سرور حتماً تازه شود
+    const href = buildHref(name, toPeriodKey(nextJy, nextJm), hiddenFields);
+    const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (href === here) {
+      document.getElementById("invoice-results")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
     window.location.assign(href);
   }
 
   return (
-    <div className="form-grid jalali-month-form">
-      <div className="jalali-month-field">
-        <span className="jalali-month-label">ماه شمسی</span>
-        <div className="jalali-date-fields">
-          <SoftSelect
-            aria-label="ماه"
-            placeholder="ماه"
-            value={String(jm)}
-            options={monthOptions}
-            allowClear={false}
-            onChange={(raw) => {
-              const next = Number(raw);
-              if (!next || next < 1 || next > 12) return;
-              setJm(next);
-              go(jy, next);
-            }}
-          />
-          <SoftSelect
-            aria-label="سال"
-            placeholder="سال"
-            value={String(jy)}
-            options={yearOptions}
-            allowClear={false}
-            onChange={(raw) => {
-              const next = Number(raw);
-              if (!next) return;
-              setJy(next);
-              go(next, jm);
-            }}
-          />
-        </div>
-        <span className="jalali-month-hint muted">
-          {jalaliMonthLabel(periodKey).replace(/\d/g, (d) => FA[Number(d)]!)} ·{" "}
-          {faDigits(periodKey)}
-        </span>
+    <form
+      className="jalali-month-form"
+      method="get"
+      action=""
+      onSubmit={(e) => {
+        e.preventDefault();
+        go(jy, jm);
+      }}
+    >
+      {hiddenFields &&
+        Object.entries(hiddenFields).map(([k, v]) =>
+          v ? <input key={k} type="hidden" name={k} value={v} /> : null,
+        )}
+      <input type="hidden" name={name} value={periodKey} />
+
+      <span className="jalali-month-label">ماه شمسی</span>
+      <div className="jalali-month-controls">
+        <SoftSelect
+          aria-label="ماه"
+          placeholder="ماه"
+          value={String(jm)}
+          options={monthOptions}
+          allowClear={false}
+          onChange={(raw) => {
+            const next = Number(raw);
+            if (!next || next < 1 || next > 12) return;
+            setJm(next);
+          }}
+        />
+        <SoftSelect
+          aria-label="سال"
+          placeholder="سال"
+          value={String(jy)}
+          options={yearOptions}
+          allowClear={false}
+          onChange={(raw) => {
+            const next = Number(raw);
+            if (!next) return;
+            setJy(next);
+          }}
+        />
+        <button className="btn-mini" type="submit">
+          {submitLabel}
+        </button>
       </div>
-      <button
-        className="btn-mini"
-        type="button"
-        onClick={() => go(jy, jm)}
-      >
-        {submitLabel}
-      </button>
-    </div>
+      <span className="jalali-month-hint muted">
+        {jalaliMonthLabel(periodKey).replace(/\d/g, (d) => FA[Number(d)]!)}
+        {" · "}
+        <span className="period-key">{faDigits(periodKey)}</span>
+      </span>
+    </form>
   );
 }

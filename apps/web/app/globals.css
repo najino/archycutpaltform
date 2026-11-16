@@ -1228,20 +1228,87 @@ code {
   gap: 8px;
 }
 
-.jalali-month-form {
-  max-width: 360px;
-  margin-bottom: 16px;
+.invoice-search {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.jalali-month-field {
+.invoice-search-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+
+.invoice-search-current {
+  font-size: 12px;
+}
+
+.invoice-search-grid {
   display: grid;
-  gap: 5px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  align-items: end;
+}
+
+.invoice-search-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.invoice-search-field > span {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.invoice-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.invoice-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.jalali-month-form {
+  display: grid;
+  gap: 4px;
+  max-width: 420px;
+  margin: 0;
+  flex: 1 1 280px;
+}
+
+.jalali-month-controls {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.jalali-month-controls .btn-mini {
+  align-self: stretch;
+  height: 36px;
+  padding-inline: 14px;
 }
 
 .jalali-month-label {
-  color: var(--on-surface-variant);
-  font-size: 12px;
-  font-weight: 550;
+  color: var(--on-surface);
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
 .jalali-month-form .jalali-date-fields {
@@ -1251,7 +1318,25 @@ code {
 .jalali-month-hint {
   display: block;
   font-size: 12px;
-  margin-top: 2px;
+  margin-top: 0;
+  color: var(--on-surface-variant);
+}
+
+#invoice-results {
+  scroll-margin-top: 72px;
+}
+
+.period-key {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+.jalali-month-hint .period-key {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
 }
 
 .jalali-required-proxy {
@@ -1391,16 +1476,29 @@ code {
 .table td {
   text-align: right;
   padding: 9px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 13px;
+  color: var(--on-surface);
+  vertical-align: top;
 }
 
 .table th {
-  background: transparent;
-  color: var(--on-surface-variant);
-  font-weight: 550;
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f4f0ff;
+  font-weight: 700;
+  font-size: 12.5px;
   letter-spacing: 0.02em;
+  opacity: 1;
+}
+
+.table td a {
+  color: var(--primary-fixed, #c4b5fd);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.table td a:hover {
+  text-decoration: underline;
 }
 
 .table tr:hover td {
