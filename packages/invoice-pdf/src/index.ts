@@ -19,6 +19,8 @@ export type InvoicePdfInput = {
   number: string;
   periodKey: string;
   editorName: string;
+  /** برچسب طرف حساب؛ پیش‌فرض «ادیتور» */
+  partyLabel?: string;
   status: string;
   issuedAt?: Date | null;
   totalAmount: bigint;
@@ -74,7 +76,7 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
   <div class="meta">
     شماره فاکتور: <b>${escapeHtml(input.number)}</b><br/>
     دوره: ${escapeHtml(jalaliMonthLabel(input.periodKey))} (${toPersianDigits(input.periodKey)})<br/>
-    ادیتور: ${escapeHtml(input.editorName)}<br/>
+    ${escapeHtml(input.partyLabel ?? "ادیتور")}: ${escapeHtml(input.editorName)}<br/>
     تاریخ صدور: ${issueDate}<br/>
     وضعیت: <span class="status">${STATUS_FA[input.status] ?? input.status}</span>
   </div>

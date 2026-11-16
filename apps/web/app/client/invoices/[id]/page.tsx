@@ -7,6 +7,7 @@ import {
   jalaliMonthLabel,
   toPersianDigits,
 } from "@eth/core";
+import { InvoicePdfActions } from "@/components/invoice-pdf-actions";
 import { requireClientPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
 
@@ -55,6 +56,8 @@ export default async function ClientInvoiceDetailPage({
         {agency.name} · {jalaliMonthLabel(invoice.periodKey)} ·{" "}
         {STATUS_FA[invoice.status] ?? invoice.status} · {formatToman(total)}
       </p>
+
+      <InvoicePdfActions invoiceId={invoice.id} number={invoice.number} />
 
       <div className="panel">
         <table className="table">

@@ -121,6 +121,22 @@ textarea:focus-visible {
   box-shadow: var(--focus-ring);
 }
 
+@media print {
+  .no-print,
+  .invoice-pdf-actions,
+  .editor-topbar,
+  .admin-sidebar,
+  .admin-topbar,
+  .pwa-install {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #122 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2327,6 +2343,21 @@ label.btn-mini {
 }
 
 /* ——— Payment receipt ——— */
+.invoice-pdf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.invoice-pdf-error {
+  width: 100%;
+  margin: 0;
+  color: var(--status-rejected);
+  font-size: 12px;
+}
+
 .invoice-admin-bar {
   max-width: 800px;
   margin: 0 auto;

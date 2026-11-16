@@ -11,6 +11,7 @@ import {
   toPersianDigits,
 } from "@eth/core";
 import { FlashAlert } from "@/components/flash-alert";
+import { InvoicePdfActions } from "@/components/invoice-pdf-actions";
 import { resolveFlash } from "@/lib/flash";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
@@ -87,6 +88,8 @@ export default async function InvoicePrintPage({
           {editor?.displayName ?? "—"} · {jalaliMonthLabel(invoice.periodKey)} ·{" "}
           {STATUS_FA[invoice.status] ?? invoice.status}
         </p>
+
+        <InvoicePdfActions invoiceId={invoice.id} number={invoice.number} />
 
         {flash && (
           <FlashAlert

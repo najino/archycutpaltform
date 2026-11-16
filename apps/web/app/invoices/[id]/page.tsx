@@ -9,6 +9,7 @@ import {
   toPersianDigits,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
+import { InvoicePdfActions } from "@/components/invoice-pdf-actions";
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
 import { requireEditorPortal } from "@/lib/authz";
@@ -71,6 +72,8 @@ export default async function InvoicePrintPage({
         {STATUS_FA[invoice.status] ?? invoice.status} ·{" "}
         {formatToman(invoice.totalAmount)}
       </p>
+
+      <InvoicePdfActions invoiceId={invoice.id} number={invoice.number} />
 
       {flash && (
         <FlashAlert

@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     "@eth/telegram",
     "@eth/invoice-pdf",
   ],
+  serverExternalPackages: ["playwright", "playwright-core"],
   experimental: {
     serverActions: {
       bodySizeLimit: "64mb",
