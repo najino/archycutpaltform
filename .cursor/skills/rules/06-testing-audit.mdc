@@ -1,0 +1,40 @@
+---
+
+description: Test architecture and coverage audit
+globs:
+
+* "**/*"
+  alwaysApply: false
+
+---
+
+# TESTING AUDIT MODE
+
+Analyze:
+
+* Unit tests
+* Integration tests
+* Feature tests
+* E2E tests
+* Critical business flows
+* Authentication
+* Authorization
+* Data integrity
+* External integrations
+* Edge cases
+* Failure scenarios
+
+Do not judge quality only by coverage percentage.
+
+Prioritize critical behavior.
+
+Identify:
+
+* Missing tests
+* Fragile tests
+* Duplicate tests
+* Slow tests
+* Flaky tests
+* Poor test isolation
+
+Provide a prioritized testing roadmap.

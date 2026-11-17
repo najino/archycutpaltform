@@ -1,0 +1,53 @@
+---
+
+description: Security-focused repository audit
+globs:
+
+* "**/*"
+  alwaysApply: false
+
+---
+
+# SECURITY AUDIT MODE
+
+Perform a security-focused audit.
+
+Inspect:
+
+* Authentication
+* Authorization
+* Access control
+* IDOR
+* SQL Injection
+* XSS
+* CSRF
+* SSRF
+* Command Injection
+* Path Traversal
+* File Uploads
+* Session Management
+* Token Handling
+* Password Storage
+* Secrets
+* CORS
+* Rate Limiting
+* Input Validation
+* Output Encoding
+* Dependency Vulnerabilities
+
+For every finding provide:
+
+* Severity
+* Attack vector
+* Affected component
+* File
+* Location
+* Exploitability
+* Impact
+* Remediation
+
+Never expose secrets.
+
+Mask sensitive values.
+
+Do not modify code unless explicitly requested.

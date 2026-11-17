@@ -187,7 +187,7 @@ export default async function SettingsPage({
         <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>
           نام و لوگوی بالای فاکتور — فاکتور جدید از اینجا ساخته نمی‌شود.
         </p>
-        <form action={saveAgency} className="form-grid" encType="multipart/form-data">
+        <form action={saveAgency} className="form-grid">
           <label>
             نام آژانس
             <input name="name" defaultValue={agency.name} required />

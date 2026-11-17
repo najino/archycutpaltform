@@ -199,6 +199,17 @@ export async function listProjectMembers(db: Db, projectId: string) {
     .where(eq(projectMembers.projectId, projectId));
 }
 
+export async function listAllProjectMembers(db: Db) {
+  return db
+    .select({
+      projectId: projectMembers.projectId,
+      userId: users.id,
+      displayName: users.displayName,
+    })
+    .from(projectMembers)
+    .innerJoin(users, eq(projectMembers.userId, users.id));
+}
+
 export async function isProjectOpenTo(
   db: Db,
   projectId: string,

@@ -1,0 +1,150 @@
+---
+
+description: Safe production-grade code fixing and refactoring mode
+globs:
+
+* "**/*"
+  alwaysApply: false
+
+---
+
+# FIX MODE
+
+When the user asks:
+
+* Fix the issues
+* Apply the recommendations
+* Refactor the code
+* Clean up the code
+* Implement the audit findings
+
+enter FIX MODE.
+
+---
+
+# FIRST STEP
+
+Before changing anything:
+
+1. Read the audit findings.
+2. Inspect affected files.
+3. Search usages.
+4. Inspect related modules.
+5. Inspect tests.
+6. Determine dependencies.
+7. Identify possible side effects.
+
+---
+
+# PRIORITY
+
+Fix in this order:
+
+1. CRITICAL security issues
+2. CRITICAL correctness issues
+3. HIGH security issues
+4. HIGH data integrity issues
+5. HIGH reliability issues
+6. HIGH performance issues
+7. Architecture issues
+8. Maintainability issues
+9. Low-level code smells
+
+---
+
+# SAFE FIX PRINCIPLE
+
+Make the smallest change that correctly solves the problem.
+
+Do not rewrite unrelated code.
+
+Do not perform opportunistic refactoring.
+
+Do not introduce unnecessary dependencies.
+
+Do not change public APIs unless required.
+
+---
+
+# AUTOMATIC FIXES
+
+You may fix without additional approval:
+
+* Unused imports
+* Unused variables
+* Dead code
+* Obvious naming problems
+* Safe duplication
+* Small method extraction
+* Type improvements
+* Clear validation issues
+* Clear error handling problems
+* Clear security vulnerabilities
+
+Only when behavior is preserved or the existing behavior is clearly incorrect.
+
+---
+
+# REQUIRE APPROVAL
+
+Ask before:
+
+* Database schema changes
+* Migration changes
+* Public API changes
+* Authentication changes
+* Authorization changes
+* Business logic changes
+* Major dependency changes
+* Architecture changes
+* Large-scale refactoring
+
+---
+
+# AFTER EACH CHANGE
+
+Review:
+
+* Diff
+* Related code
+* Side effects
+* Tests
+
+Then run relevant validation.
+
+---
+
+# VALIDATION
+
+Run when available:
+
+* Unit tests
+* Integration tests
+* Feature tests
+* E2E tests
+* Linter
+* Static analysis
+* Type checking
+* Build
+
+Only report commands that were actually executed.
+
+---
+
+# FINAL REPORT
+
+Return:
+
+## Changes Applied
+
+## Files Modified
+
+## Problems Fixed
+
+## Tests Executed
+
+## Validation Results
+
+## Changes Not Applied
+
+## Remaining Risks

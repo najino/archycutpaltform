@@ -1,0 +1,215 @@
+---
+
+description: Comprehensive repository audit mode
+globs:
+
+* "**/*"
+  alwaysApply: false
+
+---
+
+# AUDIT MODE
+
+When the user asks to:
+
+* Audit the project
+* Review the codebase
+* Check Clean Code
+* Analyze code quality
+* Review architecture
+* Find technical debt
+* Review security
+* Review performance
+
+enter AUDIT MODE.
+
+---
+
+# RULE
+
+In AUDIT MODE:
+
+DO NOT modify files.
+
+DO NOT refactor code.
+
+DO NOT delete code.
+
+DO NOT automatically fix issues.
+
+The objective is analysis only.
+
+---
+
+# AUDIT PROCESS
+
+Execute the following phases:
+
+## Phase 1 — Repository Discovery
+
+Inspect:
+
+* Directory structure
+* Source code
+* Tests
+* Configuration
+* Dependencies
+* Environment configuration
+* Build system
+* Deployment
+* Docker
+* CI/CD
+* Database migrations
+
+---
+
+## Phase 2 — Technology Detection
+
+Identify:
+
+* Languages
+* Frameworks
+* Libraries
+* Databases
+* Cache
+* Queues
+* External APIs
+* Infrastructure
+
+---
+
+## Phase 3 — Architecture
+
+Analyze:
+
+* Application boundaries
+* Module boundaries
+* Dependency direction
+* Coupling
+* Cohesion
+* Circular dependencies
+* Business logic placement
+* Infrastructure separation
+
+---
+
+## Phase 4 — Clean Code
+
+Review:
+
+* Naming
+* Functions
+* Classes
+* Complexity
+* SOLID
+* DRY
+* KISS
+* YAGNI
+* Code smells
+* Duplication
+* Dead code
+
+---
+
+## Phase 5 — Security
+
+Check:
+
+* Authentication
+* Authorization
+* Injection
+* XSS
+* CSRF
+* SSRF
+* IDOR
+* Secrets
+* File uploads
+* Session handling
+* Dependency vulnerabilities
+
+---
+
+## Phase 6 — Performance
+
+Check:
+
+* Database queries
+* N+1
+* Caching
+* Memory
+* CPU
+* API calls
+* Frontend rendering
+* Bundle size
+
+---
+
+## Phase 7 — Testing
+
+Check:
+
+* Unit tests
+* Integration tests
+* Feature tests
+* E2E tests
+* Critical paths
+* Edge cases
+
+---
+
+# ISSUE FORMAT
+
+Every finding:
+
+ID:
+Category:
+Severity:
+Impact:
+Effort:
+Confidence:
+File:
+Location:
+
+Problem:
+
+Evidence:
+
+Why it matters:
+
+Recommended solution:
+
+---
+
+# SEVERITY
+
+CRITICAL:
+Immediate security, data integrity, or production failure risk.
+
+HIGH:
+Major architecture, security, performance, or reliability issue.
+
+MEDIUM:
+Maintainability or technical debt issue.
+
+LOW:
+Minor improvement or code smell.
+
+---
+
+# FINAL AUDIT REPORT
+
+Return:
+
+1. Executive Summary
+2. Technology Stack
+3. Architecture Overview
+4. Quality Scores
+5. Critical Findings
+6. Top 10 Issues
+7. Complete Findings
+8. Priority Matrix
+9. Refactoring Roadmap
+10. Quick Wins
+11. Long-Term Risks
+
+Do not make changes.

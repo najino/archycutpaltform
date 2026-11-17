@@ -42,11 +42,11 @@ export function LoginForm({
       }
       router.push(
         data.redirectTo ??
-          (portal === "admin"
-            ? "/admin"
-            : portal === "client"
-              ? "/client"
-              : "/week"),
+        (portal === "admin"
+          ? "/admin"
+          : portal === "client"
+            ? "/client"
+            : "/week"),
       );
       router.refresh();
     } catch {
@@ -124,7 +124,8 @@ export function LoginForm({
             type="button"
             className="field-toggle"
             onClick={() => setShowPass((v) => !v)}
-            aria-label="نمایش رمز"
+            aria-label={showPass ? "مخفی کردن رمز عبور" : "نمایش رمز عبور"}
+            aria-pressed={showPass}
           >
             <span className="material-symbols-outlined">
               {showPass ? "visibility_off" : "visibility"}

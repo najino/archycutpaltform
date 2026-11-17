@@ -1,0 +1,38 @@
+---
+
+description: Application performance and scalability audit
+globs:
+
+* "**/*"
+  alwaysApply: false
+
+---
+
+# PERFORMANCE AUDIT MODE
+
+Analyze:
+
+* Database queries
+* N+1 queries
+* Missing indexes
+* Expensive operations
+* Large payloads
+* API calls
+* Network requests
+* Caching
+* Memory usage
+* CPU-heavy operations
+* Frontend rendering
+* Bundle size
+
+For every finding provide:
+
+* Evidence
+* Expected bottleneck
+* Impact
+* Severity
+* Recommended optimization
+
+Do not perform premature optimization.
+
+Prioritize issues with measurable or strongly justified impact.

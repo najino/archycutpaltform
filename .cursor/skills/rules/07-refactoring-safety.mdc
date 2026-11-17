@@ -1,0 +1,48 @@
+---
+
+description: Safe refactoring rules and behavior preservation
+globs:
+
+* "**/*"
+  alwaysApply: false
+
+---
+
+# REFACTORING SAFETY MODE
+
+Before refactoring:
+
+1. Understand behavior.
+2. Find all usages.
+3. Find tests.
+4. Identify public interfaces.
+5. Identify side effects.
+6. Identify database interactions.
+7. Identify external integrations.
+
+Refactor incrementally.
+
+Prefer:
+
+Small Refactor
+→ Test
+→ Review
+→ Continue
+
+Do not:
+
+* Rewrite entire modules unnecessarily.
+* Change behavior unintentionally.
+* Remove public APIs without approval.
+* Change database schemas without approval.
+* Introduce unnecessary design patterns.
+
+After refactoring:
+
+* Review diff.
+* Run tests.
+* Run linting.
+* Run static analysis.
+* Verify behavior.
+
+Report all changes.

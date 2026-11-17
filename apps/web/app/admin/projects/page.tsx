@@ -3,9 +3,9 @@ import {
   can,
   createProject,
   formatToman,
+  listAllProjectMembers,
   listClients,
   listMembers,
-  listProjectMembers,
   listProjects,
   parseTomanInput,
   updateProject,
@@ -56,11 +56,19 @@ export default async function ProjectsPage({
 
   const sp = await searchParams;
   const flash = resolveFlash(sp);
-  const [projects, members, clients] = await Promise.all([
+  const [projects, members, clients, allProjectMembers] = await Promise.all([
     listProjects(db(), user),
     listMembers(db()),
     listClients(db()),
+    listAllProjectMembers(db()),
   ]);
+
+  const membersByProject = new Map<string, string[]>();
+  for (const pm of allProjectMembers) {
+    const list = membersByProject.get(pm.projectId) ?? [];
+    list.push(pm.displayName);
+    membersByProject.set(pm.projectId, list);
+  }
 
   const editors = members.filter(
     (m) => m.isActive && (m.role === "editor" || m.role === "admin"),
@@ -136,35 +144,33 @@ export default async function ProjectsPage({
             </tr>
           </thead>
           <tbody>
-            {await Promise.all(
-              projects.map(async (p) => {
-                const pm = await listProjectMembers(db(), p.id);
-                return (
-                  <tr key={p.id}>
-                    <td>{p.name}</td>
-                    <td>{p.unitLabel}</td>
-                    <td>{formatToman(p.unitPrice)}</td>
-                    <td>{p.status}</td>
-                    <td>
-                      {pm.map((x) => x.user.displayName).join("، ") || "—"}
-                    </td>
-                    <td>
-                      <form action={toggleStatus}>
-                        <input type="hidden" name="id" value={p.id} />
-                        <input
-                          type="hidden"
-                          name="status"
-                          value={p.status === "open" ? "closed" : "open"}
-                        />
-                        <button className="btn-mini" type="submit">
-                          {p.status === "open" ? "بستن" : "باز کردن"}
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                );
-              }),
-            )}
+            {projects.map((p) => {
+              const projectMemberNames = membersByProject.get(p.id) ?? [];
+              return (
+                <tr key={p.id}>
+                  <td>{p.name}</td>
+                  <td>{p.unitLabel}</td>
+                  <td>{formatToman(p.unitPrice)}</td>
+                  <td>{p.status}</td>
+                  <td>
+                    {projectMemberNames.join("، ") || "—"}
+                  </td>
+                  <td>
+                    <form action={toggleStatus}>
+                      <input type="hidden" name="id" value={p.id} />
+                      <input
+                        type="hidden"
+                        name="status"
+                        value={p.status === "open" ? "closed" : "open"}
+                      />
+                      <button className="btn-mini" type="submit">
+                        {p.status === "open" ? "بستن" : "باز کردن"}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
