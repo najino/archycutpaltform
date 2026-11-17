@@ -5,7 +5,8 @@ import {
   JALALI_MONTHS,
   jalaliMonthLabel,
   toPeriodKey,
-} from "@eth/core/calendar";
+  toPersianDigits,
+} from "@eth/core";
 import { SoftSelect } from "@/components/soft-select";
 
 type Editor = { id: string; name: string };
@@ -17,11 +18,6 @@ type Props = {
   q: string;
   editors: Editor[];
 };
-
-const FA = "۰۱۲۳۴۵۶۷۸۹";
-function faDigits(n: number | string) {
-  return String(n).replace(/\d/g, (d) => FA[Number(d)]!);
-}
 
 function parseKey(key: string) {
   const m = /^(\d{4})-(\d{2})$/.exec(key);
@@ -54,7 +50,7 @@ export function InvoiceSearch({ month, userId, status, q, editors }: Props) {
     [],
   );
   const yearOptions = useMemo(
-    () => years.map((y) => ({ value: String(y), label: faDigits(y) })),
+    () => years.map((y) => ({ value: String(y), label: toPersianDigits(y) })),
     [years],
   );
   const editorOptions = useMemo(
@@ -97,9 +93,9 @@ export function InvoiceSearch({ month, userId, status, q, editors }: Props) {
         <span className="jalali-month-label">جستجوی پیشرفته</span>
         {periodKey ? (
           <span className="muted invoice-search-current">
-            {jalaliMonthLabel(periodKey).replace(/\d/g, (d) => FA[Number(d)]!)}
+            {toPersianDigits(jalaliMonthLabel(periodKey))}
             {" · "}
-            <span className="period-key">{faDigits(periodKey)}</span>
+            <span className="period-key">{toPersianDigits(periodKey)}</span>
           </span>
         ) : (
           <span className="muted invoice-search-current">همهٔ ماه‌ها</span>

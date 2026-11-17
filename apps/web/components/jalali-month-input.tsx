@@ -6,7 +6,8 @@ import {
   JALALI_MONTHS,
   jalaliMonthLabel,
   toPeriodKey,
-} from "@eth/core/calendar";
+  toPersianDigits,
+} from "@eth/core";
 import { SoftSelect } from "@/components/soft-select";
 
 type Props = {
@@ -16,11 +17,6 @@ type Props = {
   /** Extra query fields preserved on month change (e.g. userId) */
   hiddenFields?: Record<string, string>;
 };
-
-const FA = "۰۱۲۳۴۵۶۷۸۹";
-function faDigits(n: number | string) {
-  return String(n).replace(/\d/g, (d) => FA[Number(d)]!);
-}
 
 function parseKey(key: string) {
   const m = /^(\d{4})-(\d{2})$/.exec(key);
@@ -76,7 +72,7 @@ export function JalaliMonthInput({
   );
 
   const yearOptions = useMemo(
-    () => years.map((y) => ({ value: String(y), label: faDigits(y) })),
+    () => years.map((y) => ({ value: String(y), label: toPersianDigits(y) })),
     [years],
   );
 
@@ -140,9 +136,9 @@ export function JalaliMonthInput({
         </button>
       </div>
       <span className="jalali-month-hint muted">
-        {jalaliMonthLabel(periodKey).replace(/\d/g, (d) => FA[Number(d)]!)}
+        {toPersianDigits(jalaliMonthLabel(periodKey))}
         {" · "}
-        <span className="period-key">{faDigits(periodKey)}</span>
+        <span className="period-key">{toPersianDigits(periodKey)}</span>
       </span>
     </form>
   );

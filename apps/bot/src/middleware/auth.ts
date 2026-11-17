@@ -1,5 +1,6 @@
 import type { NextFunction } from "grammy";
 import { getUserByTelegramId } from "@eth/core";
+import { env } from "../env.js";
 import type { BotContext } from "../context.js";
 
 const PUBLIC_COMMANDS = new Set(["start", "id"]);
@@ -50,10 +51,7 @@ export async function authMiddleware(ctx: BotContext, next: NextFunction) {
     if (command && PUBLIC_COMMANDS.has(command)) {
       return next();
     }
-    const base = (process.env.WEB_BASE_URL || "http://localhost:3010").replace(
-      /\/$/,
-      "",
-    );
+    const base = env.webBaseUrl.replace(/\/$/, "");
     await ctx.reply(
       `حساب کارفرما فقط از پنل وب در دسترس است:\n${base}/login?portal=client`,
     );

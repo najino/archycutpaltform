@@ -18,7 +18,11 @@ export async function handleCallbacks(ctx: BotContext) {
   }
 
   if (data.startsWith("start_task:")) {
-    const code = data.slice("start_task:".length);
+    const code = data.slice("start_task:".length).trim();
+    if (!code) {
+      await ctx.answerCallbackQuery({ text: "Invalid code", show_alert: true });
+      return;
+    }
     const task = await getTaskByShortCode(ctx.db, code);
     if (!task || task.assigneeId !== ctx.user.id) {
       await ctx.answerCallbackQuery({ text: "Forbidden", show_alert: true });
@@ -52,7 +56,11 @@ export async function handleCallbacks(ctx: BotContext) {
       return;
     }
     const isApprove = data.startsWith("approve:");
-    const code = data.split(":")[1]!;
+    const code = data.split(":")[1]?.trim();
+    if (!code) {
+      await ctx.answerCallbackQuery({ text: "Invalid code", show_alert: true });
+      return;
+    }
     try {
       const updated = await changeStatus(
         ctx.db,

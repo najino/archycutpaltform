@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { formatToman } from "@eth/core";
 import { SoftSelect } from "@/components/soft-select";
 
 export type ComposeTask = {
@@ -25,10 +26,6 @@ type Props = {
   existingStatus?: string | null;
 };
 
-function formatFa(amount: bigint) {
-  const withSep = amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "٬");
-  return withSep.replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]!) + " تومان";
-}
 
 export function InvoiceComposeForm({
   periodKey,
@@ -191,7 +188,7 @@ export function InvoiceComposeForm({
               حذف انتخاب
             </button>
             <span className="muted text-11">
-              {selectedIds.length} مورد · جمع {formatFa(total)}
+              {selectedIds.length} مورد · جمع {formatToman(total)}
             </span>
           </div>
 
@@ -223,7 +220,7 @@ export function InvoiceComposeForm({
                   </span>
                 </span>
                 <span className="invoice-compose-amount font-mono">
-                  {formatFa(BigInt(t.amount || "0"))}
+                  {formatToman(BigInt(t.amount || "0"))}
                 </span>
               </label>
             ))}
@@ -232,7 +229,7 @@ export function InvoiceComposeForm({
           <div className="invoice-compose-total panel">
             <div>
               <div className="muted">مجموع فاکتور</div>
-              <div className="metric-value">{formatFa(total)}</div>
+              <div className="metric-value">{formatToman(total)}</div>
             </div>
             <div className="board-item-actions">
               <button

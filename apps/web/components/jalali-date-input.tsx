@@ -6,7 +6,8 @@ import {
   jalaliMonthLength,
   JALALI_MONTHS,
   toGregorian,
-} from "@eth/core/calendar";
+  toPersianDigits,
+} from "@eth/core";
 import { SoftSelect } from "@/components/soft-select";
 
 type Props = {
@@ -15,11 +16,6 @@ type Props = {
   required?: boolean;
   id?: string;
 };
-
-const FA = "۰۱۲۳۴۵۶۷۸۹";
-function faDigits(n: number | string) {
-  return String(n).replace(/\d/g, (d) => FA[Number(d)]!);
-}
 
 function isoFromParts(jy: number, jm: number, jd: number) {
   const g = toGregorian(jy, jm, jd);
@@ -66,7 +62,7 @@ export function JalaliDateInput({
     () =>
       Array.from({ length: maxDay }, (_, i) => {
         const d = i + 1;
-        return { value: String(d), label: faDigits(d) };
+        return { value: String(d), label: toPersianDigits(d) };
       }),
     [maxDay],
   );
@@ -81,7 +77,7 @@ export function JalaliDateInput({
   );
 
   const yearOptions = useMemo(
-    () => years.map((y) => ({ value: String(y), label: faDigits(y) })),
+    () => years.map((y) => ({ value: String(y), label: toPersianDigits(y) })),
     [years],
   );
 
