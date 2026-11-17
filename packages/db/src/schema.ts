@@ -142,7 +142,8 @@ export const tasks = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     shortCode: text("short_code").notNull().unique(),
     projectId: uuid("project_id").references(() => projects.id),
-    units: numeric("units", { precision: 6, scale: 2, mode: "number" })
+    units: numeric("units", { precision: 6, scale: 2 })
+      .$type<number>()
       .notNull()
       .default(1),
     unitPriceSnapshot: bigint("unit_price_snapshot", { mode: "bigint" }),
@@ -186,7 +187,7 @@ export const invoiceLines = pgTable("invoice_lines", {
     .references(() => tasks.id),
   projectName: text("project_name"),
   description: text("description"),
-  units: numeric("units", { precision: 6, scale: 2, mode: "number" }).notNull(),
+  units: numeric("units", { precision: 6, scale: 2 }).$type<number>().notNull(),
   unitPrice: bigint("unit_price", { mode: "bigint" }).notNull(),
   amount: bigint("amount", { mode: "bigint" }).notNull(),
 });

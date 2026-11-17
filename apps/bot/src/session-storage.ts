@@ -33,9 +33,9 @@ export function createPgSessionStorage<T>(db: Db): StorageAdapter<T> {
 }
 
 /** Persistence adapter for @grammyjs/conversations v2 */
-export function createPgConversationStorage(
+export function createPgConversationStorage<T = any>(
   db: Db,
-): VersionedStateStorage<string, unknown> {
+): VersionedStateStorage<string, T> {
   return {
     async read(key) {
       const rows = await db
@@ -43,7 +43,7 @@ export function createPgConversationStorage(
         .from(botSessions)
         .where(eq(botSessions.key, `conv:${key}`))
         .limit(1);
-      return rows[0]?.value as VersionedState<unknown> | undefined;
+      return rows[0]?.value as VersionedState<T> | undefined;
     },
     async write(key, state) {
       await db

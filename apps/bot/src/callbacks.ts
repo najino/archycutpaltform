@@ -1,5 +1,5 @@
 import { changeStatus, can, getTaskByShortCode } from "@eth/core";
-import type { BotContext } from "../context.js";
+import type { BotContext } from "./context.js";
 import { handlePromoteCallback } from "./commands/promote.js";
 import { handleInvoiceCallbacks } from "./commands/invoices.js";
 
