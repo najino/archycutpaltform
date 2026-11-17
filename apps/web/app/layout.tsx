@@ -49,7 +49,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var h=document.documentElement;h.style.colorScheme='dark';h.style.backgroundColor='#100e18';if(!document.querySelector('meta[name=\"darkreader-lock\"]')){var m=document.createElement('meta');m.name='darkreader-lock';m.content='darkreader-lock';(document.head||h).prepend(m);}document.querySelectorAll('style.darkreader,link.darkreader').forEach(function(n){n.disabled=true;n.remove();});window.__ethInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__ethInstallPrompt=e;window.dispatchEvent(new Event('eth-install-ready'));});}catch(e){}})();",
+            "(function(){try{var h=document.documentElement;h.style.colorScheme='dark';h.style.backgroundColor='#100e18';if(!document.querySelector('meta[name=\"darkreader-lock\"]')){var m=document.createElement('meta');m.name='darkreader-lock';m.content='darkreader-lock';(document.head||h).prepend(m);}document.querySelectorAll('style.darkreader,link.darkreader').forEach(function(n){n.disabled=true;n.remove();});window.__ethInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__ethInstallPrompt=e;window.dispatchEvent(new Event('eth-install-ready'));});window.addEventListener('error',function(e){if(e&&e.target&&e.target!==window){e.stopImmediatePropagation();}},true);window.addEventListener('unhandledrejection',function(e){if(e&&e.reason&&typeof e.reason==='object'&&e.reason instanceof Event){e.stopImmediatePropagation();e.preventDefault();}},true);}catch(e){}})();",
           }}
         />
         <style
