@@ -6,7 +6,7 @@ import {
   jalaliMonthLabel,
   toPeriodKey,
   toPersianDigits,
-} from "@eth/core";
+} from "@eth/core/client";
 import { SoftSelect } from "@/components/soft-select";
 
 type Editor = { id: string; name: string };

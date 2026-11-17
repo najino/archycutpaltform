@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { formatToman } from "@eth/core";
+import { formatToman } from "@eth/core/client";
 import { SoftSelect } from "@/components/soft-select";
 
 export type ComposeTask = {
