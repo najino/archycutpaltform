@@ -1,15 +1,24 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 
 export function htmlToPdf(html: string): Promise<Buffer> {
-  const script = path.resolve(
-    process.cwd(),
-    "../../packages/invoice-pdf/src/html-to-pdf.mjs",
-  );
+  const candidateScripts = [
+    path.resolve(process.cwd(), "packages/invoice-pdf/src/html-to-pdf.mjs"),
+    path.resolve(process.cwd(), "../../packages/invoice-pdf/src/html-to-pdf.mjs"),
+    path.resolve(process.cwd(), "../packages/invoice-pdf/src/html-to-pdf.mjs"),
+  ];
+  const script = candidateScripts.find((p) => fs.existsSync(p));
+  if (!script) {
+    throw new Error(
+      `html-to-pdf.mjs not found in candidate paths: ${candidateScripts.join(", ")}`,
+    );
+  }
+  const scriptCwd = path.resolve(path.dirname(script), "..");
 
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [script], {
-      cwd: path.resolve(process.cwd(), "../../packages/invoice-pdf"),
+      cwd: scriptCwd,
       stdio: ["pipe", "pipe", "pipe"],
       env: process.env,
     });

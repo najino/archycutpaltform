@@ -128,12 +128,12 @@ export async function submitConversation(
     return;
   }
 
-  const category = cats.find((c) => c.id === categoryId)!;
+  const category = cats.find((c) => c.id === categoryId);
   const client = clients.find((c) => c.id === clientId);
   const caption = formatPortfolioCaption({
     title,
-    categoryName: category.name,
-    categorySlug: category.slug,
+    categoryName: category?.name ?? "عمومی",
+    categorySlug: category?.slug ?? "general",
     clientName: client?.name,
     clientSlug: client ? slugifyHashtag(client.name) : null,
     videoType,
