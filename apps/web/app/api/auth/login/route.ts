@@ -1,17 +1,39 @@
 import { NextResponse } from "next/server";
-import { loginWithTelegramId, loginWithUsername } from "@eth/core";
+import {
+  loginWithTelegramId,
+  loginWithUsername,
+  PermissionError,
+  ValidationError,
+} from "@eth/core";
 import { db } from "@/lib/db";
+import { limitRequest } from "@/lib/rate-limit";
 import { createSession } from "@/lib/session";
 import { homeForUser, isAdminUser } from "@/lib/authz";
 import { toUserError } from "@/lib/user-error";
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as {
+  const limited = limitRequest(req, "login", 8, 15 * 60_000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "تلاش ورود زیاد بود. کمی بعد دوباره تلاش کنید." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(limited.retryAfterSec) },
+      },
+    );
+  }
+
+  let body: {
     telegramId?: string;
     username?: string;
     password?: string;
     portal?: "admin" | "editor" | "client";
   };
+  try {
+    body = (await req.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "درخواست نامعتبر است" }, { status: 400 });
+  }
 
   const portal =
     body.portal === "admin"
@@ -65,13 +87,15 @@ export async function POST(req: Request) {
       redirectTo: homeForUser(user),
     });
   } catch (err) {
+    if (err instanceof PermissionError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
+    }
+    if (err instanceof ValidationError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     const message = toUserError(err, "ورود ناموفق");
     const status =
-      message.includes("اشتباه") || message.includes("پیدا نشد")
-        ? 401
-        : message.includes("دیتابیس") || message.includes("شلوغ")
-          ? 503
-          : 400;
+      message.includes("دیتابیس") || message.includes("شلوغ") ? 503 : 400;
     return NextResponse.json({ error: message }, { status });
   }
 }

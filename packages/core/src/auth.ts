@@ -7,10 +7,28 @@ import {
   ValidationError,
   assertCan,
 } from "./permissions.js";
-import { hashPassword, verifyPassword } from "./password.js";
+import {
+  hashPassword,
+  MAX_PASSWORD_LENGTH,
+  verifyPassword,
+} from "./password.js";
 import { getUserByTelegramId } from "./invites.js";
 import { logAndEmit } from "./events.js";
 import type { ActivitySource } from "@eth/db";
+
+export const LOGIN_FAILED_MESSAGE = "نام کاربری یا رمز عبور اشتباه است";
+
+let dummyLoginHash: string | null = null;
+
+function dummyHash(): string {
+  dummyLoginHash ??= hashPassword("invalid-login-placeholder");
+  return dummyLoginHash;
+}
+
+function rejectLogin(password: string): never {
+  verifyPassword(password, dummyHash());
+  throw new PermissionError(LOGIN_FAILED_MESSAGE);
+}
 
 export async function loginWithTelegramId(
   db: Db,
@@ -24,18 +42,16 @@ export async function loginWithTelegramId(
   if (!password) {
     throw new ValidationError("رمز عبور لازم است");
   }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    rejectLogin(password.slice(0, MAX_PASSWORD_LENGTH));
+  }
 
   const user = await getUserByTelegramId(db, BigInt(telegramId));
-  if (!user || !user.isActive) {
-    throw new NotFoundError("کاربر پیدا نشد یا غیرفعال است");
-  }
-  if (!user.passwordHash) {
-    throw new PermissionError(
-      "برای این کاربر رمز تنظیم نشده. از ادمین بخواهید رمز بگذارد.",
-    );
+  if (!user || !user.isActive || !user.passwordHash) {
+    rejectLogin(password);
   }
   if (!verifyPassword(password, user.passwordHash)) {
-    throw new PermissionError("آیدی یا رمز عبور اشتباه است");
+    rejectLogin(password);
   }
   return user;
 }
@@ -54,6 +70,9 @@ export async function loginWithUsername(
   if (!password) {
     throw new ValidationError("رمز عبور لازم است");
   }
+  if (password.length > MAX_PASSWORD_LENGTH || !USERNAME_RE.test(username)) {
+    rejectLogin(password.slice(0, MAX_PASSWORD_LENGTH));
+  }
 
   const user = (
     await db
@@ -63,19 +82,11 @@ export async function loginWithUsername(
       .limit(1)
   )[0];
 
-  if (!user || !user.isActive) {
-    throw new NotFoundError("کاربر پیدا نشد یا غیرفعال است");
-  }
-  if (user.role !== "client") {
-    throw new PermissionError("این حساب برای ورود کارفرما نیست");
-  }
-  if (!user.passwordHash) {
-    throw new PermissionError(
-      "برای این کاربر رمز تنظیم نشده. از استودیو بخواهید رمز بگذارد.",
-    );
+  if (!user || !user.isActive || user.role !== "client" || !user.passwordHash) {
+    rejectLogin(password);
   }
   if (!verifyPassword(password, user.passwordHash)) {
-    throw new PermissionError("نام کاربری یا رمز عبور اشتباه است");
+    rejectLogin(password);
   }
   return user;
 }
@@ -98,8 +109,8 @@ export async function createClientUser(
       "نام کاربری ۳ تا ۳۲ حرف انگلیسی، عدد، نقطه یا زیرخط باشد",
     );
   }
-  if (input.password.length < 6) {
-    throw new ValidationError("رمز حداقل ۶ کاراکتر باشد");
+  if (input.password.length < 6 || input.password.length > MAX_PASSWORD_LENGTH) {
+    throw new ValidationError("رمز بین ۶ تا ۲۵۶ کاراکتر باشد");
   }
 
   const client = (
@@ -159,8 +170,8 @@ export async function setUserPassword(
   targetUserId: string,
   newPassword: string,
 ) {
-  if (newPassword.length < 6) {
-    throw new ValidationError("رمز حداقل ۶ کاراکتر باشد");
+  if (newPassword.length < 6 || newPassword.length > MAX_PASSWORD_LENGTH) {
+    throw new ValidationError("رمز بین ۶ تا ۲۵۶ کاراکتر باشد");
   }
 
   const isSelf = actor.id === targetUserId;

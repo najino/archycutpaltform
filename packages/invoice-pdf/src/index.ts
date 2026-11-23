@@ -94,6 +94,7 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
   const issueDate = input.issuedAt
     ? formatJalaliDate(input.issuedAt)
     : "—";
+  const logoSrc = safeLogoSrc(input.agencyLogoUrl);
 
   return `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -113,7 +114,7 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
   </style>
 </head>
 <body>
-  ${input.agencyLogoUrl ? `<img class="logo" src="${escapeHtml(input.agencyLogoUrl)}" />` : ""}
+  ${logoSrc ? `<img class="logo" src="${escapeHtml(logoSrc)}" />` : ""}
   <h1>${escapeHtml(input.agencyName)}</h1>
   <div class="meta">
     شماره فاکتور: <b>${escapeHtml(input.number)}</b><br/>
@@ -152,7 +153,22 @@ function escapeHtml(s: string): string {
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function safeLogoSrc(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(url)) return url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return url;
+    }
+  } catch {
+    /* آدرس نامعتبر */
+  }
+  return null;
 }
 
 export async function renderInvoicePdf(

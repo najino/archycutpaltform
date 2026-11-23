@@ -56,7 +56,11 @@ export function LoginForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="form-grid login-form">
+    <form
+      onSubmit={onSubmit}
+      className="form-grid login-form"
+      aria-busy={loading}
+    >
       {isClient ? (
         <label>
           <span className="login-label-row">
@@ -74,6 +78,7 @@ export function LoginForm({
               placeholder="brand.studio"
               autoComplete="username"
               dir="ltr"
+              aria-invalid={error ? true : undefined}
             />
           </div>
           <span className="login-hint">نام کاربری‌ای که استودیو برایتان ساخته</span>
@@ -96,6 +101,7 @@ export function LoginForm({
               placeholder="مثال: 987654321"
               autoComplete="username"
               dir="ltr"
+              aria-invalid={error ? true : undefined}
             />
           </div>
           <span className="login-hint">شناسه یکتا — از دستور /id در بات</span>
@@ -119,6 +125,7 @@ export function LoginForm({
             placeholder="••••••••••••"
             autoComplete="current-password"
             dir="ltr"
+            aria-invalid={error ? true : undefined}
           />
           <button
             type="button"
@@ -134,12 +141,17 @@ export function LoginForm({
         </div>
       </label>
 
-      {error && <p className="login-form-error">{error}</p>}
+      {error ? (
+        <p className="login-form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
 
       <button
         className="btn primary login-submit"
         type="submit"
         disabled={loading}
+        aria-busy={loading}
       >
         {loading
           ? "در حال ورود…"

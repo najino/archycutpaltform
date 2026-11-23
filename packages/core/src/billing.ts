@@ -102,11 +102,17 @@ export async function monthlyEarnings(
     byUser.set(t.assigneeId, list);
   }
 
+  const userIds = [...byUser.keys()];
+  const nameRows = userIds.length
+    ? await db
+        .select({ id: users.id, displayName: users.displayName })
+        .from(users)
+        .where(inArray(users.id, userIds))
+    : [];
+  const names = new Map(nameRows.map((row) => [row.id, row.displayName]));
+
   const result: EditorEarnings[] = [];
   for (const [userId, userTasks] of byUser) {
-    const u = (
-      await db.select().from(users).where(eq(users.id, userId)).limit(1)
-    )[0];
     let units = 0;
     let amount = 0n;
     for (const t of userTasks) {
@@ -115,7 +121,7 @@ export async function monthlyEarnings(
     }
     result.push({
       userId,
-      displayName: u?.displayName ?? userId,
+      displayName: names.get(userId) ?? userId,
       approvedCount: userTasks.length,
       units,
       amount,

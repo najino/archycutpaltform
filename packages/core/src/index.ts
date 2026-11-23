@@ -13,4 +13,5 @@ export * from "./labels.js";
 export * from "./projects.js";
 export * from "./billing.js";
 export * from "./password.js";
+export * from "./rate-limit.js";
 export * from "./auth.js";

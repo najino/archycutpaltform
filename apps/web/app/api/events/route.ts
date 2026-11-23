@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: Request) {
   const user = await getSessionUser();
-  if (!user) {
+  if (!user || !user.isActive) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -52,9 +52,10 @@ export async function GET(req: Request) {
       unsubscribe = subscribePgEvents(url, (payload) => {
         try {
           const parsed = JSON.parse(payload) as { type?: string };
-          send(parsed.type ?? "message", payload);
+          // فقط نوع رویداد؛ payload ممکن است داده داخلی استودیو داشته باشد
+          send(parsed.type ?? "message", "{}");
         } catch {
-          send("message", payload);
+          send("message", "{}");
         }
       });
 

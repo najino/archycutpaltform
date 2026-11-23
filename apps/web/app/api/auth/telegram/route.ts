@@ -6,9 +6,21 @@ import {
   verifyTelegramLogin,
   type TelegramAuthPayload,
 } from "@/lib/telegram-auth";
+import { limitRequest } from "@/lib/rate-limit";
 import { toUserError } from "@/lib/user-error";
 
 export async function POST(req: Request) {
+  const limited = limitRequest(req, "telegram-login", 20, 15 * 60_000);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "تلاش ورود زیاد بود. کمی بعد دوباره تلاش کنید." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(limited.retryAfterSec) },
+      },
+    );
+  }
+
   try {
     const body = (await req.json()) as TelegramAuthPayload;
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -26,7 +38,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await getUserByTelegramId(db(), BigInt(body.id));
+    const telegramId = String(body.id ?? "");
+    if (!/^\d+$/.test(telegramId)) {
+      return NextResponse.json(
+        { error: "احراز هویت تلگرام نامعتبر است." },
+        { status: 401 },
+      );
+    }
+
+    const user = await getUserByTelegramId(db(), BigInt(telegramId));
     if (!user || !user.isActive) {
       return NextResponse.json(
         { error: "کاربر عضو تیم نیست. ابتدا از لینک دعوت استفاده کنید." },

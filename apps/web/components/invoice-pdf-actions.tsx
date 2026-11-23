@@ -83,14 +83,21 @@ export function InvoicePdfActions({
   }
 
   return (
-    <div className="invoice-pdf-actions no-print">
+    <div
+      className="invoice-pdf-actions no-print"
+      role="group"
+      aria-label="دانلود و چاپ فاکتور"
+    >
       <button
         type="button"
         className="btn-mini btn-mini-ok"
         onClick={download}
         disabled={!!busy}
+        aria-busy={busy === "download"}
       >
-        <span className="material-symbols-outlined">download</span>
+        <span className="material-symbols-outlined" aria-hidden="true">
+          download
+        </span>
         {busy === "download" ? "در حال ساخت…" : "دانلود PDF"}
       </button>
       <button
@@ -98,11 +105,18 @@ export function InvoicePdfActions({
         className="btn-mini"
         onClick={printPdf}
         disabled={!!busy}
+        aria-busy={busy === "print"}
       >
-        <span className="material-symbols-outlined">print</span>
+        <span className="material-symbols-outlined" aria-hidden="true">
+          print
+        </span>
         {busy === "print" ? "در حال ساخت…" : "چاپ PDF"}
       </button>
-      {error ? <p className="invoice-pdf-error">{error}</p> : null}
+      {error ? (
+        <p className="invoice-pdf-error" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

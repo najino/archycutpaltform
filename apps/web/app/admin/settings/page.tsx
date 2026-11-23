@@ -22,10 +22,14 @@ import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+const LOGO_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 
 async function fileToDataUrl(file: File): Promise<string> {
   const buf = Buffer.from(await file.arrayBuffer());
-  const mime = file.type || "image/png";
+  const mime = LOGO_MIME.has(file.type) ? file.type : null;
+  if (!mime) {
+    throw new Error("unsupported-logo");
+  }
   return `data:${mime};base64,${buf.toString("base64")}`;
 }
 
@@ -103,7 +107,7 @@ async function saveAgency(formData: FormData) {
   if (removeLogo) {
     logoUrl = null;
   } else if (logoFile instanceof File && logoFile.size > 0) {
-    if (!logoFile.type.startsWith("image/")) {
+    if (!LOGO_MIME.has(logoFile.type)) {
       redirect("/admin/settings?logoError=type");
     }
     if (logoFile.size > LOGO_MAX_BYTES) {
@@ -111,7 +115,9 @@ async function saveAgency(formData: FormData) {
     }
     logoUrl = await fileToDataUrl(logoFile);
   } else if (keepLogoUrl) {
-    logoUrl = keepLogoUrl;
+    const okData = /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(keepLogoUrl);
+    const okHttp = /^https?:\/\//i.test(keepLogoUrl);
+    logoUrl = okData || okHttp ? keepLogoUrl : current.logoUrl ?? null;
   }
 
   await setAgencySettings(
