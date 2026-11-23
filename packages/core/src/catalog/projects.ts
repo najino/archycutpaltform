@@ -13,8 +13,8 @@ import {
   ValidationError,
   assertCan,
   can,
-} from "./permissions.js";
-import { logAndEmit } from "./events.js";
+} from "../identity/permissions.js";
+import { logAndEmit } from "../shared/events.js";
 
 export type CreateProjectInput = {
   name: string;

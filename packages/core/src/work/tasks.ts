@@ -15,11 +15,11 @@ import {
   assertCan,
   assertCanModifyTask,
   can,
-} from "./permissions.js";
-import { logAndEmit } from "./events.js";
+} from "../identity/permissions.js";
+import { logAndEmit } from "../shared/events.js";
 import { weekKeyFromDueOrCreated } from "./week.js";
-import { applyApprovalPricing, assertTaskEditable } from "./billing.js";
-import { assertCanUseProject } from "./projects.js";
+import { applyApprovalPricing, assertTaskEditable } from "../billing/billing.js";
+import { assertCanUseProject } from "../catalog/projects.js";
 
 const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   todo: ["in_progress"],

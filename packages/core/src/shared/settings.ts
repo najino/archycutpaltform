@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { ActivitySource, Db, User } from "@eth/db";
 import { appSettings, categories, clients } from "@eth/db";
-import { assertCan } from "./permissions.js";
+import { assertCan } from "../identity/permissions.js";
 import { logAndEmit } from "./events.js";
 import { slugifyHashtag } from "@eth/telegram";
 

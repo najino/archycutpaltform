@@ -7,8 +7,8 @@ import {
   PermissionError,
   ValidationError,
   assertCan,
-} from "./permissions.js";
-import { logAndEmit } from "./events.js";
+} from "../identity/permissions.js";
+import { logAndEmit } from "../shared/events.js";
 
 export type SubmitDeliverableInput = {
   taskId: string;

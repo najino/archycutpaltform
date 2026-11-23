@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { computeAmount, formatToman, toPersianDigits } from "./money.js";
+import { computeAmount, formatToman, toPersianDigits } from "../shared/money.js";
 import {
   formatJalaliDate,
   monthPeriod,
@@ -8,7 +8,7 @@ import {
   previousMonthPeriod,
   toGregorian,
   toJalali,
-} from "./calendar.js";
+} from "../shared/calendar.js";
 
 describe("money math", () => {
   it("computes amount from units × price", () => {

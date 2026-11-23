@@ -13,7 +13,7 @@ import {
   verifyPassword,
 } from "./password.js";
 import { getUserByTelegramId } from "./invites.js";
-import { logAndEmit } from "./events.js";
+import { logAndEmit } from "../shared/events.js";
 import type { ActivitySource } from "@eth/db";
 
 export const LOGIN_FAILED_MESSAGE = "نام کاربری یا رمز عبور اشتباه است";

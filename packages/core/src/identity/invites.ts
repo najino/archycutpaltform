@@ -8,7 +8,7 @@ import {
   ValidationError,
   assertCan,
 } from "./permissions.js";
-import { logAndEmit } from "./events.js";
+import { logAndEmit } from "../shared/events.js";
 import { hashPassword } from "./password.js";
 
 function generateCode(): string {

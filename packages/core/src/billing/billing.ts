@@ -20,16 +20,16 @@ import {
   assertCan,
   can,
   isClientUser,
-} from "./permissions.js";
-import { logAndEmit } from "./events.js";
-import { computeAmount } from "./money.js";
+} from "../identity/permissions.js";
+import { logAndEmit } from "../shared/events.js";
+import { computeAmount } from "../shared/money.js";
 import {
   currentMonthPeriod,
   parsePeriodKey,
   periodKeyAliases,
   type MonthPeriod,
-} from "./calendar.js";
-import { rateFor } from "./projects.js";
+} from "../shared/calendar.js";
+import { rateFor } from "../catalog/projects.js";
 
 /** Apply pricing snapshot when approving a task that has a project. */
 export async function applyApprovalPricing(

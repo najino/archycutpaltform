@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import type { Db, User } from "@eth/db";
 import { tasks, users } from "@eth/db";
-import { assertCan, can } from "./permissions.js";
+import { assertCan, can } from "../identity/permissions.js";
 
 export type WeekStats = {
   userId: string;

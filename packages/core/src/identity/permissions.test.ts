@@ -5,7 +5,7 @@ import {
   can,
   canModifyTask,
   canTransition,
-} from "./index.js";
+} from "../index.js";
 
 function user(partial: Partial<User> & Pick<User, "role">): User {
   return {

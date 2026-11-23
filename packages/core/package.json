@@ -8,8 +8,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
-    "./calendar": "./src/calendar.ts",
-    "./money": "./src/money.ts"
+    "./calendar": "./src/shared/calendar.ts",
+    "./money": "./src/shared/money.ts",
+    "./identity": "./src/identity/index.ts",
+    "./work": "./src/work/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./billing": "./src/billing/index.ts"
   },
   "scripts": {
     "test": "tsx --test src/**/*.test.ts",
