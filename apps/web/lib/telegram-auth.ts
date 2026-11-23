@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 export type TelegramAuthPayload = {

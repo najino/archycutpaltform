@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
 
@@ -35,11 +36,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <head>
@@ -47,12 +49,16 @@ export default function RootLayout({
         <meta name="color-scheme" content="dark" />
         <meta name="darkreader-lock" content="darkreader-lock" />
         <script
+          nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html:
             "(function(){try{var h=document.documentElement;h.style.colorScheme='dark';h.style.backgroundColor='#100e18';if(!document.querySelector('meta[name=\"darkreader-lock\"]')){var m=document.createElement('meta');m.name='darkreader-lock';m.content='darkreader-lock';(document.head||h).prepend(m);}document.querySelectorAll('style.darkreader,link.darkreader').forEach(function(n){n.disabled=true;n.remove();});window.__ethInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__ethInstallPrompt=e;window.dispatchEvent(new Event('eth-install-ready'));});window.addEventListener('error',function(e){if(e&&e.target&&e.target!==window){e.stopImmediatePropagation();}},true);window.addEventListener('unhandledrejection',function(e){if(e&&e.reason&&typeof e.reason==='object'&&e.reason instanceof Event){e.stopImmediatePropagation();e.preventDefault();}},true);}catch(e){}})();",
           }}
         />
         <style
+          nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html:
               "html,body{background-color:#100e18!important;color:#ece8f5;color-scheme:dark;}",

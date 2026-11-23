@@ -13,7 +13,8 @@
     "./identity": "./src/identity/index.ts",
     "./work": "./src/work/index.ts",
     "./catalog": "./src/catalog/index.ts",
-    "./billing": "./src/billing/index.ts"
+    "./billing": "./src/billing/index.ts",
+    "./security": "./src/shared/http-security.ts"
   },
   "scripts": {
     "test": "tsx --test src/**/*.test.ts",
@@ -22,7 +23,7 @@
   "dependencies": {
     "@eth/db": "workspace:*",
     "@eth/telegram": "workspace:*",
-    "drizzle-orm": "^0.38.3"
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

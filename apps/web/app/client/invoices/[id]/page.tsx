@@ -5,6 +5,7 @@ import {
   getAgencySettings,
   getInvoiceDetail,
   invoiceStatusLabel,
+  isUuid,
   jalaliMonthLabel,
   toPersianDigits,
 } from "@eth/core";
@@ -19,6 +20,7 @@ export default async function ClientInvoiceDetailPage({
 }) {
   const user = await requireClientPortal();
   const { id } = await params;
+  if (!isUuid(id)) notFound();
 
   let detail;
   try {

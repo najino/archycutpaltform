@@ -5,24 +5,25 @@ import {
   currentWeekKey,
   formatJalaliDate,
   getMyWeekStats,
+  isUuid,
   jalaliWeekLabelFromKey,
   listProjects,
   listWeekTasks,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
 import { JalaliDateInput } from "@/components/jalali-date-input";
+import { requireActionUser } from "@/lib/action-guard";
 import { requireEditorPortal } from "@/lib/authz";
-import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 
 async function addTaskAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=editor");
-  const title = String(formData.get("title") ?? "").trim();
+  const user = await requireActionUser("/login?portal=editor");
+  const title = String(formData.get("title") ?? "").trim().slice(0, 200);
   if (!title) return;
   const dueDateRaw = String(formData.get("dueDate") ?? "").trim();
-  const projectId = String(formData.get("projectId") ?? "") || null;
+  const projectRaw = String(formData.get("projectId") ?? "");
+  const projectId = projectRaw && isUuid(projectRaw) ? projectRaw : null;
   const units = Number(formData.get("units") ?? 1) || 1;
   await createTask(
     db(),

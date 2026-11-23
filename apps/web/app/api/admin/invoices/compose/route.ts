@@ -11,44 +11,46 @@ import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { notifyEditorInvoiceIssued } from "@/lib/telegram-bot";
 import { toUserError } from "@/lib/user-error";
+import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
+import { logSecurity } from "@/lib/security-log";
+import { composeInvoiceSchema, parseJsonBody } from "@/lib/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const user = await getSessionUser();
-  if (!user || !can(user, "invoice.manage")) {
+  if (!user || !user.isActive) {
     return NextResponse.json(
       { error: "نشست شما منقضی شده. دوباره وارد شوید." },
       { status: 401 },
     );
   }
+  if (!can(user, "invoice.manage")) {
+    logSecurity("compose_forbidden", { userId: user.id });
+    return NextResponse.json({ error: "دسترسی ندارید" }, { status: 403 });
+  }
 
-  let body: {
-    userId?: string;
-    periodKey?: string;
-    taskIds?: string[];
-    issue?: boolean;
-  };
+  const limited = limitUserRequest(request, user.id, "compose", 20, 15 * 60_000);
+  if (!limited.ok) {
+    return rateLimitedJson("compose", limited.retryAfterSec);
+  }
+
+  let raw: unknown;
   try {
-    body = await request.json();
+    raw = await request.json();
   } catch {
     return NextResponse.json({ error: "بدنه نامعتبر" }, { status: 400 });
   }
 
-  const userId = String(body.userId ?? "").trim();
-  const periodKey = String(body.periodKey ?? "").trim();
-  const taskIds = Array.isArray(body.taskIds)
-    ? body.taskIds.map(String)
-    : [];
-  const issue = Boolean(body.issue);
-
-  if (!userId || !periodKey) {
+  const parsed = parseJsonBody(composeInvoiceSchema, raw);
+  if (!parsed.ok) {
     return NextResponse.json(
       { error: "ادیتور و ماه الزامی است" },
       { status: 400 },
     );
   }
+  const { userId, periodKey, taskIds, issue } = parsed.data;
 
   try {
     const invoice = await createPersonalizedInvoice(
@@ -84,7 +86,7 @@ export async function POST(request: Request) {
       totalAmount: invoice.totalAmount.toString(),
     });
   } catch (err) {
-    console.error("compose invoice failed:", err);
+    logSecurity("compose_failed", { userId: user.id });
     return NextResponse.json(
       { error: toUserError(err, "خطا در ساخت فاکتور شخصی") },
       { status: 400 },

@@ -1,3 +1,4 @@
+import "server-only";
 import { getDb } from "@eth/db";
 
 export function db() {

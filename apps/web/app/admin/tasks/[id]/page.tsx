@@ -8,22 +8,24 @@ import {
   formatJalaliDateTime,
   formatToman,
   getTaskById,
+  isTaskStatus,
+  isUuid,
   jalaliWeekLabelFromKey,
   listActivityForEntity,
   toPersianDigits,
 } from "@eth/core";
 import { deliverables } from "@eth/db";
 import { channelPostUrl } from "@eth/telegram";
-import type { TaskStatus } from "@eth/db";
+import { requireActionUser } from "@/lib/action-guard";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 async function statusAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionUser("/login?portal=admin");
   const taskId = String(formData.get("taskId") ?? "");
-  const status = String(formData.get("status") ?? "") as TaskStatus;
+  const status = String(formData.get("status") ?? "");
+  if (!isUuid(taskId) || !isTaskStatus(status)) redirect("/admin/board");
   await changeStatus(db(), user, taskId, status, "web");
   redirect(`/admin/tasks/${taskId}`);
 }
@@ -33,9 +35,9 @@ export default async function TaskDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireAdmin();
   const { id } = await params;
+  if (!isUuid(id)) notFound();
   const task = await getTaskById(db(), id);
   if (!task) notFound();
 

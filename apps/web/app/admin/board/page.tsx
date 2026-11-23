@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  can,
   changeStatus,
   createTask,
   currentWeekKey,
+  isTaskStatus,
+  isUuid,
   jalaliWeekLabelFromKey,
   listMembers,
   listProjects,
@@ -14,8 +15,8 @@ import type { TaskStatus } from "@eth/db";
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
 import { JalaliDateInput } from "@/components/jalali-date-input";
+import { requireActionCan, requireActionUser } from "@/lib/action-guard";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 import { requireAdmin } from "@/lib/authz";
 
 const COLUMNS: { status: TaskStatus; label: string; icon: string }[] = [
@@ -28,14 +29,14 @@ const COLUMNS: { status: TaskStatus; label: string; icon: string }[] = [
 
 async function assignAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user || !can(user, "task.assign")) redirect("/login?portal=admin");
-  const title = String(formData.get("title") ?? "").trim();
+  const user = await requireActionCan("task.assign");
+  const title = String(formData.get("title") ?? "").trim().slice(0, 200);
   const assigneeId = String(formData.get("assigneeId") ?? "");
   const dueDate = String(formData.get("dueDate") ?? "").trim() || null;
-  const projectId = String(formData.get("projectId") ?? "") || null;
+  const projectIdRaw = String(formData.get("projectId") ?? "");
+  const projectId = projectIdRaw && isUuid(projectIdRaw) ? projectIdRaw : null;
   const units = Number(formData.get("units") ?? 1) || 1;
-  if (!title || !assigneeId) return;
+  if (!title || !isUuid(assigneeId)) return;
   await createTask(
     db(),
     user,
@@ -47,10 +48,10 @@ async function assignAction(formData: FormData) {
 
 async function statusAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionUser("/login?portal=admin");
   const taskId = String(formData.get("taskId") ?? "");
-  const status = String(formData.get("status") ?? "") as TaskStatus;
+  const status = String(formData.get("status") ?? "");
+  if (!isUuid(taskId) || !isTaskStatus(status)) return;
   await changeStatus(db(), user, taskId, status, "web");
   redirect("/admin/board?ok=status");
 }

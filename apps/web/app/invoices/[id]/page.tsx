@@ -6,6 +6,7 @@ import {
   getAgencySettings,
   getInvoiceDetail,
   invoiceStatusLabel,
+  isUuid,
   setInvoicePaymentReceipt,
   toPersianDigits,
 } from "@eth/core";
@@ -13,17 +14,17 @@ import { EditorShell } from "@/components/editor-shell";
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions";
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
+import { requireActionUser } from "@/lib/action-guard";
 import { requireEditorPortal } from "@/lib/authz";
-import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";
 
 async function saveReceiptAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=editor");
+  const user = await requireActionUser("/login?portal=editor");
   const id = String(formData.get("id") ?? "");
-  const paymentReceipt = String(formData.get("paymentReceipt") ?? "");
+  const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
+  if (!isUuid(id)) redirect("/invoices");
   await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
   redirect(`/invoices/${id}?ok=receipt#payment`);
 }
@@ -37,6 +38,7 @@ export default async function InvoicePrintPage({
 }) {
   const user = await requireEditorPortal();
   const { id } = await params;
+  if (!isUuid(id)) notFound();
   const flash = resolveFlash(await searchParams);
 
   let detail;

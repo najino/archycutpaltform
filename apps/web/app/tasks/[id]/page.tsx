@@ -8,6 +8,8 @@ import {
   formatJalaliDateTime,
   formatToman,
   getTaskById,
+  isTaskStatus,
+  isUuid,
   jalaliWeekLabelFromKey,
   listActivityForEntity,
   listCategories,
@@ -16,19 +18,18 @@ import {
 } from "@eth/core";
 import { deliverables } from "@eth/db";
 import { channelPostUrl } from "@eth/telegram";
-import type { TaskStatus } from "@eth/db";
 import { DeliverableUpload } from "@/components/deliverable-upload";
 import { EditorShell } from "@/components/editor-shell";
+import { requireActionUser } from "@/lib/action-guard";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 async function statusAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireActionUser("/login?portal=editor");
   const taskId = String(formData.get("taskId") ?? "");
-  const status = String(formData.get("status") ?? "") as TaskStatus;
+  const status = String(formData.get("status") ?? "");
+  if (!isUuid(taskId) || !isTaskStatus(status)) redirect("/week");
   await changeStatus(db(), user, taskId, status, "web");
   redirect(`/tasks/${taskId}`);
 }
@@ -40,6 +41,7 @@ export default async function TaskDetailPage({
 }) {
   const user = await requireEditorPortal();
   const { id } = await params;
+  if (!isUuid(id)) notFound();
   const task = await getTaskById(db(), id);
   if (!task) notFound();
 

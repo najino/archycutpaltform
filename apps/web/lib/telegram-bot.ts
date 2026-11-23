@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash } from "node:crypto";
 
 const MAX_BYTES = 49 * 1024 * 1024;

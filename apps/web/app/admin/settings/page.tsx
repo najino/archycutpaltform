@@ -6,11 +6,14 @@ import {
   createClientUser,
   createInvite,
   getAgencySettings,
+  IMAGE_MIME,
+  isUuid,
   listCategories,
   listClients,
   listMembers,
   setAgencySettings,
   setUserPassword,
+  sniffImageKind,
 } from "@eth/core";
 import { inviteDeepLink } from "@eth/telegram";
 import { AgencyLogoField } from "@/components/agency-logo-field";
@@ -18,19 +21,23 @@ import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
 import { InviteLinkCard } from "@/components/invite-link-card";
 import { InviteRoleSelect } from "@/components/invite-role-select";
+import { requireActionCan } from "@/lib/action-guard";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
+import { toUserError } from "@/lib/user-error";
 
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
-const LOGO_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 
 async function fileToDataUrl(file: File): Promise<string> {
-  const buf = Buffer.from(await file.arrayBuffer());
-  const mime = LOGO_MIME.has(file.type) ? file.type : null;
-  if (!mime) {
+  if (file.size > LOGO_MAX_BYTES) {
     throw new Error("unsupported-logo");
   }
-  return `data:${mime};base64,${buf.toString("base64")}`;
+  const buf = Buffer.from(await file.arrayBuffer());
+  const kind = sniffImageKind(buf);
+  if (!kind) {
+    throw new Error("unsupported-logo");
+  }
+  return `data:${IMAGE_MIME[kind]};base64,${buf.toString("base64")}`;
 }
 
 const ROLE_FA: Record<string, string> = {
@@ -42,9 +49,8 @@ const ROLE_FA: Record<string, string> = {
 
 async function addCategory(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
-  const name = String(formData.get("name") ?? "").trim();
+  const user = await requireActionCan("settings.manage");
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
   if (!name) return;
   await createCategory(db(), user, name, "web");
   redirect("/admin/settings?ok=category");
@@ -52,9 +58,8 @@ async function addCategory(formData: FormData) {
 
 async function addClient(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
-  const name = String(formData.get("name") ?? "").trim();
+  const user = await requireActionCan("settings.manage");
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
   if (!name) return;
   await createClient(db(), user, name, "web");
   redirect("/admin/settings?ok=client");
@@ -62,12 +67,14 @@ async function addClient(formData: FormData) {
 
 async function addClientUser(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionCan("settings.manage");
   const clientId = String(formData.get("clientId") ?? "").trim();
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const displayName = String(formData.get("displayName") ?? "").trim();
+  if (!isUuid(clientId)) {
+    redirect("/admin/settings?error=" + encodeURIComponent("کارفرما نامعتبر است"));
+  }
   try {
     await createClientUser(
       db(),
@@ -76,8 +83,7 @@ async function addClientUser(formData: FormData) {
       "web",
     );
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "ساخت حساب کارفرما ناموفق بود";
+    const message = toUserError(err, "ساخت حساب کارفرما ناموفق بود");
     redirect(`/admin/settings?error=${encodeURIComponent(message)}`);
   }
   redirect("/admin/settings?ok=client_user");
@@ -85,17 +91,16 @@ async function addClientUser(formData: FormData) {
 
 async function makeInvite(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
-  const role = String(formData.get("role") ?? "editor") as "editor" | "admin";
+  const user = await requireActionCan("invite.create");
+  const roleRaw = String(formData.get("role") ?? "editor");
+  const role = roleRaw === "admin" ? "admin" : "editor";
   const invite = await createInvite(db(), user, role, "web");
   redirect(`/admin/settings?invite=${invite.code}`);
 }
 
 async function saveAgency(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionCan("settings.manage");
 
   const current = await getAgencySettings(db());
   const removeLogo = String(formData.get("removeLogo") ?? "") === "1";
@@ -107,17 +112,18 @@ async function saveAgency(formData: FormData) {
   if (removeLogo) {
     logoUrl = null;
   } else if (logoFile instanceof File && logoFile.size > 0) {
-    if (!LOGO_MIME.has(logoFile.type)) {
-      redirect("/admin/settings?logoError=type");
-    }
     if (logoFile.size > LOGO_MAX_BYTES) {
       redirect("/admin/settings?logoError=size");
     }
-    logoUrl = await fileToDataUrl(logoFile);
+    try {
+      logoUrl = await fileToDataUrl(logoFile);
+    } catch {
+      redirect("/admin/settings?logoError=type");
+    }
   } else if (keepLogoUrl) {
     const okData = /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(keepLogoUrl);
-    const okHttp = /^https?:\/\//i.test(keepLogoUrl);
-    logoUrl = okData || okHttp ? keepLogoUrl : current.logoUrl ?? null;
+    const okHttps = /^https:\/\//i.test(keepLogoUrl);
+    logoUrl = okData || okHttps ? keepLogoUrl : current.logoUrl ?? null;
   }
 
   await setAgencySettings(
@@ -125,7 +131,7 @@ async function saveAgency(formData: FormData) {
     user,
     {
       name:
-        String(formData.get("name") ?? "").trim() ||
+        String(formData.get("name") ?? "").trim().slice(0, 120) ||
         "فاکتور تسویه حساب ماهانه آرشی کات",
       logoUrl,
     },
@@ -136,10 +142,10 @@ async function saveAgency(formData: FormData) {
 
 async function savePassword(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionCan("settings.manage");
   const targetUserId = String(formData.get("userId") ?? user.id);
   const password = String(formData.get("password") ?? "");
+  if (!isUuid(targetUserId)) redirect("/admin/settings");
   await setUserPassword(db(), user, targetUserId, password);
   redirect("/admin/settings?ok=password");
 }
@@ -149,8 +155,7 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ invite?: string; logoError?: string; ok?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireAdmin();
   if (!can(user, "settings.manage")) redirect("/admin");
 
   const sp = await searchParams;

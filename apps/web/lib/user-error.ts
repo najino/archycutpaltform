@@ -96,9 +96,5 @@ export function toUserError(
   }
 
   // پیام انگلیسی ناشناخته را لو نده
-  if (/^[A-Za-z0-9\s\-_:.,'"/\\()]+$/.test(text) && text.length > 8) {
-    return fallback;
-  }
-
-  return text || fallback;
+  return fallback;
 }

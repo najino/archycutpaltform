@@ -16,8 +16,8 @@
     "@grammyjs/conversations": "^2.0.3",
     "@grammyjs/runner": "^2.0.3",
     "dotenv": "^16.4.7",
-    "grammy": "^1.35.0",
-    "drizzle-orm": "^0.38.3"
+    "drizzle-orm": "^0.45.2",
+    "grammy": "^1.35.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

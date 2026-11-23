@@ -21,6 +21,14 @@ import { weekKeyFromDueOrCreated } from "./week.js";
 import { applyApprovalPricing, assertTaskEditable } from "../billing/billing.js";
 import { assertCanUseProject } from "../catalog/projects.js";
 
+export const TASK_STATUSES = [
+  "todo",
+  "in_progress",
+  "delivered",
+  "approved",
+  "rejected",
+] as const satisfies readonly TaskStatus[];
+
 const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   todo: ["in_progress"],
   in_progress: ["delivered", "todo"],
@@ -28,6 +36,10 @@ const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   approved: [],
   rejected: ["in_progress"],
 };
+
+export function isTaskStatus(value: string): value is TaskStatus {
+  return (TASK_STATUSES as readonly string[]).includes(value);
+}
 
 export function canTransition(from: TaskStatus, to: TaskStatus): boolean {
   return ALLOWED_TRANSITIONS[from].includes(to);

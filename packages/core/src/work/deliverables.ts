@@ -7,6 +7,7 @@ import {
   PermissionError,
   ValidationError,
   assertCan,
+  can,
 } from "../identity/permissions.js";
 import { logAndEmit } from "../shared/events.js";
 
@@ -48,7 +49,7 @@ export async function submitDeliverable(
   const task = taskRows[0];
   if (!task) throw new NotFoundError("Task not found");
 
-  if (task.assigneeId !== actor.id && actor.role === "editor") {
+  if (task.assigneeId !== actor.id && !can(actor, "task.edit_any")) {
     throw new PermissionError("Can only submit for own tasks");
   }
   if (task.status === "approved") {

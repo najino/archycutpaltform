@@ -7,6 +7,7 @@ import {
   getAgencySettings,
   getInvoiceDetail,
   invoiceStatusLabel,
+  isUuid,
   markInvoicePaid,
   setInvoicePaymentReceipt,
   toPersianDigits,
@@ -14,26 +15,27 @@ import {
 import { FlashAlert } from "@/components/flash-alert";
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions";
 import { resolveFlash } from "@/lib/flash";
-import { getSessionUser } from "@/lib/session";
+import { requireActionCan, requireActionUser } from "@/lib/action-guard";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
 import Link from "next/link";
 
 async function saveReceiptAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionUser("/login?portal=admin");
   const id = String(formData.get("id") ?? "");
-  const paymentReceipt = String(formData.get("paymentReceipt") ?? "");
+  const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
+  if (!isUuid(id)) redirect("/admin/invoices");
   await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
   redirect(`/admin/invoices/${id}?ok=receipt#payment`);
 }
 
 async function finalizePaymentAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionCan("invoice.pay");
   const id = String(formData.get("id") ?? "");
-  const paymentReceipt = String(formData.get("paymentReceipt") ?? "");
+  const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
+  if (!isUuid(id)) redirect("/admin/invoices");
   await markInvoicePaid(db(), user, id, "web", paymentReceipt || null);
   redirect(`/admin/invoices/${id}?ok=paid#payment`);
 }
@@ -45,9 +47,9 @@ export default async function InvoicePrintPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ ok?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+  const user = await requireAdmin();
   const { id } = await params;
+  if (!isUuid(id)) notFound();
   const flash = resolveFlash(await searchParams);
 
   let detail;

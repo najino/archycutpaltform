@@ -3,6 +3,7 @@ import {
   getAgencySettings,
   getInvoiceDetail,
   isClientUser,
+  isUuid,
   NotFoundError,
   PermissionError,
   ValidationError,
@@ -11,13 +12,15 @@ import { renderInvoicePdf, toInvoicePdfInput } from "@eth/invoice-pdf";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { toUserError } from "@/lib/user-error";
+import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
+import { logSecurity } from "@/lib/security-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function pdfErrorResponse(err: unknown) {
-  console.error("invoice pdf", err);
   if (err instanceof PermissionError) {
+    logSecurity("pdf_forbidden");
     return NextResponse.json(
       { error: "دسترسی به این فاکتور ندارید" },
       { status: 403 },
@@ -32,6 +35,7 @@ function pdfErrorResponse(err: unknown) {
       { status: 400 },
     );
   }
+  console.error("invoice pdf");
   return NextResponse.json(
     { error: toUserError(err, "ساخت PDF ناموفق بود") },
     { status: 500 },
@@ -47,7 +51,16 @@ export async function GET(
     return NextResponse.json({ error: "وارد شوید" }, { status: 401 });
   }
 
+  const limited = limitUserRequest(req, user.id, "invoice-pdf", 30, 15 * 60_000);
+  if (!limited.ok) {
+    return rateLimitedJson("invoice-pdf", limited.retryAfterSec);
+  }
+
   const { id } = await params;
+  if (!isUuid(id)) {
+    return NextResponse.json({ error: "فاکتور پیدا نشد" }, { status: 404 });
+  }
+
   const inline = new URL(req.url).searchParams.get("inline") === "1";
 
   try {
@@ -80,6 +93,7 @@ export async function GET(
         "Content-Type": "application/pdf",
         "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="${filename}"`,
         "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (err) {

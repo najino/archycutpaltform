@@ -54,7 +54,7 @@ export async function setAgencySettings(
     action: "settings.agency_updated",
     entityType: "settings",
     entityId: null,
-    payload: settings as unknown as Record<string, unknown>,
+    payload: { name: settings.name, hasLogo: Boolean(settings.logoUrl) },
   });
 }
 

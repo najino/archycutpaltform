@@ -1,3 +1,4 @@
+import "server-only";
 import postgres from "postgres";
 
 type Handler = (payload: string) => void;

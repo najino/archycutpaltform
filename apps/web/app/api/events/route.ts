@@ -1,5 +1,6 @@
 import { subscribePgEvents } from "@/lib/pg-listen";
 import { getSessionUser } from "@/lib/session";
+import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -10,9 +11,14 @@ export async function GET(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  const limited = limitUserRequest(req, user.id, "events", 20, 60_000);
+  if (!limited.ok) {
+    return rateLimitedJson("events", limited.retryAfterSec);
+  }
+
   const url = process.env.DATABASE_URL;
   if (!url) {
-    return new Response("DATABASE_URL missing", { status: 500 });
+    return new Response("Service unavailable", { status: 503 });
   }
 
   const encoder = new TextEncoder();
@@ -75,7 +81,7 @@ export async function GET(req: Request) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
+      "Cache-Control": "no-cache, no-store, no-transform",
       Connection: "keep-alive",
     },
   });

@@ -1,15 +1,15 @@
-import { redirect } from "next/navigation";
 import {
   can,
   currentMonthPeriod,
   formatToman,
+  isJalaliPeriodKey,
   jalaliMonthLabel,
   monthlyEarnings,
   toPersianDigits,
 } from "@eth/core";
 import { JalaliMonthInput } from "@/components/jalali-month-input";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 import Link from "next/link";
 
 export default async function EarningsPage({
@@ -17,11 +17,13 @@ export default async function EarningsPage({
 }: {
   searchParams: Promise<{ month?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireAdmin();
 
   const sp = await searchParams;
-  const periodKey = sp.month || currentMonthPeriod().periodKey;
+  const periodKey =
+    sp.month && isJalaliPeriodKey(sp.month)
+      ? sp.month
+      : currentMonthPeriod().periodKey;
   const isAdmin = can(user, "earnings.view_all");
   const rows = await monthlyEarnings(
     db(),

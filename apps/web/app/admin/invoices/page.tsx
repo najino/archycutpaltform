@@ -6,6 +6,7 @@ import {
   currentMonthPeriod,
   formatToman,
   invoiceStatusLabel,
+  isUuid,
   issueInvoice,
   jalaliMonthLabel,
   listInvoices,
@@ -17,14 +18,15 @@ import {
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
 import { InvoiceSearch } from "@/components/invoice-search";
+import { requireActionCan } from "@/lib/action-guard";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 async function issueAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionCan("invoice.manage");
   const id = String(formData.get("id") ?? "");
+  if (!isUuid(id)) redirect("/admin/invoices");
   const inv = await issueInvoice(db(), user, id, "web");
   try {
     const { notifyEditorInvoiceIssued } = await import("@/lib/telegram-bot");
@@ -49,9 +51,9 @@ async function issueAction(formData: FormData) {
 
 async function voidAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireActionCan("invoice.manage");
   const id = String(formData.get("id") ?? "");
+  if (!isUuid(id)) redirect("/admin/invoices");
   await voidInvoice(db(), user, id, "web");
   redirect("/admin/invoices?ok=void");
 }
@@ -67,8 +69,7 @@ export default async function InvoicesPage({
     q?: string;
   }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireAdmin();
 
   const sp = await searchParams;
   const flash = resolveFlash(sp);

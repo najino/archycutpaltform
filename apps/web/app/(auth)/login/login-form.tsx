@@ -40,14 +40,20 @@ export function LoginForm({
         setLoading(false);
         return;
       }
-      router.push(
-        data.redirectTo ??
-        (portal === "admin"
+      const fallback =
+        portal === "admin"
           ? "/admin"
           : portal === "client"
             ? "/client"
-            : "/week"),
-      );
+            : "/week";
+      const next =
+        typeof data.redirectTo === "string" &&
+        data.redirectTo.startsWith("/") &&
+        !data.redirectTo.startsWith("//") &&
+        !data.redirectTo.includes("://")
+          ? data.redirectTo
+          : fallback;
+      router.push(next);
       router.refresh();
     } catch {
       setError("خطای شبکه");

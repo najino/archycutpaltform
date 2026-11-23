@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
+  can,
   getTaskById,
+  isUuid,
   listCategories,
   listClients,
   submitDeliverable,
@@ -15,6 +17,8 @@ import {
   publishLinkToPortfolioChannel,
 } from "@/lib/telegram-bot";
 import { toUserError } from "@/lib/user-error";
+import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
+import { logSecurity } from "@/lib/security-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,12 +43,27 @@ export async function POST(
     );
   }
 
+  if (!can(user, "deliverable.submit")) {
+    logSecurity("submit_forbidden", { userId: user.id });
+    return NextResponse.json({ error: "دسترسی ندارید" }, { status: 403 });
+  }
+
+  const limited = limitUserRequest(request, user.id, "submit", 10, 15 * 60_000);
+  if (!limited.ok) {
+    return rateLimitedJson("submit", limited.retryAfterSec);
+  }
+
   const { id: taskId } = await params;
+  if (!isUuid(taskId)) {
+    return NextResponse.json({ error: "تسک پیدا نشد" }, { status: 404 });
+  }
+
   const task = await getTaskById(db(), taskId);
   if (!task) {
     return NextResponse.json({ error: "تسک پیدا نشد" }, { status: 404 });
   }
-  if (task.assigneeId !== user.id && user.role === "editor") {
+  if (task.assigneeId !== user.id && !can(user, "task.edit_any")) {
+    logSecurity("submit_forbidden", { userId: user.id });
     return NextResponse.json(
       { error: "فقط ادیتور همین تسک می‌تواند تحویل بدهد" },
       { status: 403 },
@@ -70,21 +89,21 @@ export async function POST(
   let mediaUrl: string;
   try {
     mediaUrl = normalizeMediaUrl(String(form.get("mediaUrl") ?? ""));
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "لینک نامعتبر است" },
-      { status: 400 },
-    );
+  } catch {
+    return NextResponse.json({ error: "لینک نامعتبر است" }, { status: 400 });
   }
 
-  const title = String(form.get("title") ?? "").trim() || task.title;
+  const title = String(form.get("title") ?? "").trim().slice(0, 200) || task.title;
   const categoryId = String(form.get("categoryId") ?? "").trim();
   const clientRaw = String(form.get("clientId") ?? "").trim();
   const clientId = clientRaw || null;
   const videoType = String(form.get("videoType") ?? "").trim() as VideoType;
 
-  if (!categoryId) {
+  if (!isUuid(categoryId)) {
     return NextResponse.json({ error: "دسته الزامی است" }, { status: 400 });
+  }
+  if (clientId && !isUuid(clientId)) {
+    return NextResponse.json({ error: "کارفرما پیدا نشد" }, { status: 400 });
   }
   if (!VIDEO_TYPES.has(videoType)) {
     return NextResponse.json({ error: "نوع ویدیو نامعتبر است" }, { status: 400 });
@@ -152,7 +171,7 @@ export async function POST(
       mediaUrl,
     });
   } catch (err) {
-    console.error("web link submit failed:", err);
+    logSecurity("submit_failed", { userId: user.id });
     return NextResponse.json(
       { error: toUserError(err, "خطا در انتشار به تلگرام") },
       { status: 500 },

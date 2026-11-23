@@ -1,8 +1,13 @@
-import { redirect } from "next/navigation";
-import { listCategories, listClients, listDeliverables, listMembers } from "@eth/core";
+import {
+  isUuid,
+  listCategories,
+  listClients,
+  listDeliverables,
+  listMembers,
+} from "@eth/core";
 import { channelPostUrl, videoTypeLabel } from "@eth/telegram";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 export default async function PortfolioPage({
   searchParams,
@@ -14,21 +19,22 @@ export default async function PortfolioPage({
     editorId?: string;
   }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  await requireAdmin();
   const sp = await searchParams;
+  const videoType =
+    sp.videoType === "reels" ||
+    sp.videoType === "shorts" ||
+    sp.videoType === "youtube_long" ||
+    sp.videoType === "other"
+      ? sp.videoType
+      : undefined;
 
   const [rows, cats, clients, members] = await Promise.all([
     listDeliverables(db(), {
-      categoryId: sp.categoryId,
-      clientId: sp.clientId,
-      videoType: sp.videoType as
-        | "reels"
-        | "shorts"
-        | "youtube_long"
-        | "other"
-        | undefined,
-      editorId: sp.editorId,
+      categoryId: sp.categoryId && isUuid(sp.categoryId) ? sp.categoryId : undefined,
+      clientId: sp.clientId && isUuid(sp.clientId) ? sp.clientId : undefined,
+      videoType,
+      editorId: sp.editorId && isUuid(sp.editorId) ? sp.editorId : undefined,
     }),
     listCategories(db()),
     listClients(db()),

@@ -8,6 +8,7 @@ import {
   canTransition,
   isClientUser,
   isStudioUser,
+  isTaskStatus,
   PermissionError,
 } from "../index.js";
 
@@ -78,6 +79,7 @@ describe("permissions", () => {
     assert.equal(can(client, "invoice.manage"), false);
     assert.equal(can(client, "task.view_all"), false);
     assert.equal(can(client, "project.manage"), false);
+    assert.equal(can(client, "deliverable.submit"), false);
   });
 
   it("invoiced tasks are locked", () => {
@@ -122,5 +124,11 @@ describe("status transitions", () => {
     assert.equal(canTransition("todo", "approved"), false);
     assert.equal(canTransition("approved", "rejected"), false);
     assert.equal(canTransition("delivered", "todo"), false);
+  });
+
+  it("rejects unknown status strings", () => {
+    assert.equal(isTaskStatus("todo"), true);
+    assert.equal(isTaskStatus("approved"), true);
+    assert.equal(isTaskStatus("hacked"), false);
   });
 });

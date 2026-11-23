@@ -3,6 +3,7 @@ import {
   can,
   createProject,
   formatToman,
+  isUuid,
   listAllProjectMembers,
   listClients,
   listMembers,
@@ -12,19 +13,20 @@ import {
 } from "@eth/core";
 import { FlashAlert } from "@/components/flash-alert";
 import { resolveFlash } from "@/lib/flash";
+import { requireActionCan } from "@/lib/action-guard";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 async function createAction(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user || !can(user, "project.manage")) redirect("/login?portal=admin");
+  const user = await requireActionCan("project.manage");
 
-  const name = String(formData.get("name") ?? "").trim();
-  const unitLabel = String(formData.get("unitLabel") ?? "episode").trim();
+  const name = String(formData.get("name") ?? "").trim().slice(0, 120);
+  const unitLabel = String(formData.get("unitLabel") ?? "episode").trim().slice(0, 40);
   const unitPrice = parseTomanInput(String(formData.get("unitPrice") ?? "0"));
-  const clientId = String(formData.get("clientId") ?? "") || null;
-  const memberIds = formData.getAll("memberIds").map(String);
+  const clientRaw = String(formData.get("clientId") ?? "");
+  const clientId = clientRaw && isUuid(clientRaw) ? clientRaw : null;
+  const memberIds = formData.getAll("memberIds").map(String).filter(isUuid);
 
   await createProject(
     db(),
@@ -37,10 +39,11 @@ async function createAction(formData: FormData) {
 
 async function toggleStatus(formData: FormData) {
   "use server";
-  const user = await getSessionUser();
-  if (!user || !can(user, "project.manage")) redirect("/login?portal=admin");
+  const user = await requireActionCan("project.manage");
   const id = String(formData.get("id") ?? "");
-  const status = String(formData.get("status") ?? "") as "open" | "closed";
+  const statusRaw = String(formData.get("status") ?? "");
+  const status = statusRaw === "closed" ? "closed" : "open";
+  if (!isUuid(id)) return;
   await updateProject(db(), user, id, { status }, "web");
   redirect("/admin/projects?ok=project_status");
 }
@@ -50,8 +53,7 @@ export default async function ProjectsPage({
 }: {
   searchParams: Promise<{ ok?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireAdmin();
   if (!can(user, "project.manage")) redirect("/admin");
 
   const sp = await searchParams;

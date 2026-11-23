@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import {
   can,
   currentMonthPeriod,
+  isJalaliPeriodKey,
+  isUuid,
   jalaliMonthLabel,
   listBillableTasks,
   listInvoices,
@@ -13,21 +15,24 @@ import {
   InvoiceComposeForm,
   type ComposeTask,
 } from "@/components/invoice-compose-form";
+import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/session";
 
 export default async function InvoiceComposePage({
   searchParams,
 }: {
   searchParams: Promise<{ month?: string; userId?: string }>;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login?portal=admin");
+  const user = await requireAdmin();
   if (!can(user, "invoice.manage")) redirect("/admin/invoices");
 
   const sp = await searchParams;
-  const periodKey = sp.month || currentMonthPeriod().periodKey;
-  const selectedUserId = sp.userId?.trim() || "";
+  const periodKey =
+    sp.month && isJalaliPeriodKey(sp.month)
+      ? sp.month
+      : currentMonthPeriod().periodKey;
+  const selectedUserId =
+    sp.userId && isUuid(sp.userId.trim()) ? sp.userId.trim() : "";
 
   const members = await listMembers(db());
   const editors = members
