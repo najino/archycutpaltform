@@ -8,9 +8,9 @@ import {
   listMembers,
 } from "@eth/core";
 import { db } from "@/lib/db";
+import { jsonError } from "@/lib/http-error";
 import { getSessionUser } from "@/lib/session";
 import { notifyEditorInvoiceIssued } from "@/lib/telegram-bot";
-import { toUserError } from "@/lib/user-error";
 import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
 import { logSecurity } from "@/lib/security-log";
 import { composeInvoiceSchema, parseJsonBody } from "@/lib/validation";
@@ -21,14 +21,11 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   const user = await getSessionUser();
   if (!user || !user.isActive) {
-    return NextResponse.json(
-      { error: "نشست شما منقضی شده. دوباره وارد شوید." },
-      { status: 401 },
-    );
+    return jsonError("UNAUTHORIZED");
   }
   if (!can(user, "invoice.manage")) {
     logSecurity("compose_forbidden", { userId: user.id });
-    return NextResponse.json({ error: "دسترسی ندارید" }, { status: 403 });
+    return jsonError("FORBIDDEN");
   }
 
   const limited = limitUserRequest(request, user.id, "compose", 20, 15 * 60_000);
@@ -40,15 +37,12 @@ export async function POST(request: Request) {
   try {
     raw = await request.json();
   } catch {
-    return NextResponse.json({ error: "بدنه نامعتبر" }, { status: 400 });
+    return jsonError("BAD_REQUEST");
   }
 
   const parsed = parseJsonBody(composeInvoiceSchema, raw);
   if (!parsed.ok) {
-    return NextResponse.json(
-      { error: "ادیتور و ماه الزامی است" },
-      { status: 400 },
-    );
+    return jsonError("VALIDATION", { message: "ادیتور و ماه الزامی است" });
   }
   const { userId, periodKey, taskIds, issue } = parsed.data;
 
@@ -87,9 +81,6 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     logSecurity("compose_failed", { userId: user.id });
-    return NextResponse.json(
-      { error: toUserError(err, "خطا در ساخت فاکتور شخصی") },
-      { status: 400 },
-    );
+    return jsonError(err);
   }
 }

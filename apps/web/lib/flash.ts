@@ -1,3 +1,5 @@
+import { lookupErrorParam } from "@eth/core/errors";
+
 export type FlashTone = "success" | "error" | "info" | "warning";
 
 export type FlashMessage = {
@@ -31,10 +33,11 @@ export function resolveFlash(sp: {
   }
 
   if (sp.error) {
+    const mapped = lookupErrorParam(sp.error);
     return {
       tone: "error",
-      title: "خطا",
-      detail: sp.error,
+      title: mapped?.title ?? "خطا",
+      detail: mapped?.message ?? "خطایی رخ داد. دوباره تلاش کنید.",
       clearKeys: ["error"],
     };
   }

@@ -21,9 +21,11 @@ import { InvoiceSearch } from "@/components/invoice-search";
 import { requireActionCan } from "@/lib/action-guard";
 import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { runAction } from "@/lib/http-error";
 
 async function issueAction(formData: FormData) {
   "use server";
+  await runAction("/admin/invoices", async () => {
   const user = await requireActionCan("invoice.manage");
   const id = String(formData.get("id") ?? "");
   if (!isUuid(id)) redirect("/admin/invoices");
@@ -47,15 +49,18 @@ async function issueAction(formData: FormData) {
     console.error("issue notify failed:", err);
   }
   redirect(`/admin/invoices?month=${inv.periodKey}&ok=invoice`);
+  });
 }
 
 async function voidAction(formData: FormData) {
   "use server";
-  const user = await requireActionCan("invoice.manage");
-  const id = String(formData.get("id") ?? "");
-  if (!isUuid(id)) redirect("/admin/invoices");
-  await voidInvoice(db(), user, id, "web");
-  redirect("/admin/invoices?ok=void");
+  await runAction("/admin/invoices", async () => {
+    const user = await requireActionCan("invoice.manage");
+    const id = String(formData.get("id") ?? "");
+    if (!isUuid(id)) redirect("/admin/invoices");
+    await voidInvoice(db(), user, id, "web");
+    redirect("/admin/invoices?ok=void");
+  });
 }
 
 export default async function InvoicesPage({
@@ -64,6 +69,7 @@ export default async function InvoicesPage({
   searchParams: Promise<{
     month?: string;
     ok?: string;
+    error?: string;
     userId?: string;
     status?: string;
     q?: string;

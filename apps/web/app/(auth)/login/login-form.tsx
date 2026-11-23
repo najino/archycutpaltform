@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { InlineError } from "@/components/inline-error";
+import { networkPublicError, readResponseError } from "@/lib/api-error";
 
 export type LoginPortal = "admin" | "editor" | "client";
 
@@ -13,7 +15,9 @@ export function LoginForm({
   botUsername: string;
 }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ title: string; message: string } | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const isClient = portal === "client";
@@ -34,12 +38,15 @@ export function LoginForm({
           portal,
         }),
       });
-      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "ورود ناموفق");
+        const body = await readResponseError(res);
+        setError({ title: body.title, message: body.message });
         setLoading(false);
         return;
       }
+      const data = (await res.json().catch(() => ({}))) as {
+        redirectTo?: string;
+      };
       const fallback =
         portal === "admin"
           ? "/admin"
@@ -56,7 +63,8 @@ export function LoginForm({
       router.push(next);
       router.refresh();
     } catch {
-      setError("خطای شبکه");
+      const body = networkPublicError();
+      setError({ title: body.title, message: body.message });
       setLoading(false);
     }
   }
@@ -148,9 +156,7 @@ export function LoginForm({
       </label>
 
       {error ? (
-        <p className="login-form-error" role="alert">
-          {error}
-        </p>
+        <InlineError title={error.title} message={error.message} />
       ) : null}
 
       <button

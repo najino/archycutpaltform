@@ -24,7 +24,7 @@ import { InviteRoleSelect } from "@/components/invite-role-select";
 import { requireActionCan } from "@/lib/action-guard";
 import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
-import { toUserError } from "@/lib/user-error";
+import { failAction, runAction } from "@/lib/http-error";
 
 const LOGO_MAX_BYTES = 2 * 1024 * 1024;
 
@@ -49,57 +49,61 @@ const ROLE_FA: Record<string, string> = {
 
 async function addCategory(formData: FormData) {
   "use server";
-  const user = await requireActionCan("settings.manage");
-  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
-  if (!name) return;
-  await createCategory(db(), user, name, "web");
-  redirect("/admin/settings?ok=category");
+  await runAction("/admin/settings", async () => {
+    const user = await requireActionCan("settings.manage");
+    const name = String(formData.get("name") ?? "").trim().slice(0, 80);
+    if (!name) return;
+    await createCategory(db(), user, name, "web");
+    redirect("/admin/settings?ok=category");
+  });
 }
 
 async function addClient(formData: FormData) {
   "use server";
-  const user = await requireActionCan("settings.manage");
-  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
-  if (!name) return;
-  await createClient(db(), user, name, "web");
-  redirect("/admin/settings?ok=client");
+  await runAction("/admin/settings", async () => {
+    const user = await requireActionCan("settings.manage");
+    const name = String(formData.get("name") ?? "").trim().slice(0, 80);
+    if (!name) return;
+    await createClient(db(), user, name, "web");
+    redirect("/admin/settings?ok=client");
+  });
 }
 
 async function addClientUser(formData: FormData) {
   "use server";
-  const user = await requireActionCan("settings.manage");
-  const clientId = String(formData.get("clientId") ?? "").trim();
-  const username = String(formData.get("username") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  const displayName = String(formData.get("displayName") ?? "").trim();
-  if (!isUuid(clientId)) {
-    redirect("/admin/settings?error=" + encodeURIComponent("کارفرما نامعتبر است"));
-  }
-  try {
+  await runAction("/admin/settings", async () => {
+    const user = await requireActionCan("settings.manage");
+    const clientId = String(formData.get("clientId") ?? "").trim();
+    const username = String(formData.get("username") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+    const displayName = String(formData.get("displayName") ?? "").trim();
+    if (!isUuid(clientId)) {
+      failAction("/admin/settings", "کارفرما نامعتبر است");
+    }
     await createClientUser(
       db(),
       user,
       { clientId, username, password, displayName },
       "web",
     );
-  } catch (err) {
-    const message = toUserError(err, "ساخت حساب کارفرما ناموفق بود");
-    redirect(`/admin/settings?error=${encodeURIComponent(message)}`);
-  }
-  redirect("/admin/settings?ok=client_user");
+    redirect("/admin/settings?ok=client_user");
+  });
 }
 
 async function makeInvite(formData: FormData) {
   "use server";
-  const user = await requireActionCan("invite.create");
-  const roleRaw = String(formData.get("role") ?? "editor");
-  const role = roleRaw === "admin" ? "admin" : "editor";
-  const invite = await createInvite(db(), user, role, "web");
-  redirect(`/admin/settings?invite=${invite.code}`);
+  await runAction("/admin/settings", async () => {
+    const user = await requireActionCan("invite.create");
+    const roleRaw = String(formData.get("role") ?? "editor");
+    const role = roleRaw === "admin" ? "admin" : "editor";
+    const invite = await createInvite(db(), user, role, "web");
+    redirect(`/admin/settings?invite=${invite.code}`);
+  });
 }
 
 async function saveAgency(formData: FormData) {
   "use server";
+  await runAction("/admin/settings", async () => {
   const user = await requireActionCan("settings.manage");
 
   const current = await getAgencySettings(db());
@@ -138,22 +142,30 @@ async function saveAgency(formData: FormData) {
     "web",
   );
   redirect("/admin/settings?ok=agency");
+  });
 }
 
 async function savePassword(formData: FormData) {
   "use server";
-  const user = await requireActionCan("settings.manage");
-  const targetUserId = String(formData.get("userId") ?? user.id);
-  const password = String(formData.get("password") ?? "");
-  if (!isUuid(targetUserId)) redirect("/admin/settings");
-  await setUserPassword(db(), user, targetUserId, password);
-  redirect("/admin/settings?ok=password");
+  await runAction("/admin/settings", async () => {
+    const user = await requireActionCan("settings.manage");
+    const targetUserId = String(formData.get("userId") ?? user.id);
+    const password = String(formData.get("password") ?? "");
+    if (!isUuid(targetUserId)) redirect("/admin/settings");
+    await setUserPassword(db(), user, targetUserId, password);
+    redirect("/admin/settings?ok=password");
+  });
 }
 
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ invite?: string; logoError?: string; ok?: string }>;
+  searchParams: Promise<{
+    invite?: string;
+    logoError?: string;
+    ok?: string;
+    error?: string;
+  }>;
 }) {
   const user = await requireAdmin();
   if (!can(user, "settings.manage")) redirect("/admin");

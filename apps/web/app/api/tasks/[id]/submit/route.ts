@@ -10,13 +10,13 @@ import {
 import type { VideoType } from "@eth/db";
 import { formatPortfolioCaption, slugifyHashtag } from "@eth/telegram";
 import { db } from "@/lib/db";
+import { jsonError } from "@/lib/http-error";
 import { getSessionUser } from "@/lib/session";
 import {
   normalizeMediaUrl,
   notifyAdminsDelivered,
   publishLinkToPortfolioChannel,
 } from "@/lib/telegram-bot";
-import { toUserError } from "@/lib/user-error";
 import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
 import { logSecurity } from "@/lib/security-log";
 
@@ -37,15 +37,12 @@ export async function POST(
 ) {
   const user = await getSessionUser();
   if (!user || !user.isActive) {
-    return NextResponse.json(
-      { error: "نشست شما منقضی شده. دوباره وارد شوید." },
-      { status: 401 },
-    );
+    return jsonError("UNAUTHORIZED");
   }
 
   if (!can(user, "deliverable.submit")) {
     logSecurity("submit_forbidden", { userId: user.id });
-    return NextResponse.json({ error: "دسترسی ندارید" }, { status: 403 });
+    return jsonError("FORBIDDEN");
   }
 
   const limited = limitUserRequest(request, user.id, "submit", 10, 15 * 60_000);
@@ -55,42 +52,37 @@ export async function POST(
 
   const { id: taskId } = await params;
   if (!isUuid(taskId)) {
-    return NextResponse.json({ error: "تسک پیدا نشد" }, { status: 404 });
+    return jsonError("NOT_FOUND", { message: "تسک پیدا نشد." });
   }
 
   const task = await getTaskById(db(), taskId);
   if (!task) {
-    return NextResponse.json({ error: "تسک پیدا نشد" }, { status: 404 });
+    return jsonError("NOT_FOUND", { message: "تسک پیدا نشد." });
   }
   if (task.assigneeId !== user.id && !can(user, "task.edit_any")) {
     logSecurity("submit_forbidden", { userId: user.id });
-    return NextResponse.json(
-      { error: "فقط ادیتور همین تسک می‌تواند تحویل بدهد" },
-      { status: 403 },
-    );
+    return jsonError("FORBIDDEN", {
+      message: "فقط ادیتور همین تسک می‌تواند تحویل بدهد",
+    });
   }
   if (task.status === "approved") {
-    return NextResponse.json(
-      { error: "تسک تأییدشده قابل تحویل مجدد نیست" },
-      { status: 400 },
-    );
+    return jsonError("VALIDATION", {
+      message: "تسک تأییدشده قابل تحویل مجدد نیست.",
+    });
   }
 
   let form: FormData;
   try {
     form = await request.formData();
   } catch {
-    return NextResponse.json(
-      { error: "بدنه درخواست نامعتبر است" },
-      { status: 400 },
-    );
+    return jsonError("BAD_REQUEST");
   }
 
   let mediaUrl: string;
   try {
     mediaUrl = normalizeMediaUrl(String(form.get("mediaUrl") ?? ""));
   } catch {
-    return NextResponse.json({ error: "لینک نامعتبر است" }, { status: 400 });
+    return jsonError("VALIDATION", { message: "لینک نامعتبر است" });
   }
 
   const title = String(form.get("title") ?? "").trim().slice(0, 200) || task.title;
@@ -100,13 +92,13 @@ export async function POST(
   const videoType = String(form.get("videoType") ?? "").trim() as VideoType;
 
   if (!isUuid(categoryId)) {
-    return NextResponse.json({ error: "دسته الزامی است" }, { status: 400 });
+    return jsonError("VALIDATION", { message: "دسته الزامی است" });
   }
   if (clientId && !isUuid(clientId)) {
-    return NextResponse.json({ error: "کارفرما پیدا نشد" }, { status: 400 });
+    return jsonError("NOT_FOUND", { message: "کارفرما پیدا نشد." });
   }
   if (!VIDEO_TYPES.has(videoType)) {
-    return NextResponse.json({ error: "نوع ویدیو نامعتبر است" }, { status: 400 });
+    return jsonError("VALIDATION", { message: "نوع ویدیو نامعتبر است" });
   }
 
   const [categories, clients] = await Promise.all([
@@ -115,11 +107,11 @@ export async function POST(
   ]);
   const category = categories.find((c) => c.id === categoryId);
   if (!category) {
-    return NextResponse.json({ error: "دسته پیدا نشد" }, { status: 400 });
+    return jsonError("NOT_FOUND", { message: "دسته پیدا نشد." });
   }
   const client = clientId ? clients.find((c) => c.id === clientId) : null;
   if (clientId && !client) {
-    return NextResponse.json({ error: "کارفرما پیدا نشد" }, { status: 400 });
+    return jsonError("NOT_FOUND", { message: "کارفرما پیدا نشد." });
   }
 
   const caption = formatPortfolioCaption({
@@ -172,9 +164,6 @@ export async function POST(
     });
   } catch (err) {
     logSecurity("submit_failed", { userId: user.id });
-    return NextResponse.json(
-      { error: toUserError(err, "خطا در انتشار به تلگرام") },
-      { status: 500 },
-    );
+    return jsonError(err);
   }
 }

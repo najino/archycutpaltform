@@ -16,9 +16,11 @@ import { resolveFlash } from "@/lib/flash";
 import { requireActionCan } from "@/lib/action-guard";
 import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { runAction } from "@/lib/http-error";
 
 async function createAction(formData: FormData) {
   "use server";
+  await runAction("/admin/projects", async () => {
   const user = await requireActionCan("project.manage");
 
   const name = String(formData.get("name") ?? "").trim().slice(0, 120);
@@ -35,23 +37,26 @@ async function createAction(formData: FormData) {
     "web",
   );
   redirect("/admin/projects?ok=project");
+  });
 }
 
 async function toggleStatus(formData: FormData) {
   "use server";
-  const user = await requireActionCan("project.manage");
-  const id = String(formData.get("id") ?? "");
-  const statusRaw = String(formData.get("status") ?? "");
-  const status = statusRaw === "closed" ? "closed" : "open";
-  if (!isUuid(id)) return;
-  await updateProject(db(), user, id, { status }, "web");
-  redirect("/admin/projects?ok=project_status");
+  await runAction("/admin/projects", async () => {
+    const user = await requireActionCan("project.manage");
+    const id = String(formData.get("id") ?? "");
+    const statusRaw = String(formData.get("status") ?? "");
+    const status = statusRaw === "closed" ? "closed" : "open";
+    if (!isUuid(id)) return;
+    await updateProject(db(), user, id, { status }, "web");
+    redirect("/admin/projects?ok=project_status");
+  });
 }
 
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const user = await requireAdmin();
   if (!can(user, "project.manage")) redirect("/admin");

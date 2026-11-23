@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import type { User } from "@eth/db";
 import { can, consumeRateLimit, type Action, type RateLimitStore } from "@eth/core";
 import { getSessionUser } from "./session";
-import { homeForUser } from "./authz";
 import { logSecurity } from "./security-log";
 
 const actionStore: RateLimitStore = new Map();
@@ -28,7 +27,7 @@ async function limitAction(userId: string) {
   );
   if (!limited.ok) {
     logSecurity("rate_limit", { scope: "server-action", userId });
-    redirect("/login?error=rate");
+    throw new Error("RATE_LIMIT");
   }
 }
 
@@ -36,7 +35,8 @@ export async function requireActionUser(loginPath = "/login"): Promise<User> {
   const user = await getSessionUser();
   if (!user || !user.isActive) {
     logSecurity("action_unauthenticated");
-    redirect(loginPath);
+    const sep = loginPath.includes("?") ? "&" : "?";
+    redirect(`${loginPath}${sep}error=UNAUTHORIZED`);
   }
   await limitAction(user.id);
   return user;
@@ -49,7 +49,7 @@ export async function requireActionCan(
   const user = await requireActionUser(loginPath);
   if (!can(user, action)) {
     logSecurity("permission_denied", { action, userId: user.id });
-    redirect(homeForUser(user));
+    throw new Error("FORBIDDEN");
   }
   return user;
 }

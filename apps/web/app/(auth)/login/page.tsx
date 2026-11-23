@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { lookupErrorParam } from "@eth/core/errors";
+import { InlineError } from "@/components/inline-error";
 import { getSessionUser } from "@/lib/session";
 import { homeForUser } from "@/lib/authz";
 import { LoginForm } from "./login-form";
@@ -13,6 +15,7 @@ export default async function LoginPage({
   if (user) redirect(homeForUser(user));
 
   const sp = await searchParams;
+  const flash = lookupErrorParam(sp.error);
   const portal =
     sp.portal === "admin"
       ? "admin"
@@ -90,7 +93,12 @@ export default async function LoginPage({
             </div>
           </div>
 
-          {sp.error && <p className="login-error">{sp.error}</p>}
+          {sp.error ? (
+            <InlineError
+              title={flash?.title ?? "ورود ناموفق"}
+              message={flash?.message ?? "ورود ناموفق بود. دوباره تلاش کنید."}
+            />
+          ) : null}
 
           <LoginForm portal={portal} botUsername={botUsername} />
         </div>

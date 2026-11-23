@@ -1,38 +1,29 @@
 import { NextResponse } from "next/server";
-import {
-  loginWithTelegramId,
-  loginWithUsername,
-  PermissionError,
-  ValidationError,
-} from "@eth/core";
+import { loginWithTelegramId, loginWithUsername } from "@eth/core";
 import { db } from "@/lib/db";
+import { jsonError } from "@/lib/http-error";
 import { limitRequest, rateLimitedJson } from "@/lib/rate-limit";
 import { createSession } from "@/lib/session";
 import { homeForUser, isAdminUser } from "@/lib/authz";
-import { toUserError } from "@/lib/user-error";
 import { logSecurity } from "@/lib/security-log";
 import { loginBodySchema, parseJsonBody } from "@/lib/validation";
 
 export async function POST(req: Request) {
   const limited = limitRequest(req, "login", 8, 15 * 60_000);
   if (!limited.ok) {
-    return rateLimitedJson(
-      "login",
-      limited.retryAfterSec,
-      "تلاش ورود زیاد بود. کمی بعد دوباره تلاش کنید.",
-    );
+    return rateLimitedJson("login", limited.retryAfterSec);
   }
 
   let raw: unknown;
   try {
     raw = await req.json();
   } catch {
-    return NextResponse.json({ error: "درخواست نامعتبر است" }, { status: 400 });
+    return jsonError("BAD_REQUEST");
   }
 
   const parsed = parseJsonBody(loginBodySchema, raw);
   if (!parsed.ok) {
-    return NextResponse.json({ error: "درخواست نامعتبر است" }, { status: 400 });
+    return jsonError("BAD_REQUEST");
   }
   const body = parsed.data;
 
@@ -52,28 +43,23 @@ export async function POST(req: Request) {
     const admin = isAdminUser(user);
     if (portal === "admin" && !admin) {
       logSecurity("login_wrong_portal", { portal: "admin" });
-      return NextResponse.json(
-        { error: "این حساب دسترسی ادمین ندارد. از ورود ادیتور استفاده کنید." },
-        { status: 403 },
-      );
+      return jsonError("WRONG_PORTAL", {
+        message: "این حساب دسترسی ادمین ندارد. از ورود ادیتور استفاده کنید.",
+      });
     }
     if (portal === "editor" && (admin || user.role === "client")) {
       logSecurity("login_wrong_portal", { portal: "editor" });
-      return NextResponse.json(
-        {
-          error: admin
-            ? "حساب ادمین است. از تب «مدیر» وارد شوید."
-            : "حساب کارفرما است. از تب «کارفرما» وارد شوید.",
-        },
-        { status: 403 },
-      );
+      return jsonError("WRONG_PORTAL", {
+        message: admin
+          ? "حساب ادمین است. از تب «مدیر» وارد شوید."
+          : "حساب کارفرما است. از تب «کارفرما» وارد شوید.",
+      });
     }
     if (portal === "client" && user.role !== "client") {
       logSecurity("login_wrong_portal", { portal: "client" });
-      return NextResponse.json(
-        { error: "این حساب کارفرما نیست. تب ورود را عوض کنید." },
-        { status: 403 },
-      );
+      return jsonError("WRONG_PORTAL", {
+        message: "این حساب کارفرما نیست. تب ورود را عوض کنید.",
+      });
     }
 
     await createSession(user.id);
@@ -83,17 +69,7 @@ export async function POST(req: Request) {
       redirectTo: homeForUser(user),
     });
   } catch (err) {
-    if (err instanceof PermissionError) {
-      logSecurity("login_failed", { portal });
-      return NextResponse.json({ error: err.message }, { status: 401 });
-    }
-    if (err instanceof ValidationError) {
-      return NextResponse.json({ error: err.message }, { status: 400 });
-    }
-    logSecurity("login_error", { portal });
-    const message = toUserError(err, "ورود ناموفق");
-    const status =
-      message.includes("دیتابیس") || message.includes("شلوغ") ? 503 : 400;
-    return NextResponse.json({ error: message }, { status });
+    logSecurity("login_failed", { portal });
+    return jsonError(err);
   }
 }

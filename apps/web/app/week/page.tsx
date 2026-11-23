@@ -11,13 +11,17 @@ import {
   listWeekTasks,
 } from "@eth/core";
 import { EditorShell } from "@/components/editor-shell";
+import { FlashAlert } from "@/components/flash-alert";
 import { JalaliDateInput } from "@/components/jalali-date-input";
 import { requireActionUser } from "@/lib/action-guard";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { resolveFlash } from "@/lib/flash";
+import { runAction } from "@/lib/http-error";
 
 async function addTaskAction(formData: FormData) {
   "use server";
+  await runAction("/week", async () => {
   const user = await requireActionUser("/login?portal=editor");
   const title = String(formData.get("title") ?? "").trim().slice(0, 200);
   if (!title) return;
@@ -38,10 +42,16 @@ async function addTaskAction(formData: FormData) {
     "web",
   );
   redirect("/week");
+  });
 }
 
-export default async function WeekPage() {
+export default async function WeekPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const user = await requireEditorPortal();
+  const flash = resolveFlash(await searchParams);
 
   const weekKey = currentWeekKey();
   const [tasks, stats, projects] = await Promise.all([
@@ -66,6 +76,14 @@ export default async function WeekPage() {
         <div>
           <h1 className="hero-title">هفته من</h1>
           <p className="hero-sub">لیست تسک‌های هفته جاری و وضعیت تحویل.</p>
+          {flash && (
+            <FlashAlert
+              tone={flash.tone}
+              title={flash.title}
+              detail={flash.detail}
+              clearKeys={flash.clearKeys}
+            />
+          )}
         </div>
         <span className="sys-pill">
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isTrustedMutation } from "@/lib/csrf";
+import { jsonError } from "@/lib/http-error";
 import { applySecurityHeaders } from "@/lib/secure-headers";
 
 const PUBLIC = [
@@ -38,10 +39,12 @@ export function middleware(req: NextRequest) {
 
   if (!isTrustedMutation(req)) {
     console.info("[security]", "csrf_rejected", pathname);
-    return withSecurity(
-      NextResponse.json({ error: "درخواست نامعتبر است" }, { status: 403 }),
-      nonce,
-    );
+    if (pathname.startsWith("/api/") || req.headers.has("next-action")) {
+      return withSecurity(jsonError("CSRF"), nonce);
+    }
+    const url = req.nextUrl.clone();
+    url.searchParams.set("error", "CSRF");
+    return withSecurity(NextResponse.redirect(url, 303), nonce);
   }
 
   if (isPublicPath(pathname)) {
@@ -54,10 +57,7 @@ export function middleware(req: NextRequest) {
   const session = req.cookies.get("eth_session");
   if (!session && !pathname.startsWith("/api/auth")) {
     if (pathname.startsWith("/api/")) {
-      return withSecurity(
-        NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-        nonce,
-      );
+      return withSecurity(jsonError("UNAUTHORIZED"), nonce);
     }
     return withSecurity(
       NextResponse.redirect(new URL("/login", req.url)),

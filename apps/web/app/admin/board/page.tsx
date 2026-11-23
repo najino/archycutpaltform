@@ -18,6 +18,7 @@ import { JalaliDateInput } from "@/components/jalali-date-input";
 import { requireActionCan, requireActionUser } from "@/lib/action-guard";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/authz";
+import { runAction } from "@/lib/http-error";
 
 const COLUMNS: { status: TaskStatus; label: string; icon: string }[] = [
   { status: "todo", label: "در صف", icon: "inbox" },
@@ -29,37 +30,41 @@ const COLUMNS: { status: TaskStatus; label: string; icon: string }[] = [
 
 async function assignAction(formData: FormData) {
   "use server";
-  const user = await requireActionCan("task.assign");
-  const title = String(formData.get("title") ?? "").trim().slice(0, 200);
-  const assigneeId = String(formData.get("assigneeId") ?? "");
-  const dueDate = String(formData.get("dueDate") ?? "").trim() || null;
-  const projectIdRaw = String(formData.get("projectId") ?? "");
-  const projectId = projectIdRaw && isUuid(projectIdRaw) ? projectIdRaw : null;
-  const units = Number(formData.get("units") ?? 1) || 1;
-  if (!title || !isUuid(assigneeId)) return;
-  await createTask(
-    db(),
-    user,
-    { title, assigneeId, dueDate, projectId, units },
-    "web",
-  );
-  redirect("/admin/board?ok=task");
+  await runAction("/admin/board", async () => {
+    const user = await requireActionCan("task.assign");
+    const title = String(formData.get("title") ?? "").trim().slice(0, 200);
+    const assigneeId = String(formData.get("assigneeId") ?? "");
+    const dueDate = String(formData.get("dueDate") ?? "").trim() || null;
+    const projectIdRaw = String(formData.get("projectId") ?? "");
+    const projectId = projectIdRaw && isUuid(projectIdRaw) ? projectIdRaw : null;
+    const units = Number(formData.get("units") ?? 1) || 1;
+    if (!title || !isUuid(assigneeId)) return;
+    await createTask(
+      db(),
+      user,
+      { title, assigneeId, dueDate, projectId, units },
+      "web",
+    );
+    redirect("/admin/board?ok=task");
+  });
 }
 
 async function statusAction(formData: FormData) {
   "use server";
-  const user = await requireActionUser("/login?portal=admin");
-  const taskId = String(formData.get("taskId") ?? "");
-  const status = String(formData.get("status") ?? "");
-  if (!isUuid(taskId) || !isTaskStatus(status)) return;
-  await changeStatus(db(), user, taskId, status, "web");
-  redirect("/admin/board?ok=status");
+  await runAction("/admin/board", async () => {
+    const user = await requireActionUser("/login?portal=admin");
+    const taskId = String(formData.get("taskId") ?? "");
+    const status = String(formData.get("status") ?? "");
+    if (!isUuid(taskId) || !isTaskStatus(status)) return;
+    await changeStatus(db(), user, taskId, status, "web");
+    redirect("/admin/board?ok=status");
+  });
 }
 
 export default async function AdminBoardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string; ok?: string }>;
+  searchParams: Promise<{ week?: string; ok?: string; error?: string }>;
 }) {
   const user = await requireAdmin();
   const sp = await searchParams;

@@ -20,26 +20,34 @@ import { deliverables } from "@eth/db";
 import { channelPostUrl } from "@eth/telegram";
 import { DeliverableUpload } from "@/components/deliverable-upload";
 import { EditorShell } from "@/components/editor-shell";
+import { FlashAlert } from "@/components/flash-alert";
 import { requireActionUser } from "@/lib/action-guard";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { resolveFlash } from "@/lib/flash";
+import { runAction } from "@/lib/http-error";
 
 async function statusAction(formData: FormData) {
   "use server";
-  const user = await requireActionUser("/login?portal=editor");
   const taskId = String(formData.get("taskId") ?? "");
-  const status = String(formData.get("status") ?? "");
-  if (!isUuid(taskId) || !isTaskStatus(status)) redirect("/week");
-  await changeStatus(db(), user, taskId, status, "web");
-  redirect(`/tasks/${taskId}`);
+  await runAction(`/tasks/${taskId}`, async () => {
+    const user = await requireActionUser("/login?portal=editor");
+    const status = String(formData.get("status") ?? "");
+    if (!isUuid(taskId) || !isTaskStatus(status)) redirect("/week");
+    await changeStatus(db(), user, taskId, status, "web");
+    redirect(`/tasks/${taskId}`);
+  });
 }
 
 export default async function TaskDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const user = await requireEditorPortal();
+  const flash = resolveFlash(await searchParams);
   const { id } = await params;
   if (!isUuid(id)) notFound();
   const task = await getTaskById(db(), id);
@@ -71,6 +79,14 @@ export default async function TaskDetailPage({
           ← بازگشت
         </Link>
       </p>
+      {flash && (
+        <FlashAlert
+          tone={flash.tone}
+          title={flash.title}
+          detail={flash.detail}
+          clearKeys={flash.clearKeys}
+        />
+      )}
       <h1 className="hero-title">{task.title}</h1>
       <p className="hero-sub">
         <span className={`chip ${task.status}`}>{task.status}</span>{" "}

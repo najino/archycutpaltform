@@ -18,26 +18,31 @@ import { resolveFlash } from "@/lib/flash";
 import { requireActionCan, requireActionUser } from "@/lib/action-guard";
 import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { runAction } from "@/lib/http-error";
 import Link from "next/link";
 
 async function saveReceiptAction(formData: FormData) {
   "use server";
-  const user = await requireActionUser("/login?portal=admin");
   const id = String(formData.get("id") ?? "");
-  const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
-  if (!isUuid(id)) redirect("/admin/invoices");
-  await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
-  redirect(`/admin/invoices/${id}?ok=receipt#payment`);
+  await runAction(`/admin/invoices/${id}`, async () => {
+    const user = await requireActionUser("/login?portal=admin");
+    const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
+    if (!isUuid(id)) redirect("/admin/invoices");
+    await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
+    redirect(`/admin/invoices/${id}?ok=receipt#payment`);
+  });
 }
 
 async function finalizePaymentAction(formData: FormData) {
   "use server";
-  const user = await requireActionCan("invoice.pay");
   const id = String(formData.get("id") ?? "");
-  const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
-  if (!isUuid(id)) redirect("/admin/invoices");
-  await markInvoicePaid(db(), user, id, "web", paymentReceipt || null);
-  redirect(`/admin/invoices/${id}?ok=paid#payment`);
+  await runAction(`/admin/invoices/${id}`, async () => {
+    const user = await requireActionCan("invoice.pay");
+    const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
+    if (!isUuid(id)) redirect("/admin/invoices");
+    await markInvoicePaid(db(), user, id, "web", paymentReceipt || null);
+    redirect(`/admin/invoices/${id}?ok=paid#payment`);
+  });
 }
 
 export default async function InvoicePrintPage({
@@ -45,7 +50,7 @@ export default async function InvoicePrintPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ ok?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const user = await requireAdmin();
   const { id } = await params;

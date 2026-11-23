@@ -14,7 +14,8 @@
     "./work": "./src/work/index.ts",
     "./catalog": "./src/catalog/index.ts",
     "./billing": "./src/billing/index.ts",
-    "./security": "./src/shared/http-security.ts"
+    "./security": "./src/shared/http-security.ts",
+    "./errors": "./src/shared/public-error.ts"
   },
   "scripts": {
     "test": "tsx --test src/**/*.test.ts",

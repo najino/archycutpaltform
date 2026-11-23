@@ -2,6 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { parsePublicErrorPayload } from "@eth/core/errors";
+import { InlineError } from "@/components/inline-error";
+import { networkPublicError } from "@/lib/api-error";
 
 type Option = { id: string; name: string };
 
@@ -65,7 +68,7 @@ export function DeliverableUpload({
         error?: string;
       };
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || `خطای سرور (${res.status})`);
+        throw new Error(parsePublicErrorPayload(data, res.status).message);
       }
 
       setPhase("done");
@@ -76,7 +79,8 @@ export function DeliverableUpload({
         setBusy(false);
       }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "ارسال ناموفق");
+      const fallback = networkPublicError();
+      setError(err instanceof Error ? err.message : fallback.message);
       setPhase("idle");
       setBusy(false);
     }
@@ -181,7 +185,7 @@ export function DeliverableUpload({
           </div>
         )}
 
-        {error && <p className="login-form-error">{error}</p>}
+        {error ? <InlineError message={error} /> : null}
 
         <button
           className="btn primary"

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { consumeRateLimit, type RateLimitStore } from "@eth/core";
+import { jsonError } from "./http-error";
 import { logSecurity } from "./security-log";
 
 const store: RateLimitStore = new Map();
@@ -37,17 +37,10 @@ export function limitUserRequest(
   );
 }
 
-export function rateLimitedJson(
-  scope: string,
-  retryAfterSec: number,
-  message = "تلاش زیاد بود. کمی بعد دوباره تلاش کنید.",
-) {
+export function rateLimitedJson(scope: string, retryAfterSec: number) {
   logSecurity("rate_limit", { scope });
-  return NextResponse.json(
-    { error: message },
-    {
-      status: 429,
-      headers: { "Retry-After": String(retryAfterSec) },
-    },
-  );
+  return jsonError("RATE_LIMIT", {
+    headers: { "Retry-After": String(retryAfterSec) },
+    retryAfter: retryAfterSec,
+  });
 }

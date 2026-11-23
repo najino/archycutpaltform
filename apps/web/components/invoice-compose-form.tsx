@@ -3,7 +3,10 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatToman } from "@eth/core/client";
+import { parsePublicErrorPayload } from "@eth/core/errors";
+import { InlineError } from "@/components/inline-error";
 import { SoftSelect } from "@/components/soft-select";
+import { networkPublicError } from "@/lib/api-error";
 
 export type ComposeTask = {
   id: string;
@@ -98,7 +101,7 @@ export function InvoiceComposeForm({
           invoiceId?: string;
         };
         if (!res.ok || !data.ok) {
-          throw new Error(data.error || `خطا (${res.status})`);
+          throw new Error(parsePublicErrorPayload(data, res.status).message);
         }
         router.push(
           data.invoiceId
@@ -107,7 +110,8 @@ export function InvoiceComposeForm({
         );
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "خطا در ساخت فاکتور");
+        const fallback = networkPublicError();
+        setError(err instanceof Error ? err.message : fallback.message);
       }
     });
   }
@@ -254,7 +258,7 @@ export function InvoiceComposeForm({
         </>
       )}
 
-      {error && <p className="login-form-error">{error}</p>}
+      {error ? <InlineError message={error} /> : null}
     </div>
   );
 }

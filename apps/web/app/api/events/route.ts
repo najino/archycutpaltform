@@ -1,3 +1,4 @@
+import { jsonError } from "@/lib/http-error";
 import { subscribePgEvents } from "@/lib/pg-listen";
 import { getSessionUser } from "@/lib/session";
 import { limitUserRequest, rateLimitedJson } from "@/lib/rate-limit";
@@ -8,7 +9,7 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   const user = await getSessionUser();
   if (!user || !user.isActive) {
-    return new Response("Unauthorized", { status: 401 });
+    return jsonError("UNAUTHORIZED");
   }
 
   const limited = limitUserRequest(req, user.id, "events", 20, 60_000);
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
 
   const url = process.env.DATABASE_URL;
   if (!url) {
-    return new Response("Service unavailable", { status: 503 });
+    return jsonError("UNAVAILABLE");
   }
 
   const encoder = new TextEncoder();

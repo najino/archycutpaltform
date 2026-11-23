@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { InlineError } from "@/components/inline-error";
+import { networkPublicError, readResponseError } from "@/lib/api-error";
 
 export function InvoicePdfActions({
   invoiceId,
@@ -15,8 +17,8 @@ export function InvoicePdfActions({
   async function pdfBlob() {
     const res = await fetch(`/api/invoices/${invoiceId}/pdf`);
     if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-      throw new Error(data.error ?? "ساخت PDF ناموفق بود");
+      const body = await readResponseError(res);
+      throw new Error(body.message);
     }
     return res.blob();
   }
@@ -31,7 +33,8 @@ export function InvoicePdfActions({
     try {
       await action();
     } catch (err) {
-      setError(err instanceof Error ? err.message : fallback);
+      const net = networkPublicError();
+      setError(err instanceof Error ? err.message : fallback || net.message);
     } finally {
       setBusy(null);
     }
@@ -112,11 +115,7 @@ export function InvoicePdfActions({
         </span>
         {busy === "print" ? "در حال ساخت…" : "چاپ PDF"}
       </button>
-      {error ? (
-        <p className="invoice-pdf-error" role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <InlineError message={error} /> : null}
     </div>
   );
 }

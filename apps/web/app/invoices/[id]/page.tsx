@@ -17,16 +17,19 @@ import { resolveFlash } from "@/lib/flash";
 import { requireActionUser } from "@/lib/action-guard";
 import { requireEditorPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { runAction } from "@/lib/http-error";
 import Link from "next/link";
 
 async function saveReceiptAction(formData: FormData) {
   "use server";
-  const user = await requireActionUser("/login?portal=editor");
   const id = String(formData.get("id") ?? "");
-  const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
-  if (!isUuid(id)) redirect("/invoices");
-  await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
-  redirect(`/invoices/${id}?ok=receipt#payment`);
+  await runAction(`/invoices/${id}`, async () => {
+    const user = await requireActionUser("/login?portal=editor");
+    const paymentReceipt = String(formData.get("paymentReceipt") ?? "").slice(0, 2000);
+    if (!isUuid(id)) redirect("/invoices");
+    await setInvoicePaymentReceipt(db(), user, id, paymentReceipt, "web");
+    redirect(`/invoices/${id}?ok=receipt#payment`);
+  });
 }
 
 export default async function InvoicePrintPage({
@@ -34,7 +37,7 @@ export default async function InvoicePrintPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ ok?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const user = await requireEditorPortal();
   const { id } = await params;

@@ -15,8 +15,9 @@ import {
 import { getUserByTelegramId } from "./invites.js";
 import { logAndEmit } from "../shared/events.js";
 import type { ActivitySource } from "@eth/db";
+import { LOGIN_FAILED_MESSAGE } from "./auth-messages.js";
 
-export const LOGIN_FAILED_MESSAGE = "نام کاربری یا رمز عبور اشتباه است";
+export { LOGIN_FAILED_MESSAGE };
 
 let dummyLoginHash: string | null = null;
 
