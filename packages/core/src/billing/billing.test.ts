@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { parseInvoiceStatus } from "./billing.js";
 import { computeAmount, formatToman, toPersianDigits } from "../shared/money.js";
 import {
   formatJalaliDate,
@@ -62,5 +63,21 @@ describe("jalali calendar periods", () => {
 
   it("formats iso date as jalali", () => {
     assert.equal(formatJalaliDate("2026-03-21", { persianDigits: false }), "1405/01/01");
+  });
+});
+
+describe("invoice status filter", () => {
+  it("accepts known statuses", () => {
+    assert.equal(parseInvoiceStatus("draft"), "draft");
+    assert.equal(parseInvoiceStatus("issued"), "issued");
+    assert.equal(parseInvoiceStatus("paid"), "paid");
+    assert.equal(parseInvoiceStatus("void"), "void");
+  });
+
+  it("ignores empty or unknown values", () => {
+    assert.equal(parseInvoiceStatus(undefined), undefined);
+    assert.equal(parseInvoiceStatus(""), undefined);
+    assert.equal(parseInvoiceStatus("issued "), undefined);
+    assert.equal(parseInvoiceStatus("unknown"), undefined);
   });
 });

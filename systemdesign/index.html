@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>معماری نرم‌افزار — ARSHYCUT PLATFORM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #100e18;
+      --bg-2: #181524;
+      --surface: rgba(236, 232, 245, 0.06);
+      --line: rgba(236, 232, 245, 0.12);
+      --text: #ece8f5;
+      --muted: #a89bb8;
+      --pink: #ff3d8a;
+      --pink-soft: #ff7eb3;
+      --violet: #c4b5fd;
+      --white: #ffffff;
+      --ok: #6ee7b7;
+      --grad: linear-gradient(120deg, #ffffff 0%, #ff4f9a 42%, #c4b5fd 100%);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: #07060b;
+      color: var(--text);
+      font-family: Vazirmatn, Tahoma, sans-serif;
+    }
+    .progress-bar {
+      position: fixed; top: 0; right: 0; height: 3px; z-index: 20;
+      background: var(--grad); width: 0; transition: width .35s ease;
+    }
+    .slide-deck {
+      position: relative; width: 100vw; height: 100vh; overflow: hidden;
+    }
+    @media (min-width: 769px) {
+      .slide-deck {
+        max-width: calc(100vh * 16 / 9);
+        max-height: calc(100vw * 9 / 16);
+        margin: auto; position: absolute; inset: 0;
+        border: 1px solid var(--line); border-radius: 12px;
+        box-shadow: 0 30px 80px rgba(0,0,0,.45);
+      }
+    }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      padding: 44px 52px 72px;
+      opacity: 0; visibility: hidden;
+      background:
+        radial-gradient(1200px 500px at 100% -10%, rgba(255,61,138,.16), transparent 55%),
+        radial-gradient(900px 400px at -10% 110%, rgba(196,181,253,.12), transparent 50%),
+        var(--bg);
+      overflow: hidden;
+      transition: opacity .4s ease;
+    }
+    .slide.active { opacity: 1; visibility: visible; }
+    .slide-content {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; gap: 18px;
+      justify-content: center;
+    }
+    .kicker {
+      color: var(--pink-soft); font-weight: 700; letter-spacing: .08em;
+      font-size: 13px; text-transform: uppercase;
+      font-family: "JetBrains Mono", Vazirmatn, monospace;
+    }
+    h1.hero {
+      font-size: clamp(36px, 5.4vw, 68px); line-height: 1.15; font-weight: 800;
+      background: var(--grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    h2 {
+      font-size: clamp(26px, 3.2vw, 40px); font-weight: 800; line-height: 1.25;
+    }
+    p, li { font-size: clamp(14px, 1.45vw, 18px); color: var(--muted); line-height: 1.75; }
+    .lead { font-size: clamp(16px, 1.8vw, 22px); color: var(--text); max-width: 52ch; }
+    .mono { font-family: "JetBrains Mono", monospace; direction: ltr; unicode-bidi: isolate; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 16px; padding: 16px 18px; text-align: right;
+    }
+    .card h3 { font-size: 16px; margin-bottom: 6px; color: var(--white); }
+    .card p { font-size: 13px; }
+    .accent { border-top: 3px solid var(--pink); }
+    .accent-v { border-top: 3px solid var(--violet); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+    th { color: var(--violet); font-weight: 700; }
+    .yes { color: var(--ok); font-weight: 700; }
+    .no { color: #f87171; }
+    .chip {
+      display: inline-block; padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,61,138,.15); color: var(--pink-soft);
+      font-size: 12px; font-weight: 700;
+    }
+    .flow {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .flow span.box {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+      padding: 10px 14px; color: var(--text); font-weight: 600; font-size: 14px;
+    }
+    .flow .arr { color: var(--pink); font-weight: 800; }
+    .layers { display: flex; flex-direction: column; gap: 8px; }
+    .layer {
+      border-radius: 12px; padding: 12px 16px; border: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-note { color: var(--muted); font-size: 12px; }
+    .nav-controls {
+      position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 16px; z-index: 10;
+    }
+    .nav-btn {
+      width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+      background: rgba(255,255,255,.06); color: var(--white); cursor: pointer; font-size: 16px;
+    }
+    .nav-btn:hover { background: rgba(255,61,138,.25); }
+    .slide-counter { color: var(--muted); font-size: 13px; font-family: "JetBrains Mono", monospace; }
+    .agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; }
+    .agenda li { list-style: none; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--text); }
+    .agenda b { color: var(--pink-soft); margin-left: 8px; }
+    svg.arch { width: 100%; height: auto; max-height: 320px; }
+    .dont { color: #fca5a5; }
+    @media (max-width: 768px) {
+      .slide { padding: 28px 18px 70px; }
+      .grid-2, .grid-3, .grid-4, .grid-5, .agenda { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .nav-controls, .progress-bar { display: none !important; }
+      .slide { position: relative; opacity: 1; visibility: visible; page-break-after: always; height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progressBar"></div>
+  <div class="slide-deck">
+
+    <div class="slide active">
+      <div class="slide-content" style="align-items:flex-start">
+        <span class="chip">سند معماری نرم‌افزار · آبان ۱۴۰۵</span>
+        <h1 class="hero">ARSHYCUT PLATFORM</h1>
+        <p class="lead">معماری نهایی: مونولیت ماژولار API-محور، با کلاینت وب/PWA و بات تلگرام روی یک دامنه و یک Postgres.</p>
+        <p>مخاطب: تیم محصول و توسعه · وضعیت: بدون جداسازی اجباری فرانت از بک</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">01 / دستور جلسه</div>
+        <h2>نقشهٔ ارائه</h2>
+        <ol class="agenda">
+          <li><b>۰۲</b> محصول و مسئله</li>
+          <li><b>۰۳</b> اصول تغییرناپذیر</li>
+          <li><b>۰۴</b> نام معماری</li>
+          <li><b>۰۵</b> نمای سیستم</li>
+          <li><b>۰۶</b> مونوریپو و دامنه</li>
+          <li><b>۰۷</b> نقش‌ها و پورتال‌ها</li>
+          <li><b>۰۸</b> جریان کار تا فاکتور</li>
+          <li><b>۰۹</b> داده، امنیت، PDF</li>
+          <li><b>۱۰</b> پترن‌ها و مسیر رشد</li>
+          <li><b>۱۱</b> آنچه نمی‌سازیم</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">02 / محصول</div>
+        <h2>پلتفرم عملیات استودیو تدوین</h2>
+        <div class="grid-3">
+          <div class="card accent"><h3>وب و PWA</h3><p>سه پورتال جدا: مدیر، ادیتور، کارفرما. تسک، پروژه، فاکتور، تنظیمات.</p></div>
+          <div class="card accent"><h3>بات تلگرام</h3><p>دعوت، تحویل فایل، تأیید، اعلان. ویدیو روی سرور ذخیره نمی‌شود.</p></div>
+          <div class="card accent"><h3>مالی شمسی</h3><p>قیمت واحد، اسنپ‌شات روی approve، فاکتور ماهانه، PDF و چاپ.</p></div>
+        </div>
+        <p>منبع حقیقت یک دیتابیس است. منطق کسب‌وکار فقط در <span class="mono">packages/core</span> نوشته می‌شود.</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">03 / اصول</div>
+        <h2>قوانینی که معماری را قفل می‌کنند</h2>
+        <div class="grid-2">
+          <div class="card"><h3>۱. دامنه واحد</h3><p>وب و بات برای mutation منطق جدا ندارند. هر تغییر از core و <span class="mono">permissions.can</span> می‌گذرد.</p></div>
+          <div class="card"><h3>۲. یک منبع داده</h3><p>Postgres تنها منبع حقیقت است. فایل رسانه فقط <span class="mono">file_id</span> تلگرام است.</p></div>
+          <div class="card"><h3>۳. ردپا</h3><p>هر عمل در <span class="mono">activity_log</span> با منبع web / bot / system ثبت می‌شود.</p></div>
+          <div class="card"><h3>۴. رشد بدون rewrite</h3><p>فرانت فعلاً جدا نمی‌شود. مرز دامنه طوری است که بعداً API روی همان ماژول‌ها بنشیند.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:flex-start">
+        <div class="kicker">04 / تصمیم معماری</div>
+        <h2>مونولیت ماژولار · API-محور</h2>
+        <p class="lead">یک بک‌اند دامنه، چند کلاینت. این یک پترن تکی GoF نیست؛ سبک سیستم است.</p>
+        <div class="grid-3" style="width:100%">
+          <div class="card accent"><h3>الان</h3><p>Next و بات مستقیماً core را صدا می‌زنند. جداسازی UI/API الزامی نیست.</p></div>
+          <div class="card accent-v"><h3>مرز آماده</h3><p>دامنه‌ها در پوشه جدا هستند تا فردا فقط یک Facade HTTP اضافه شود.</p></div>
+          <div class="card"><h3>بعداً در صورت نیاز</h3><p>ورکر PDF/کرون، سپس در صورت محصول دوم استخراج API.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">05 / نمای سیستم</div>
+        <h2>کانتکست اجرایی</h2>
+        <svg class="arch" viewBox="0 0 960 300" role="img" aria-label="نمودار کانتکست سیستم">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#ff3d8a"/><stop offset="1" stop-color="#c4b5fd"/></linearGradient>
+          </defs>
+          <rect x="20" y="90" width="170" height="90" rx="16" fill="#181524" stroke="#ff3d8a"/>
+          <text x="105" y="132" text-anchor="middle" fill="#ece8f5" font-size="15" font-family="Vazirmatn">ادمین / ادیتور</text>
+          <text x="105" y="154" text-anchor="middle" fill="#a89bb8" font-size="12" font-family="Vazirmatn">PWA وب</text>
+          <rect x="210" y="90" width="170" height="90" rx="16" fill="#181524" stroke="#ff7eb3"/>
+          <text x="295" y="132" text-anchor="middle" fill="#ece8f5" font-size="15" font-family="Vazirmatn">کارفرما</text>
+          <text x="295" y="154" text-anchor="middle" fill="#a89bb8" font-size="12" font-family="Vazirmatn">پورتال /client</text>
+          <rect x="400" y="90" width="170" height="90" rx="16" fill="#181524" stroke="#c4b5fd"/>
+          <text x="485" y="132" text-anchor="middle" fill="#ece8f5" font-size="15" font-family="Vazirmatn">ادیتور در تلگرام</text>
+          <text x="485" y="154" text-anchor="middle" fill="#a89bb8" font-size="12" font-family="Vazirmatn">grammY bot</text>
+          <rect x="640" y="40" width="280" height="220" rx="20" fill="#181524" stroke="url(#g)" stroke-width="2"/>
+          <text x="780" y="78" text-anchor="middle" fill="#ff7eb3" font-size="13" font-family="JetBrains Mono">ARSHYCUT CORE</text>
+          <text x="780" y="120" text-anchor="middle" fill="#ece8f5" font-size="16" font-family="Vazirmatn">دامنه ماژولار</text>
+          <text x="780" y="148" text-anchor="middle" fill="#a89bb8" font-size="13" font-family="Vazirmatn">identity · work · catalog · billing</text>
+          <text x="780" y="188" text-anchor="middle" fill="#c4b5fd" font-size="13" font-family="Vazirmatn">Postgres + Drizzle</text>
+          <text x="780" y="216" text-anchor="middle" fill="#a89bb8" font-size="12" font-family="Vazirmatn">invoice-pdf · telegram helpers</text>
+          <path d="M190 135 H250" stroke="#ff3d8a" fill="none"/>
+          <path d="M380 135 H400" stroke="#c4b5fd" fill="none"/>
+          <path d="M570 135 H640" stroke="#c4b5fd" fill="none"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">06 / مونوریپو</div>
+        <h2>نقش هر بسته</h2>
+        <div class="grid-2">
+          <div class="card"><h3 class="mono">apps/web</h3><p>Next.js ۱۵ — پنل، PWA، نشست JWT، SSE، ساخت PDF از طریق API داخلی.</p></div>
+          <div class="card"><h3 class="mono">apps/bot</h3><p>grammY — دعوت، submit، کرون فاکتور/گزارش، انتشار به کانال پورتفولیو.</p></div>
+          <div class="card"><h3 class="mono">packages/core</h3><p>تنها محل قوانین کسب‌وکار. وب و بات هر دو مصرف‌کنندهٔ همین بسته هستند.</p></div>
+          <div class="card"><h3 class="mono">packages/db</h3><p>اسکیما Drizzle، مایگریشن، seed. bigint تومان؛ بدون float برای پول.</p></div>
+          <div class="card"><h3 class="mono">packages/telegram</h3><p>کپشن، escape، دیپ‌لینک. بدون تصمیم دامنه.</p></div>
+          <div class="card"><h3 class="mono">packages/invoice-pdf</h3><p>HTML فاکتور + Chromium headless جدا از باندل Next.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">07 / دامنه‌ها</div>
+        <h2>مرزبندی داخل core</h2>
+        <div class="grid-5">
+          <div class="card accent"><h3>identity</h3><p>نقش، ورود، دعوت، رمز، نرخ‌محدود.</p></div>
+          <div class="card accent"><h3>work</h3><p>تسک، هفته، تحویل، آمار.</p></div>
+          <div class="card accent"><h3>catalog</h3><p>پروژه، کارفرما، نرخ واحد.</p></div>
+          <div class="card accent"><h3>billing</h3><p>اسنپ‌شات قیمت، فاکتور، درآمد.</p></div>
+          <div class="card accent-v"><h3>shared</h3><p>تقویم شمسی، پول، رویداد، تنظیمات.</p></div>
+        </div>
+        <p>صادرات عمومی <span class="mono">@eth/core</span> عوض نشده تا وب و بات نشکنند. واردات دامنه‌ای هم برای رشد بعدی آماده است: <span class="mono">@eth/core/billing</span>.</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">08 / دسترسی</div>
+        <h2>نقش × پورتال</h2>
+        <table>
+          <thead>
+            <tr><th>پورتال</th><th>نقش</th><th>می‌بیند</th><th>نمی‌تواند</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>مدیر <span class="mono">/admin</span></td><td>owner / admin</td><td>برد، پروژه، همه فاکتورها، تنظیمات</td><td>owner alone: promote</td></tr>
+            <tr><td>ادیتور <span class="mono">/week</span></td><td>editor</td><td>کار خودش، درآمد خودش، فاکتور صادرشده</td><td>approve، صدور فاکتور دیگران</td></tr>
+            <tr><td>کارفرما <span class="mono">/client</span></td><td>client</td><td>پروژه خودش و فاکتور همان پروژه‌ها</td><td>تسک استودیو، فاکتور ادیتور دیگر</td></tr>
+          </tbody>
+        </table>
+        <p>ورود اشتباهِ پورتال رد می‌شود. کاربر غیرفعال نشست ندارد.</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">09 / جریان اصلی</div>
+        <h2>از تسک تا تسویه</h2>
+        <div class="flow">
+          <span class="box">todo</span><span class="arr">←</span>
+          <span class="box">in_progress</span><span class="arr">←</span>
+          <span class="box">delivered</span><span class="arr">←</span>
+          <span class="box">approved</span>
+        </div>
+        <p style="text-align:center">rejected از delivered برمی‌گردد به in_progress. بعد از فاکتور، تسک قفل ویرایش است.</p>
+        <div class="grid-3">
+          <div class="card"><h3>قیمت</h3><p>روی approve از پروژه/override اسنپ می‌شود. مبلغ bigint تومان است.</p></div>
+          <div class="card"><h3>فاکتور</h3><p>دوره شمسی YYYY-MM. یکتایی (user, period). کارفرما فقط خطوط پروژهٔ خودش را می‌بیند.</p></div>
+          <div class="card"><h3>تحویل</h3><p>فقط در تلگرام. سرور بایت ویدیو نگه نمی‌دارد؛ copyMessage به کانال.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">10 / داده و زنده بودن</div>
+        <h2>Postgres ستون فقرات است</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>موجودیت‌های کلیدی</h3>
+            <p>users، invite_codes، projects، tasks، deliverables، invoices / invoice_lines، activity_log، bot_sessions، tg_processed_updates.</p>
+          </div>
+          <div class="card">
+            <h3>Realtime</h3>
+            <p><span class="mono">pg_notify('events')</span> → SSE در <span class="mono">/api/events</span>. به کلاینت فقط نوع رویداد می‌رود، نه payload داخلی.</p>
+          </div>
+        </div>
+        <p>پول اعشاری ذخیره نمی‌شود. هفته در DB به ISO است؛ برچسب UI شمسی است.</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">11 / امنیت</div>
+        <h2>سطح کنترل هویت</h2>
+        <div class="grid-3">
+          <div class="card accent"><h3>نشست</h3><p>JWT در کوکی httpOnly، sameSite=lax، secure در production. کاربر غیرفعال = خارج.</p></div>
+          <div class="card accent"><h3>ورود</h3><p>scrypt، پیام خطای یکسان، محدودیت ۸/۱۵ دقیقه، وریفای تلگرام با hash و auth_date.</p></div>
+          <div class="card accent"><h3>مرز کارفرما</h3><p>فاکتور و پروژه فقط با clientId. PDF همان فیلتر دامنه را اعمال می‌کند.</p></div>
+        </div>
+        <p>لوگوی آژانس فقط تصویر شطرنجی مجاز است. وبهوک بات با secret و idempotency روی update_id.</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">12 / خروجی مالی</div>
+        <h2>فاکتور PDF جدا از UI</h2>
+        <div class="layers">
+          <div class="layer" style="background:rgba(255,61,138,.12)"><span>صفحه فاکتور — دانلود / چاپ</span><span class="mono">InvoicePdfActions</span></div>
+          <div class="layer" style="background:rgba(196,181,253,.12)"><span>API داخلی وب</span><span class="mono">GET /api/invoices/:id/pdf</span></div>
+          <div class="layer" style="background:rgba(255,255,255,.06)"><span>HTML دامنه + مبلغ کارفرما در صورت نقش client</span><span class="mono">@eth/invoice-pdf</span></div>
+          <div class="layer" style="background:rgba(110,231,183,.1)"><span>پروسه Chromium جدا — بدون باندل در Next</span><span class="mono">html-to-pdf.mjs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">13 / پترن‌ها</div>
+        <h2>چه پترنی داخل این معماری است</h2>
+        <div class="grid-3">
+          <div class="card"><h3>Modular / Bounded Context</h3><p>مالی از تسک جدا؛ هویت از کاتالوگ جدا.</p></div>
+          <div class="card"><h3>Layered (نرم)</h3><p>UI → core → db. صفحه نباید SQL بنویسد.</p></div>
+          <div class="card"><h3>Facade (آینده)</h3><p>HTTP نسخه‌دار روی همین ماژول‌ها، وقتی فرانت جدا شد.</p></div>
+          <div class="card"><h3>RBAC</h3><p>owner / admin / editor / client با جدول اقدام‌ها.</p></div>
+          <div class="card"><h3>Worker</h3><p>PDF همین حالا جداست؛ کرون بات هم جدا از درخواست کاربر است.</p></div>
+          <div class="card"><h3>Client–Server</h3><p>سبک استقرار نهایی، نه الزام امروز.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">14 / مسیر رشد</div>
+        <h2>سه‌گام؛ بدون جداسازی اجباری</h2>
+        <div class="grid-3">
+          <div class="card accent"><h3>الان — انجام شد</h3><p>مرز دامنه در core. قرارداد وب/بات پایدار. PDF ورکر. امنیت ورود.</p></div>
+          <div class="card accent-v"><h3>قدم بعد در صورت فشار</h3><p>صف برای PDF/کرون/اعلان. Redis برای نرخ‌محدود چنداینستنس.</p></div>
+          <div class="card"><h3>وقتی محصول دوم آمد</h3><p>Facade HTTP و انتقال Next به کلاینت خالص. میکروسرویس پیش‌فرض نیست.</p></div>
+        </div>
+        <p>معیار جدا کردن فرانت: وابستگی صفحات به <span class="mono">db()</span> به صفر برسد — نه تاریخ تقویم.</p>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:stretch">
+        <div class="kicker">15 / خارج از محدوده</div>
+        <h2>عمداً این‌ها معماری نهایی نیستند</h2>
+        <div class="grid-2">
+          <div class="card"><h3 class="dont">میکروسرویس کامل</h3><p>تسک و فاکتور تراکنش مشترک دارند. خرد کردن الان هزینه است نه مقیاس.</p></div>
+          <div class="card"><h3 class="dont">CQRS / Event Sourcing</h3><p>حجم رویداد و تیم برای این الگو کافی نیست.</p></div>
+          <div class="card"><h3 class="dont">Hexagonal در هر فایل</h3><p>abstraction بدون مصرف‌کنندهٔ دوم فقط خواندن را سخت می‌کند.</p></div>
+          <div class="card"><h3 class="dont">دو منبع حقیقت</h3><p>دیتابیس جدا برای بات و وب ممنوع است.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide">
+      <div class="slide-content" style="align-items:flex-start">
+        <div class="kicker">16 / جمع‌بندی</div>
+        <h1 class="hero" style="font-size:clamp(28px,4vw,48px)">یک دامنه. چند کلاینت. یک دیتابیس.</h1>
+        <p class="lead">ARSHYCUT یک مونولیت ماژولار است. پترن رشدش Facade روی همین دامنه است، نه شکستن محصول.</p>
+        <p class="footer-note">کلیدها: ← → یا دکمه‌ها · چاپ مرورگر برای PDF · پوشه: پرزنت</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav-controls">
+    <button class="nav-btn" type="button" onclick="prevSlide()" aria-label="اسلاید قبلی">→</button>
+    <span class="slide-counter" dir="ltr"><span id="current">1</span> / <span id="total">0</span></span>
+    <button class="nav-btn" type="button" onclick="nextSlide()" aria-label="اسلاید بعدی">←</button>
+  </div>
+
+  <script>
+    let current = 1;
+    const slides = document.querySelectorAll(".slide");
+    const total = slides.length;
+    document.getElementById("total").textContent = total;
+
+    function showSlide(n) {
+      if (n < 1) n = 1;
+      if (n > total) n = total;
+      current = n;
+      slides.forEach((s, i) => s.classList.toggle("active", i === n - 1));
+      document.getElementById("current").textContent = n;
+      document.getElementById("progressBar").style.width = (n / total * 100) + "%";
+    }
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault(); nextSlide();
+      }
+      if (e.key === "ArrowRight" || e.key === "PageUp") {
+        e.preventDefault(); prevSlide();
+      }
+      if (e.key === "Home") { e.preventDefault(); showSlide(1); }
+      if (e.key === "End") { e.preventDefault(); showSlide(total); }
+    });
+    showSlide(1);
+  </script>
+</body>
+</html>

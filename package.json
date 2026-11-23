@@ -12,7 +12,7 @@
     "db:migrate": "pnpm --filter @eth/db migrate",
     "db:seed": "pnpm --filter @eth/db seed",
     "db:seed:demo": "pnpm --filter @eth/db seed:demo",
-    "test": "pnpm -r --filter @eth/core test",
+    "test": "pnpm -r --filter @eth/core --filter @eth/invoice-pdf test",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {

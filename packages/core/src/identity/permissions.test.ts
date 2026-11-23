@@ -2,9 +2,13 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import type { Task, User } from "@eth/db";
 import {
+  assertCan,
   can,
   canModifyTask,
   canTransition,
+  isClientUser,
+  isStudioUser,
+  PermissionError,
 } from "../index.js";
 
 function user(partial: Partial<User> & Pick<User, "role">): User {
@@ -81,6 +85,26 @@ describe("permissions", () => {
     assert.equal(
       canModifyTask(editor, task({ assigneeId: "e1", invoiceId: "inv1" })),
       false,
+    );
+  });
+
+  it("inactive users have no actions", () => {
+    const admin = user({ role: "admin", isActive: false });
+    assert.equal(can(admin, "invoice.manage"), false);
+    assert.equal(canModifyTask(admin, task({ assigneeId: "u1" })), false);
+  });
+
+  it("classifies studio vs client", () => {
+    assert.equal(isClientUser(user({ role: "client", clientId: "c1" })), true);
+    assert.equal(isStudioUser(user({ role: "client", clientId: "c1" })), false);
+    assert.equal(isStudioUser(user({ role: "editor" })), true);
+    assert.equal(isStudioUser(user({ role: "admin" })), true);
+  });
+
+  it("assertCan throws PermissionError", () => {
+    assert.throws(
+      () => assertCan(user({ role: "editor" }), "invoice.manage"),
+      PermissionError,
     );
   });
 });
