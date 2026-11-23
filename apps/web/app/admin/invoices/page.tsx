@@ -5,6 +5,7 @@ import {
   coerceToJalaliPeriodKey,
   currentMonthPeriod,
   formatToman,
+  invoiceStatusLabel,
   issueInvoice,
   jalaliMonthLabel,
   listInvoices,
@@ -106,17 +107,7 @@ export default async function InvoicesPage({
           </>
         ) : null}
         {userId ? ` — ${nameById.get(userId) ?? ""}` : ""}
-        {status
-          ? ` — ${
-              status === "draft"
-                ? "پیش‌نویس"
-                : status === "issued"
-                  ? "صادر شده"
-                  : status === "paid"
-                    ? "پرداخت شده"
-                    : "باطل"
-            }`
-          : ""}
+        {status ? ` — ${invoiceStatusLabel(status)}` : ""}
         {numberQ ? ` — «${numberQ}»` : ""}
         {" — "}
         {toPersianDigits(invoices.length)} فاکتور
@@ -181,17 +172,7 @@ export default async function InvoicesPage({
                   </div>
                 </td>
                 <td>{formatToman(inv.totalAmount)}</td>
-                <td>
-                  {inv.status === "draft"
-                    ? "پیش‌نویس"
-                    : inv.status === "issued"
-                      ? "صادر شده"
-                      : inv.status === "paid"
-                        ? "پرداخت شده"
-                        : inv.status === "void"
-                          ? "باطل"
-                          : inv.status}
-                </td>
+                <td>{invoiceStatusLabel(inv.status)}</td>
                 <td>
                   <div className="board-item-actions">
                     <Link className="btn-mini" href={`/admin/invoices/${inv.id}`}>

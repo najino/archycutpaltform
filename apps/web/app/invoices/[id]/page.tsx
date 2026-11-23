@@ -5,6 +5,7 @@ import {
   formatToman,
   getAgencySettings,
   getInvoiceDetail,
+  invoiceStatusLabel,
   setInvoicePaymentReceipt,
   toPersianDigits,
 } from "@eth/core";
@@ -16,13 +17,6 @@ import { requireEditorPortal } from "@/lib/authz";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";
-
-const STATUS_FA: Record<string, string> = {
-  draft: "پیش‌نویس",
-  issued: "صادر شده",
-  paid: "پرداخت شده",
-  void: "باطل",
-};
 
 async function saveReceiptAction(formData: FormData) {
   "use server";
@@ -69,7 +63,7 @@ export default async function InvoicePrintPage({
       <h1 className="hero-title">{invoice.number}</h1>
       <p className="hero-sub">
         {jalaliMonthLabel(invoice.periodKey)} ·{" "}
-        {STATUS_FA[invoice.status] ?? invoice.status} ·{" "}
+        {invoiceStatusLabel(invoice.status)} ·{" "}
         {formatToman(invoice.totalAmount)}
       </p>
 

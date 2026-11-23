@@ -1,11 +1,11 @@
-import { formatToman, listProjects, toPersianDigits } from "@eth/core";
+import {
+  formatToman,
+  listProjects,
+  projectStatusLabel,
+  toPersianDigits,
+} from "@eth/core";
 import { requireClientPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
-
-const STATUS_FA: Record<string, string> = {
-  open: "باز",
-  closed: "بسته",
-};
 
 export default async function ClientProjectsPage() {
   const user = await requireClientPortal();
@@ -34,7 +34,7 @@ export default async function ClientProjectsPage() {
                 <td>{project.name}</td>
                 <td>{project.unitLabel}</td>
                 <td>{formatToman(project.unitPrice)}</td>
-                <td>{STATUS_FA[project.status] ?? project.status}</td>
+                <td>{projectStatusLabel(project.status)}</td>
               </tr>
             ))}
           </tbody>

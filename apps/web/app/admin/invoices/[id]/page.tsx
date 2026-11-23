@@ -6,6 +6,7 @@ import {
   formatToman,
   getAgencySettings,
   getInvoiceDetail,
+  invoiceStatusLabel,
   markInvoicePaid,
   setInvoicePaymentReceipt,
   toPersianDigits,
@@ -16,13 +17,6 @@ import { resolveFlash } from "@/lib/flash";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import Link from "next/link";
-
-const STATUS_FA: Record<string, string> = {
-  draft: "پیش‌نویس",
-  issued: "صادر شده",
-  paid: "پرداخت شده",
-  void: "باطل",
-};
 
 async function saveReceiptAction(formData: FormData) {
   "use server";
@@ -86,7 +80,7 @@ export default async function InvoicePrintPage({
         </h1>
         <p className="hero-sub">
           {editor?.displayName ?? "—"} · {jalaliMonthLabel(invoice.periodKey)} ·{" "}
-          {STATUS_FA[invoice.status] ?? invoice.status}
+          {invoiceStatusLabel(invoice.status)}
         </p>
 
         <InvoicePdfActions invoiceId={invoice.id} number={invoice.number} />
@@ -223,7 +217,7 @@ export default async function InvoicePrintPage({
           <br />
           ادیتور: {editor?.displayName ?? "—"}
           <br />
-          وضعیت: {STATUS_FA[invoice.status] ?? invoice.status}
+          وضعیت: {invoiceStatusLabel(invoice.status)}
         </div>
 
         <table style={{ width: "100%", borderCollapse: "collapse" }}>

@@ -1,9 +1,13 @@
 import {
   formatJalaliDate,
   formatToman,
+  invoiceStatusLabel,
   jalaliMonthLabel,
   toPersianDigits,
 } from "@eth/core";
+import { htmlToPdf } from "./spawn-html-to-pdf.js";
+
+export { htmlToPdf } from "./spawn-html-to-pdf.js";
 
 export type InvoicePdfLine = {
   projectName?: string | null;
@@ -28,12 +32,50 @@ export type InvoicePdfInput = {
   paymentReceipt?: string | null;
 };
 
-const STATUS_FA: Record<string, string> = {
-  draft: "پیش‌نویس",
-  issued: "صادر شده",
-  paid: "پرداخت شده",
-  void: "باطل",
+export type InvoicePdfSource = {
+  agencyName: string;
+  agencyLogoUrl?: string | null;
+  invoice: {
+    number: string;
+    periodKey: string;
+    status: string;
+    issuedAt?: Date | null;
+    totalAmount: bigint;
+    paymentReceipt?: string | null;
+  };
+  lines: Array<{
+    projectName?: string | null;
+    description?: string | null;
+    units: number;
+    unitPrice: bigint;
+    amount: bigint;
+  }>;
+  editorName: string;
+  partyLabel?: string;
+  totalAmount?: bigint;
 };
+
+export function toInvoicePdfInput(source: InvoicePdfSource): InvoicePdfInput {
+  return {
+    agencyName: source.agencyName,
+    agencyLogoUrl: source.agencyLogoUrl,
+    number: source.invoice.number,
+    periodKey: source.invoice.periodKey,
+    editorName: source.editorName,
+    partyLabel: source.partyLabel,
+    status: source.invoice.status,
+    issuedAt: source.invoice.issuedAt,
+    totalAmount: source.totalAmount ?? source.invoice.totalAmount,
+    paymentReceipt: source.invoice.paymentReceipt,
+    lines: source.lines.map((line) => ({
+      projectName: line.projectName,
+      description: line.description,
+      units: Number(line.units),
+      unitPrice: line.unitPrice,
+      amount: line.amount,
+    })),
+  };
+}
 
 export function buildInvoiceHtml(input: InvoicePdfInput): string {
   const rows = input.lines
@@ -78,7 +120,7 @@ export function buildInvoiceHtml(input: InvoicePdfInput): string {
     دوره: ${escapeHtml(jalaliMonthLabel(input.periodKey))} (${toPersianDigits(input.periodKey)})<br/>
     ${escapeHtml(input.partyLabel ?? "ادیتور")}: ${escapeHtml(input.editorName)}<br/>
     تاریخ صدور: ${issueDate}<br/>
-    وضعیت: <span class="status">${STATUS_FA[input.status] ?? input.status}</span>
+    وضعیت: <span class="status">${escapeHtml(invoiceStatusLabel(input.status))}</span>
   </div>
   <table>
     <thead>
@@ -113,23 +155,8 @@ function escapeHtml(s: string): string {
     .replaceAll('"', "&quot;");
 }
 
-/** Generate PDF buffer via Playwright Chromium. Regeneratable anytime. */
 export async function renderInvoicePdf(
   input: InvoicePdfInput,
 ): Promise<Buffer> {
-  const html = buildInvoiceHtml(input);
-  const { chromium } = await import("playwright");
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle" });
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "16mm", bottom: "16mm", left: "12mm", right: "12mm" },
-    });
-    return Buffer.from(pdf);
-  } finally {
-    await browser.close();
-  }
+  return htmlToPdf(buildInvoiceHtml(input));
 }

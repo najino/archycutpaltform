@@ -4,19 +4,13 @@ import {
   formatToman,
   getAgencySettings,
   getInvoiceDetail,
+  invoiceStatusLabel,
   jalaliMonthLabel,
   toPersianDigits,
 } from "@eth/core";
 import { InvoicePdfActions } from "@/components/invoice-pdf-actions";
 import { requireClientPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
-
-const STATUS_FA: Record<string, string> = {
-  draft: "پیش‌نویس",
-  issued: "صادر شده",
-  paid: "پرداخت شده",
-  void: "باطل",
-};
 
 export default async function ClientInvoiceDetailPage({
   params,
@@ -54,7 +48,7 @@ export default async function ClientInvoiceDetailPage({
       <h1 className="hero-title">{invoice.number}</h1>
       <p className="hero-sub">
         {agency.name} · {jalaliMonthLabel(invoice.periodKey)} ·{" "}
-        {STATUS_FA[invoice.status] ?? invoice.status} · {formatToman(total)}
+        {invoiceStatusLabel(invoice.status)} · {formatToman(total)}
       </p>
 
       <InvoicePdfActions invoiceId={invoice.id} number={invoice.number} />

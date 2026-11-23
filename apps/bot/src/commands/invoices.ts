@@ -6,6 +6,7 @@ import {
   generateInvoicesForPeriod,
   getAgencySettings,
   getInvoiceDetail,
+  invoiceStatusLabel,
   issueInvoice,
   jalaliMonthLabel,
   listInvoices,
@@ -14,7 +15,7 @@ import {
   parsePeriodKey,
   previousMonthPeriod,
 } from "@eth/core";
-import { renderInvoicePdf } from "@eth/invoice-pdf";
+import { renderInvoicePdf, toInvoicePdfInput } from "@eth/invoice-pdf";
 import type { BotContext } from "../context.js";
 import { env } from "../env.js";
 import { notifyAdminGroup } from "../notify.js";
@@ -75,30 +76,28 @@ export async function invoiceCommand(ctx: BotContext) {
   await sendInvoiceToUser(ctx, latest.id);
 }
 
+async function buildInvoicePdf(ctx: BotContext, invoiceId: string) {
+  if (!ctx.user) throw new Error("no user");
+  const [detail, agency] = await Promise.all([
+    getInvoiceDetail(ctx.db, ctx.user, invoiceId),
+    getAgencySettings(ctx.db),
+  ]);
+  const pdf = await renderInvoicePdf(
+    toInvoicePdfInput({
+      agencyName: agency.name,
+      agencyLogoUrl: agency.logoUrl,
+      invoice: detail.invoice,
+      lines: detail.lines,
+      editorName: detail.editor?.displayName ?? "—",
+    }),
+  );
+  return { detail, pdf };
+}
+
 export async function sendInvoiceToUser(ctx: BotContext, invoiceId: string) {
   if (!ctx.user) return;
-  const detail = await getInvoiceDetail(ctx.db, ctx.user, invoiceId);
-  const agency = await getAgencySettings(ctx.db);
-  const pdf = await renderInvoicePdf({
-    agencyName: agency.name,
-    agencyLogoUrl: agency.logoUrl,
-    number: detail.invoice.number,
-    periodKey: detail.invoice.periodKey,
-    editorName: detail.editor?.displayName ?? "",
-    status: detail.invoice.status,
-    issuedAt: detail.invoice.issuedAt,
-    totalAmount: detail.invoice.totalAmount,
-    paymentReceipt: detail.invoice.paymentReceipt,
-    lines: detail.lines.map((l) => ({
-      projectName: l.projectName,
-      description: l.description,
-      units: Number(l.units),
-      unitPrice: l.unitPrice,
-      amount: l.amount,
-    })),
-  });
-
-  const summary = `📄 ${detail.invoice.number}\nدوره ${detail.invoice.periodKey}\n${formatToman(detail.invoice.totalAmount)}\nوضعیت: ${detail.invoice.status}`;
+  const { detail, pdf } = await buildInvoicePdf(ctx, invoiceId);
+  const summary = `📄 ${detail.invoice.number}\nدوره ${detail.invoice.periodKey}\n${formatToman(detail.invoice.totalAmount)}\nوضعیت: ${invoiceStatusLabel(detail.invoice.status)}`;
   await ctx.reply(summary);
   const msg = await ctx.replyWithDocument(
     new InputFile(pdf, `${detail.invoice.number}.pdf`),
@@ -125,26 +124,7 @@ export async function handleInvoiceCallbacks(ctx: BotContext) {
     const editor = members.find((m) => m.id === inv.userId);
     if (editor?.telegramId != null) {
       try {
-        const agency = await getAgencySettings(ctx.db);
-        const detail = await getInvoiceDetail(ctx.db, ctx.user, inv.id);
-        const pdf = await renderInvoicePdf({
-          agencyName: agency.name,
-          agencyLogoUrl: agency.logoUrl,
-          number: inv.number,
-          periodKey: inv.periodKey,
-          editorName: editor.displayName,
-          status: inv.status,
-          issuedAt: inv.issuedAt,
-          totalAmount: inv.totalAmount,
-          paymentReceipt: detail.invoice.paymentReceipt,
-          lines: detail.lines.map((l) => ({
-            projectName: l.projectName,
-            description: l.description,
-            units: Number(l.units),
-            unitPrice: l.unitPrice,
-            amount: l.amount,
-          })),
-        });
+        const { pdf } = await buildInvoicePdf(ctx, inv.id);
         await ctx.api.sendMessage(
           editor.telegramId.toString(),
           `📄 فاکتور ${inv.number}\n${formatToman(inv.totalAmount)}`,

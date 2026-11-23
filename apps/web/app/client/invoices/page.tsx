@@ -2,17 +2,13 @@ import Link from "next/link";
 import {
   coerceToJalaliPeriodKey,
   formatToman,
+  invoiceStatusLabel,
   jalaliMonthLabel,
   listClientProjectInvoices,
   toPersianDigits,
 } from "@eth/core";
 import { requireClientPortal } from "@/lib/authz";
 import { db } from "@/lib/db";
-
-const STATUS_FA: Record<string, string> = {
-  issued: "صادر شده",
-  paid: "پرداخت شده",
-};
 
 export default async function ClientInvoicesPage() {
   const user = await requireClientPortal();
@@ -59,7 +55,7 @@ export default async function ClientInvoicesPage() {
                 </td>
                 <td>{row.projectNames.join("، ") || "—"}</td>
                 <td>{formatToman(row.amount)}</td>
-                <td>{STATUS_FA[row.invoice.status] ?? row.invoice.status}</td>
+                <td>{invoiceStatusLabel(row.invoice.status)}</td>
                 <td>
                   <Link
                     href={`/client/invoices/${row.invoice.id}`}

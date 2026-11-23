@@ -2,15 +2,41 @@ import { NextResponse } from "next/server";
 import {
   getAgencySettings,
   getInvoiceDetail,
+  isClientUser,
+  NotFoundError,
+  PermissionError,
+  ValidationError,
 } from "@eth/core";
-import { buildInvoiceHtml } from "@eth/invoice-pdf";
-import { htmlToPdf } from "@/lib/html-to-pdf";
+import { renderInvoicePdf, toInvoicePdfInput } from "@eth/invoice-pdf";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { toUserError } from "@/lib/user-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function pdfErrorResponse(err: unknown) {
+  console.error("invoice pdf", err);
+  if (err instanceof PermissionError) {
+    return NextResponse.json(
+      { error: "دسترسی به این فاکتور ندارید" },
+      { status: 403 },
+    );
+  }
+  if (err instanceof NotFoundError) {
+    return NextResponse.json({ error: "فاکتور پیدا نشد" }, { status: 404 });
+  }
+  if (err instanceof ValidationError) {
+    return NextResponse.json(
+      { error: toUserError(err, "درخواست نامعتبر است") },
+      { status: 400 },
+    );
+  }
+  return NextResponse.json(
+    { error: toUserError(err, "ساخت PDF ناموفق بود") },
+    { status: 500 },
+  );
+}
 
 export async function GET(
   req: Request,
@@ -29,35 +55,26 @@ export async function GET(
       getInvoiceDetail(db(), user, id),
       getAgencySettings(db()),
     ]);
-    const { invoice, lines, editor, clientAmount } = detail;
-    const isClient = user.role === "client";
+    const isClient = isClientUser(user);
     const total = isClient
-      ? (clientAmount ?? invoice.totalAmount)
-      : invoice.totalAmount;
+      ? (detail.clientAmount ?? detail.invoice.totalAmount)
+      : detail.invoice.totalAmount;
 
-    const pdf = await htmlToPdf(
-      buildInvoiceHtml({
+    const pdf = await renderInvoicePdf(
+      toInvoicePdfInput({
         agencyName: agency.name,
         agencyLogoUrl: agency.logoUrl,
-        number: invoice.number,
-        periodKey: invoice.periodKey,
-        editorName: isClient ? user.displayName : (editor?.displayName ?? "—"),
+        invoice: detail.invoice,
+        lines: detail.lines,
+        editorName: isClient
+          ? user.displayName
+          : (detail.editor?.displayName ?? "—"),
         partyLabel: isClient ? "کارفرما" : "ادیتور",
-        status: invoice.status,
-        issuedAt: invoice.issuedAt,
         totalAmount: total,
-        paymentReceipt: invoice.paymentReceipt,
-        lines: lines.map((line) => ({
-          projectName: line.projectName,
-          description: line.description,
-          units: Number(line.units),
-          unitPrice: line.unitPrice,
-          amount: line.amount,
-        })),
       }),
     );
 
-    const filename = `${invoice.number.replace(/[^\w.-]+/g, "_")}.pdf`;
+    const filename = `${detail.invoice.number.replace(/[^\w.-]+/g, "_")}.pdf`;
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
@@ -66,16 +83,6 @@ export async function GET(
       },
     });
   } catch (err) {
-    console.error("invoice pdf", err);
-    const raw = err instanceof Error ? err.message : "";
-    const message =
-      /playwright|executable doesn't exist|browserType/i.test(raw)
-        ? "موتور ساخت PDF آماده نیست. کمی بعد دوباره تلاش کنید."
-        : toUserError(err, "ساخت PDF ناموفق بود");
-    const status =
-      message.includes("Forbidden") || message.includes("پیدا نشد")
-        ? 404
-        : 500;
-    return NextResponse.json({ error: message }, { status });
+    return pdfErrorResponse(err);
   }
 }

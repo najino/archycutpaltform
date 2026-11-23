@@ -3,6 +3,7 @@ import {
   coerceToJalaliPeriodKey,
   currentMonthPeriod,
   formatToman,
+  invoiceStatusLabel,
   jalaliMonthLabel,
   listInvoices,
   toPersianDigits,
@@ -59,13 +60,7 @@ export default async function EditorInvoicesPage({
                   </div>
                 </td>
                 <td>{formatToman(inv.totalAmount)}</td>
-                <td>
-                  {inv.status === "issued"
-                    ? "صادر شده"
-                    : inv.status === "paid"
-                      ? "پرداخت شده"
-                      : inv.status}
-                </td>
+                <td>{invoiceStatusLabel(inv.status)}</td>
               </tr>
             ))}
           </tbody>

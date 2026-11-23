@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   JALALI_MONTHS,
+  INVOICE_STATUS_OPTIONS,
   jalaliMonthLabel,
   toPeriodKey,
   toPersianDigits,
@@ -24,13 +25,6 @@ function parseKey(key: string) {
   if (!m) return null;
   return { jy: Number(m[1]), jm: Number(m[2]) };
 }
-
-const STATUS_OPTIONS = [
-  { value: "draft", label: "پیش‌نویس" },
-  { value: "issued", label: "صادر شده" },
-  { value: "paid", label: "پرداخت شده" },
-  { value: "void", label: "باطل" },
-];
 
 export function InvoiceSearch({ month, userId, status, q, editors }: Props) {
   const initial = parseKey(month);
@@ -143,7 +137,7 @@ export function InvoiceSearch({ month, userId, status, q, editors }: Props) {
             aria-label="وضعیت"
             placeholder="همه"
             value={st}
-            options={STATUS_OPTIONS}
+            options={INVOICE_STATUS_OPTIONS}
             onChange={setSt}
           />
         </label>

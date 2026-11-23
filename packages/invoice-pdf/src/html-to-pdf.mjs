@@ -12,30 +12,43 @@ if (!html.trim()) {
   process.exit(1);
 }
 
+const watchdog = setTimeout(() => {
+  console.error("pdf worker timeout");
+  process.exit(2);
+}, 40_000);
+
 async function launchBrowser() {
   const extra = {
     headless: true,
-    args: ["--disable-dev-shm-usage", "--no-sandbox", "--font-render-hinting=none"],
+    args: [
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      "--font-render-hinting=none",
+    ],
   };
-  try {
-    return await chromium.launch(extra);
-  } catch (first) {
-    for (const channel of ["chrome", "msedge"]) {
-      try {
-        return await chromium.launch({ ...extra, channel });
-      } catch {
-        /* کانال بعدی */
-      }
+  const attempts = [{}, { channel: "chrome" }, { channel: "msedge" }];
+  let lastError;
+  for (const option of attempts) {
+    try {
+      return await chromium.launch({ ...extra, ...option });
+    } catch (err) {
+      lastError = err;
     }
-    throw first;
   }
+  throw lastError;
 }
 
 const browser = await launchBrowser();
 try {
   const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: "load", timeout: 20000 });
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  await page.setContent(html, { waitUntil: "load", timeout: 20_000 });
+  try {
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+  } catch {
+    /* فونت وب لود نشد؛ PDF با فونت سیستم ساخته می‌شود */
+  }
   const pdf = await page.pdf({
     format: "A4",
     printBackground: true,
@@ -43,5 +56,6 @@ try {
   });
   process.stdout.write(pdf);
 } finally {
+  clearTimeout(watchdog);
   await browser.close();
 }

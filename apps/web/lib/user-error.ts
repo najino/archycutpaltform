@@ -87,6 +87,14 @@ export function toUserError(
     return "نشست شما منقضی شده. دوباره وارد شوید.";
   }
 
+  if (
+    /playwright|executable doesn't exist|browserType|chromium|html-to-pdf|pdf process/i.test(
+      lower,
+    )
+  ) {
+    return "موتور ساخت PDF آماده نیست. کمی بعد دوباره تلاش کنید.";
+  }
+
   // پیام انگلیسی ناشناخته را لو نده
   if (/^[A-Za-z0-9\s\-_:.,'"/\\()]+$/.test(text) && text.length > 8) {
     return fallback;

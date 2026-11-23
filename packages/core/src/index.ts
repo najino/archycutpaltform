@@ -9,6 +9,7 @@ export * from "./settings.js";
 export * from "./activity.js";
 export * from "./money.js";
 export * from "./calendar.js";
+export * from "./labels.js";
 export * from "./projects.js";
 export * from "./billing.js";
 export * from "./password.js";

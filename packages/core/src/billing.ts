@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, ilike, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gte, ilike, inArray, isNull, lte, sql } from "drizzle-orm";
 import type {
   ActivitySource,
   Db,
@@ -19,6 +19,7 @@ import {
   ValidationError,
   assertCan,
   can,
+  isClientUser,
 } from "./permissions.js";
 import { logAndEmit } from "./events.js";
 import { computeAmount } from "./money.js";
@@ -710,9 +711,7 @@ export async function listInvoices(
   if (!managed) {
     conds.push(eq(invoices.userId, actor.id));
     if (!filter?.status) {
-      conds.push(
-        or(eq(invoices.status, "issued"), eq(invoices.status, "paid"))!,
-      );
+      conds.push(inArray(invoices.status, ["issued", "paid"]));
     } else if (filter.status === "issued" || filter.status === "paid") {
       conds.push(eq(invoices.status, filter.status));
     } else {
@@ -743,7 +742,7 @@ export async function listClientProjectInvoices(
   actor: User,
 ): Promise<ClientInvoiceRow[]> {
   assertCan(actor, "invoice.view_project");
-  if (actor.role !== "client" || !actor.clientId) return [];
+  if (!isClientUser(actor) || !actor.clientId) return [];
 
   const rows = await db
     .select({
@@ -758,7 +757,7 @@ export async function listClientProjectInvoices(
     .where(
       and(
         eq(projects.clientId, actor.clientId),
-        or(eq(invoices.status, "issued"), eq(invoices.status, "paid"))!,
+        inArray(invoices.status, ["issued", "paid"]),
       ),
     )
     .orderBy(asc(invoices.number));
@@ -784,17 +783,20 @@ export async function listClientProjectInvoices(
 
 export async function getInvoiceDetail(db: Db, actor: User, invoiceId: string) {
   const invoice = await getInvoiceById(db, invoiceId);
-  if (!invoice) throw new NotFoundError("Invoice not found");
+  if (!invoice) throw new NotFoundError("فاکتور پیدا نشد");
 
-  const isClient = actor.role === "client";
+  const isClient = isClientUser(actor);
   if (isClient) {
     assertCan(actor, "invoice.view_project");
+    if (!actor.clientId) {
+      throw new PermissionError("دسترسی به این فاکتور ندارید");
+    }
   } else if (
     invoice.userId !== actor.id &&
     !can(actor, "invoice.manage") &&
     !can(actor, "earnings.view_all")
   ) {
-    throw new PermissionError("Forbidden");
+    throw new PermissionError("دسترسی به این فاکتور ندارید");
   }
 
   const lineRows = await db
@@ -811,7 +813,9 @@ export async function getInvoiceDetail(db: Db, actor: User, invoiceId: string) {
   let clientAmount: bigint | null = null;
   if (isClient) {
     const visible = lineRows.filter((row) => row.clientId === actor.clientId);
-    if (visible.length === 0) throw new PermissionError("Forbidden");
+    if (visible.length === 0) {
+      throw new PermissionError("دسترسی به این فاکتور ندارید");
+    }
     lines = visible.map((row) => row.line);
     clientAmount = lines.reduce((sum, line) => sum + line.amount, 0n);
   }

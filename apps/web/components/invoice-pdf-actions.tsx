@@ -21,50 +21,65 @@ export function InvoicePdfActions({
     return res.blob();
   }
 
-  async function download() {
+  async function run(
+    kind: "download" | "print",
+    action: () => Promise<void>,
+    fallback: string,
+  ) {
     setError(null);
-    setBusy("download");
+    setBusy(kind);
     try {
-      const blob = await pdfBlob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${number}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+      await action();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "دانلود ناموفق بود");
+      setError(err instanceof Error ? err.message : fallback);
     } finally {
       setBusy(null);
     }
   }
 
-  async function printPdf() {
-    setError(null);
-    setBusy("print");
-    try {
-      const blob = await pdfBlob();
-      const url = URL.createObjectURL(blob);
-      const popup = window.open(url, "_blank", "noopener");
-      if (!popup) {
-        location.assign(`/api/invoices/${invoiceId}/pdf?inline=1`);
-        return;
-      }
-      window.setTimeout(() => {
-        try {
-          popup.focus();
-          popup.print();
-        } catch {
-          /* مرورگر PDF را خودش چاپ می‌کند */
+  function download() {
+    void run(
+      "download",
+      async () => {
+        const blob = await pdfBlob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${number}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+      },
+      "دانلود ناموفق بود",
+    );
+  }
+
+  function printPdf() {
+    void run(
+      "print",
+      async () => {
+        const blob = await pdfBlob();
+        const url = URL.createObjectURL(blob);
+        const popup = window.open(url, "_blank");
+        if (!popup) {
+          location.assign(`/api/invoices/${invoiceId}/pdf?inline=1`);
+          window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+          return;
         }
-      }, 1200);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "چاپ ناموفق بود");
-    } finally {
-      setBusy(null);
-    }
+        popup.opener = null;
+        window.setTimeout(() => {
+          try {
+            popup.focus();
+            popup.print();
+          } catch {
+            /* نمایشگر PDF مرورگر چاپ را خودش فراهم می‌کند */
+          }
+          window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        }, 800);
+      },
+      "چاپ ناموفق بود",
+    );
   }
 
   return (
