@@ -51,11 +51,14 @@ export async function handleCallbacks(ctx: BotContext) {
   }
 
   if (data.startsWith("approve:") || data.startsWith("reject:")) {
-    if (!can(ctx.user, "task.status.approve")) {
+    const isApprove = data.startsWith("approve:");
+    const requiredPermission = isApprove
+      ? "task.status.approve"
+      : "task.status.reject";
+    if (!can(ctx.user, requiredPermission)) {
       await ctx.answerCallbackQuery({ text: "Forbidden", show_alert: true });
       return;
     }
-    const isApprove = data.startsWith("approve:");
     const code = data.split(":")[1]?.trim();
     if (!code) {
       await ctx.answerCallbackQuery({ text: "Invalid code", show_alert: true });
